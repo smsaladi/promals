@@ -3,6 +3,10 @@
 from __future__ import print_function
 
 import os, sys, re, glob
+import os.path
+
+script_path = os.path.dirname(os.path.abspath(__file__))
+al2co_bin = os.path.join(script_path, 'al2co')
 
 # this script run promals given a fasta file
 # process promals output alignment
@@ -236,8 +240,8 @@ def color_csv_string(conservation_array, cutoff):
 	return web_conservation_array
 
 def get_csv_string(alnfile):
-	print alnfile
-	command = "/home/jpei/promals_package/al2co -i %s -t %s.csv.aln -g 0.25 -b 1000000 > /dev/null" %(alnfile, alnfile)
+	print(alnfile)
+	command = al2co_bin + " -i %s -t %s.csv.aln -g 0.25 -b 1000000 > /dev/null" %(alnfile, alnfile)
 	#command = "/home/jpei/promals_package/al2co -i %s -t /tmp/csv.aln -g 0.25 -b 1000000 > /dev/null" %(alnfile)
 	os.system(command)
 	if not os.path.isfile(alnfile+".csv.aln"):
