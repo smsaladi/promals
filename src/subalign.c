@@ -2315,8 +2315,6 @@ void subalign::get_ss_prof1(char *dir_name, char *query_name, char *runpsipred1_
 	sprintf(command, "cp ../%s.chk psitmp.chk", query_name);
 	status = system(command);
     cout << "3: " << status << endl;
-	sprintf(command, "cp %s .", ncbirc); // NEW: for properly running psipred (which uses makemat)
-	system(command);
 	status = system(command);
     cout << "4: " << status << endl;
 
@@ -2339,9 +2337,6 @@ void subalign::get_ss_prof1(char *dir_name, char *query_name, char *runpsipred1_
         }
 	sprintf(command, "cp %s.horiz ../", repres_name);
 	system(command);
-
-        // remove .ncbirc
-        system("rm -f .ncbirc 2>/dev/null");
 
 	// clear the temporary directory
 	//chdir("../../");

@@ -31,7 +31,6 @@ char blast_dir[500];
 char uniref90_file[500];
 char blastpgp_cmd[500];
 char blastpgp_command[500];
-char ncbirc[500];
 
 int use_ss_freq=2;
 
@@ -151,13 +150,8 @@ void getParameter(int argc, char **argv, int prog) {
         strcpy(program_dir, "./");
     }
 
-	strcpy(ncbirc, program_dir);
-	strcat(ncbirc, "/bin/.ncbirc");
-	strcpy(uniref90_file, program_dir);
-	strcat(uniref90_file, "/db/uniref90/uniref90_filt");
-	
     strcpy(uniref90_file, program_dir);
-	strcat(uniref90_file, "uniref90/uniref90_filt");
+	strcat(uniref90_file, "/db/uniref90/uniref90_filt");
 
 	strcpy(psipred_parameter_file, program_dir);
 	strcat(psipred_parameter_file, "/db/param/dataset_0.20_0.50_0.60_abcd.mat");

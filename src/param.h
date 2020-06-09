@@ -38,7 +38,6 @@ extern char blast_dir[500];
 extern char blastpgp_cmd[500];
 extern char uniref90_file[500];
 extern char blastpgp_command[500];
-extern char ncbirc[500];
 
 // for using ss-dependent amino acid frequencies
 extern int use_ss_freq; // 0, 1, or 2
