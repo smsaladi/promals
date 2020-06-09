@@ -89,18 +89,17 @@ void getParameter(int argc, char **argv, int prog) {
 	psipred_parameter_file[0] = '\0';
 	psipred_env_number = 3;
 
-	strcpy(program_dir, "/home6/jpei/promals_test/0508/promals");
-	strcat(program_dir, "/");
-	strcpy(blastpgp_command, program_dir);
-	//strcat(blastpgp_command, "blastpgp/blast-2.2.14/bin/blastpgp");
-	strcat(blastpgp_command, "bin/blastpgp");
-	strcpy(blosum62_file, program_dir);
-	strcat(blosum62_file, "bin/BLOSUM62");
-	strcpy(runpsipred_command, program_dir);
-	strcat(runpsipred_command, "psipred/runpsipred1");
-	strcpy(runpsipred1_command, program_dir);
-	strcat(runpsipred1_command, "psipred/runpsipred1");
-	strcpy(uniref90_file, program_dir);
+	strcpy(blastpgp_command, "blastpgp");
+	strcpy(runpsipred_command, "runpsipredplus");
+	strcpy(runpsipred1_command, "runpsipredplus");
+    if(getenv("PROMALS_DIR")) {
+	    strcpy(program_dir, getenv("PROMALS_DIR"));
+        strcat(program_dir, "/");
+    } else {
+        cout << "Please set PROMALS_DIR. Otherwise, set to `.`" << endl;
+        strcpy(program_dir, "./");
+    }
+    strcpy(uniref90_file, program_dir);
 	strcat(uniref90_file, "uniref90/uniref90_filt");
 	strcpy(psipred_parameter_file, program_dir);
 	strcat(psipred_parameter_file, "src/dataset_0.20_0.50_0.60_abcd.mat");
@@ -148,6 +147,7 @@ void getParameter(int argc, char **argv, int prog) {
 			unaligned = atoi(argv[i+1]);
 			assert (unaligned <=1);
 		}
+
 		if(argStr == "-param") {
 			strcpy(parameter_file, argv[i+1]);
 		}
