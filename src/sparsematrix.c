@@ -514,6 +514,54 @@ void relaxTwoSparse(sparseMatrix *a, sparseMatrix *b, float **sum) {
 	}
 }
 
+// what this routine does: sum  = sum + a * b
+void relaxTwoSparse(sparseMatrix &a, sparseMatrix &b, float **sum) {
+
+	int i, j, k, m, n;
+	int r = a.nrows, c = b.ncols;
+	int d = a.ncols;
+	float value_diff;
+
+	//vector<int>::iterator p1, p2;
+	//vector<float>::iterator v1, v2;
+	int p1, p2;
+
+	assert(a.ncols==b.nrows);
+
+	if(Debug>1) cout << "Matrix relaxation r: " << r << "\t c: " << c << endl;
+	for(i=1;i<=r;i++) {
+ 	    for(j=1;j<=c;j++) {
+		p1 = a.rstart[i-1];
+		p2 = b.cstart[j-1];
+		while( (p1<a.rstart[i]) && (p2<b.cstart[j]) ) {
+			/*
+			value_diff = a.rindex[p1] - b.cindex[p2];
+			if(value_diff<0) p1++;
+			else if(value_diff>0) p2++;
+			else {
+				p1++; p2++;
+				sum[i][j] += a.rvalue[p1] * b.cvalue[p2];
+			}
+			*/
+			if(a.rindex[p1]<b.cindex[p2]) {
+				p1++;
+			}
+			else if(a.rindex[p1]>b.cindex[p2]) {
+				p2++;
+			}
+			else {
+				sum[i][j] += a.rvalue[p1] * b.cvalue[p2];
+				p1++; p2++;
+			}
+		}
+		//cout << setw(5) << sum[i][j] << " ";
+			
+	    }
+	    //cout << endl;
+	}
+}
+
+
 float sparseMatrix::getElement(int m, int n) {
 
 	int i;

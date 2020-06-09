@@ -5,7 +5,9 @@
 #include "regularizer.h"
 //#include "hmm_psipred.h"
 
-static int mydebug = 1;
+static int mydebug = 11;
+static int debug = 11;
+static void run_psipred_check_lowercase_letters(char *repres_name, char *runpsipred1_command);
 
 // Initilize static data member at file scope
 int subalign::subaligncount=0;
@@ -136,6 +138,119 @@ subalign::subalign(const subalign &init) {
 	subaligncount++;
 	//cout << "alignment count: " << subaligncount << endl;
 
+}
+
+// Constructor reading an input alignment file in fasta format
+subalign::subalign(char *filename, const char *format_name, int max_name_len) {
+
+	int i,j,k;
+        int maxstr=100001;
+        char line[100001];
+        char *s, *ss;
+
+        if(strncmp(format_name, "fasta", 5)!=0) {
+                cout << "currently support fasta format" << endl;
+                exit(0);
+        }
+
+        ifstream fp(filename, ios::in);
+        int count = 0;
+        vector<string> names;
+        vector<string> seqs;
+        string tmpseq="";
+        names.push_back(string(""));
+        while(fp.good()) {
+                fp.getline(line, maxstr);
+                for(s=line;isspace(*s);s++);
+                if(strlen(s)==0) continue; // empty line
+                if(*s == '>') {
+                        count++;
+                        for(ss=s+1;isspace(*ss);ss++);
+                        names.push_back(string(ss).substr(0, max_name_len));
+                        seqs.push_back(tmpseq);
+                        tmpseq = "";
+                        continue;
+                }
+                else {
+                        for(ss=s;isspace(*ss);ss++);
+                        tmpseq += ss;
+                }
+        }
+        nal = count;
+        seqs.push_back(tmpseq);
+        int maxlen = 0;
+        for(i=1;i<int(seqs.size());i++) {
+                //cout << seqs[i] << endl;
+                if(int(seqs[i].size()) >maxlen) maxlen=seqs[i].size();
+        }
+        alilen = maxlen;
+        mnamelen = 0;
+        for(i=1;i<int(names.size());i++) {
+                //cout << names[i] << endl;
+                if(int(names[i].size())>mnamelen) mnamelen=names[i].size();
+        }
+        //cout << "mnamelen: " << mnamelen << endl;
+        // fill the ends with gap characters
+        for(i=1;i<int(seqs.size());i++) {
+                for(j=1;j<=alilen-seqs[i].size();j++) {
+                        seqs[i] += "-";
+                }
+        }
+        aname = cmatrix(nal, mnamelen+1);
+        aseq = cmatrix(nal, alilen+1);
+        for(i=0;i<nal;i++) {
+                strcpy(aname[i], names[i+1].c_str() );
+                strcpy(aseq[i], seqs[i+1].c_str() );
+        }
+	// new
+	//reassign();
+
+	alignment = imatrix(nal, alilen);
+
+	for(i=1;i<=nal;i++) {
+	   for(j=1;j<=alilen;j++) {
+		alignment[i][j] = am2num(aseq[i-1][j-1]);
+	   }
+	}
+
+	gap_threshold = 0.5;
+	gapt_threshold = 1.0;
+	done_profile = 0;
+	done_prof = 0;
+	done_prof_freq = 0;
+	beta = 10;
+	prof_alphabet1 = 0;
+
+	ss =0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
+	bg_type_here = -1;
+	done_score_bg = 0;
+	done_score_bg2 = 0;
+
+        apos_filtr = 0;
+        n_effAa = 0;
+        pseudoCnt = 0;
+        sum_eff_let = 0;
+        maskgapRegion = 0;
+        gap_content = 0;
+	
+	hwt_all = 0;
+	distMat = 0;
+	
+        prof_pos = 0;
+        prof_effn = 0;
+        prof_freq = 0;
+        prof_sum_eff = 0;
+        prof_hwt_all = 0;
+        prof_gap_content = 0;
+
+	ss = 0;
+	repres_name = 0;
+	prof_alphabet1 = 0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
+	subaligncount++;
 }
 
 // Constructor reading an input alignment file
@@ -558,7 +673,7 @@ void subalign::readali(char *filename)
         FILE *fp;
         char *s, *ss, *seqbuf;
         int n, l, len, len0;
-        char str[10001];
+        char str[100001];
 	int MAXSTR = 100001;
 
         if ((fp = fopen(filename, "r")) == NULL) {
@@ -655,7 +770,8 @@ void subalign::readali(char *filename)
                 fprintf(stderr, "Wrong nal, was: %d, now: %d\n", nal, n);
                 exit(1);
         }
-	free(astart); free(alen);
+	//free(astart); 
+        free(alen);
         fclose(fp);
 }
 
@@ -1003,7 +1119,7 @@ void subalign::pseudoCounts(double **matrix, double n_eff, int len, double **pse
         double alpha;
 
         alpha = n_eff-1;
-	//cout << n_eff << endl;
+	//cout << "neff: " << n_eff << endl;
 	//cout << alpha << endl;
 	//cout << beta <<endl;
 
@@ -1528,10 +1644,13 @@ void subalign::prof_positions(double prof_gap_threshold_here) {
 	prof_len = 0;
 	for(i=1;i<=alilen;i++) {
 		prof_gap_content[i] = 0;
-		for(j=1;j<nal;j++) {
+		for(j=1;j<=nal;j++) {
 			if(alignment[j][i]==0) prof_gap_content[i] += prof_hwt_all[j];
 		}
-		if(prof_gap_content[i] < prof_gap_threshold_here) {
+                // if gap frequency is prof_gap_threshold_here, still consider it to be core position
+                // this is for a common value of 0.5 and when there are only two sequences, then 
+                // every position is considered to be core positions
+		if(prof_gap_content[i] <= prof_gap_threshold_here) {
 			prof_len++;
 			prof_pos[prof_len] = i;
 		}
@@ -1542,7 +1661,7 @@ void subalign::prof_positions(double prof_gap_threshold_here) {
 		cout << "    - Use all the positions for profile" << endl;
 		cout << "    - Each sequence has the same weight" << endl;
 		cout << endl;
-		for(i=1;i<alilen;i++) {
+		for(i=1;i<=alilen;i++) {
 			prof_pos[i] = i;
 		}
 		prof_len = alilen;
@@ -1852,6 +1971,181 @@ void subalign::select_representative() {
         }
         tmp_seq[tmp_array_index] = '\0';
         oneSeqAln = oneSeq2subalign(tmp_seq, tmp_name);
+	//cout << "representative: " << tmp_name << endl;
+
+	repres_name = new char[strlen(oneSeqAln->aname[0])+2];
+	strcpy(repres_name, oneSeqAln->aname[0]);
+
+	//return oneSeqAln;
+
+}
+
+// select a representative sequence with one of the best sum-of-henikoff-frequencies
+// and minimum number of residues in the gappy region
+int subalign::select_representative_henikoff(float core_position_nongap_freq_cutoff) {
+
+	int i, j, k;
+
+        
+        // debug
+        if(mydebug>1100) printali(80);
+        
+        // 1. get the henikoff weighting
+	// determine the henikoff weight; prof_position
+	set_prof_raw_gap_threshold(0.5);
+	set_prof_gap_threshold(core_position_nongap_freq_cutoff);
+	prof_h_weight_all(prof_raw_gap_threshold);
+        //for(i=1;i<=nal;i++) { cout << "h_weight: " << i << " " << prof_hwt_all[i] << endl; }
+	prof_positions(prof_gap_threshold);
+
+        // 1.1 get the prof_pos1
+        // prof_pos stores the indexes of ungappy regions in a consecutive way
+        // prof_pos1 marks the ungappy positions with 1, and gappy positions with 0
+        int *prof_pos1 = ivector(alilen);
+        for(i=1;i<=alilen;i++) {prof_pos1[i] = 0;}
+        for(i=1;i<=alilen;i++) {
+                if(prof_pos[i]!=0) {
+                        prof_pos1[prof_pos[i]] = 1;
+                }
+        }
+
+
+        // 2. get henikoff frequencies in each position, gap is treated as the 21st letter
+        float **hfreq = gmatrix<float>(alilen, 20);
+        for(i=1;i<=alilen;i++) for(j=0;j<=20;j++) hfreq[i][j] = 0;
+        //float sum_freq = 0;
+        for(i=1;i<=alilen;i++) {
+                // ignore the gappy regions, all the frequencies are 0 in these positions
+                if(prof_pos1[i] == 0) continue; 
+                //sum_freq = 0;
+                for(j=1;j<=nal;j++) {
+                        hfreq[i][alignment[j][i]] += prof_hwt_all[j];
+                }
+        }
+
+        // 3. select the sequence with one of the largest sum of hfreq across the positions
+        //      - determine the sum of freq for each sequence, find the maximum value (max_sum_freq)
+        //      - consider those sequences that has a sum_of_freq > 0.95 * max_sum_freq
+        //      - among these sequences, select the one with the lowest number of amino acids in gappy regions
+        //      - if numbers of amino acids in gappy regions the same, select the one with the highest sumfreqs
+        int tmp_index = -1;
+        float sum_freq = 0;
+        float max_sum_freq = 0;
+        float *sumfreqs = gvector<float>(nal);
+        int *nlet_gappy = ivector(nal);
+        for(i=1;i<=nal;i++) {
+                // 3.1 determine sumfreqs
+                sum_freq = 0;
+                for(j=1;j<=alilen;j++) {
+                        // only for amino acid frequences, ignore gaps
+                        if(alignment[i][j]==0) continue;
+                        sum_freq += hfreq[j][alignment[i][j]];
+                }
+                sumfreqs[i] = sum_freq;
+                if(sum_freq > max_sum_freq) {
+                        tmp_index = i;
+                        max_sum_freq = sum_freq;
+                }
+                // 3.2 determine number of letters in gappy regions for each sequence 
+                nlet_gappy[i] = 0;
+                for(j=1;j<=alilen;j++) {
+                        if(!prof_pos1[j]) if(alignment[i][j]) nlet_gappy[i]++;
+                }
+                // debug *******************
+                if(mydebug > 1100) cout << i << " " << aname[i-1] << " " << sum_freq << " " << nlet_gappy[i]<< endl;
+        }
+        assert(tmp_index>0);
+        assert(tmp_index<=nal);
+        float max_sum_freq1= 0; // the current best among those valid positions
+        int min_nlet_gappy = 1000000;
+        for(i=1;i<=nal;i++) {
+                if(sumfreqs[i] < max_sum_freq * 0.9) continue;
+                if(nlet_gappy[i] < min_nlet_gappy) {
+                        min_nlet_gappy = nlet_gappy[i];
+                        tmp_index = i;
+                        max_sum_freq1 = sumfreqs[i];
+                }
+                else if(nlet_gappy[i]==min_nlet_gappy) {
+                        if(sumfreqs[i]>max_sum_freq1) {
+                                tmp_index = i;
+                                max_sum_freq1 = sumfreqs[i];
+                        }
+                }
+        }
+        assert(tmp_index<=nal);
+        delete [] nlet_gappy;
+        delete [] sumfreqs;
+        tmp_index = tmp_index - 1; // conform to the index of aname and aseq
+
+        // 4. modify the representative sequence, so that core positions with gaps in the
+        //    representative is replaced by letters of the largest frequency
+        float max_hfreq = 0;
+        int max_index = 0;
+        string tmpstr = "";
+        for(i=0;i<alilen;i++) {
+                if(prof_pos1[i+1] == 0) continue;
+                if(aseq[tmp_index][i] == '-') {
+                        max_hfreq = 0;
+                        max_index = 0;
+                        for(j=1;j<=20;j++) {
+                                if(hfreq[i+1][j]> max_hfreq) {
+                                        max_hfreq = hfreq[i+1][j];
+                                        max_index = j;
+                                }
+                        }
+                        aseq[tmp_index][i] = am[max_index]+32;
+                        tmpstr += aseq[tmp_index][i];
+                }
+        }
+
+        // debug *******************
+     if(mydebug > 1100) {
+        cout << endl;
+        cout << "henikoff weights" << endl;
+        for(i=1;i<=nal;i++) { cout << i << " " << prof_hwt_all[i] << endl; }
+        cout << endl;
+     }
+        cout << "representative: " << aname[tmp_index] << endl;
+        if(tmpstr.size()) cout << "filled segment: " << tmpstr << endl;
+        for(i=1;i<=alilen;i++) { cout << prof_pos1[i]; }
+        cout << endl;
+        cout << aseq[tmp_index]<<endl;
+     if(mydebug > 1100) {
+        printali(80);
+        cout << "===============" << endl;
+     }
+        
+
+        // 4. clear up the memory
+        delete [] prof_hwt_all;
+        delete [] prof_pos;
+        delete [] prof_pos1;
+        free_gmatrix<float>(hfreq, alilen, 20);
+
+        return tmp_index;
+}
+                        
+void subalign::get_oneSeqAln(int tmp_index) {
+
+        int i, j, k;
+
+        // 5. store the sequence and get its subalign in oneSeqAln
+        char *tmp_name = new char [strlen(aname[tmp_index])+1];
+        int count_aa = 0;
+        for(i=1;i<=alilen;i++) {
+                if(aseq[tmp_index][i]!='-') count_aa++;
+        }
+        char *tmp_seq = new char[count_aa+1];
+        strcpy(tmp_name, aname[tmp_index]);
+        int tmp_array_index = 0;
+        for(i=0;i<alilen;i++) {
+                if(aseq[tmp_index][i]!='-') {
+                        tmp_seq[tmp_array_index] = aseq[tmp_index][i];
+                        tmp_array_index++;
+                }
+        }
+        tmp_seq[tmp_array_index] = '\0';
+        oneSeqAln = oneSeq2subalign(tmp_seq, tmp_name);
 	cout << "representative: " << tmp_name << endl;
 
 	repres_name = new char[strlen(oneSeqAln->aname[0])+2];
@@ -1938,9 +2232,9 @@ void subalign::get_ss_prof(char *dir_name, char *runpsipred_command) {
 	system(command);
 
 	// clear the temporary directory
-	// chdir("../");
-    // sprintf(command, "rm -r -f %s", tmp_dir);
-	// system(command);
+	chdir("../");
+	sprintf(command, "rm -r -f %s", tmp_dir);
+	system(command);
 
 	// change directory back
 	chdir(cwd);
@@ -1992,7 +2286,8 @@ void subalign::get_ss_prof1(char *dir_name, char *query_name, char *runpsipred1_
         }
 	char command[500];
 	sprintf(command, "mkdir %s", tmp_dir);
-	system(command);
+	int a1 = system(command);
+    cout << "a1: " << a1 << endl;
 
 	// generate a fasta file in the temporary directory
 	char fasta_name[500];
@@ -2010,33 +2305,51 @@ void subalign::get_ss_prof1(char *dir_name, char *query_name, char *runpsipred1_
 	ofp.close();
 
 	// remember the current directory
-	getcwd(cwd, 300);
+	char *status1 = getcwd(cwd, 300);
 	if(mydebug>1) cout << "cwd: " << cwd << endl;
+    cout << "1: " << status1 << endl;
 
 	// go to temporary directory; run psipred
-	chdir(tmp_dir);
+	int status = chdir(tmp_dir);
+    cout << "2: " << status << endl;
 	sprintf(command, "cp ../%s.chk psitmp.chk", query_name);
+	status = system(command);
+    cout << "3: " << status << endl;
+	sprintf(command, "cp %s .", ncbirc); // NEW: for properly running psipred (which uses makemat)
 	system(command);
+	status = system(command);
+    cout << "4: " << status << endl;
+
+        // here check if the sequence contains small letters
+        run_psipred_check_lowercase_letters(repres_name, runpsipred1_command);
 	//sprintf(command, "runpsipred %s.fa", repres_name);
-	sprintf(command, "%s %s.fa", runpsipred1_command, repres_name);
-	cout << command << endl;
-	system(command);
+	//sprintf(command, "%s %s.fa 2>/dev/null 1>/dev/null", runpsipred1_command, repres_name);
+	//cout << command << endl;
+	//system(command);
 
 	// get the psipred profile object
 	ss->read_ss_files(repres_name);
 
 	// copy the psipred files to psipred_dir
 	sprintf(command, "cp %s.ss2 ../", repres_name);
-	system(command);
+	int ss2_status = system(command);
+        if(ss2_status) {
+                cout << "Error: .ss2 file not generated for " << query_name << endl;
+                exit(1);
+        }
 	sprintf(command, "cp %s.horiz ../", repres_name);
 	system(command);
 
+        // remove .ncbirc
+        system("rm -f .ncbirc 2>/dev/null");
+
 	// clear the temporary directory
-	// chdir("..");
-    // sprintf(command, "rm -r -f %s", tmp_dir);
-    // cout << "command: " << command << endl;
-    // int sys_status = system(command);
-	// cout << "sys_status: " << sys_status << endl;
+	//chdir("../../");
+	chdir(cwd);
+	sprintf(command, "rm -r -f %s", tmp_dir);
+        if(mydebug>1) system("pwd");
+	if(mydebug>1) cout << "command: " << command << endl;
+	//system(command);
 
 	// change directory back
 	chdir(cwd);
@@ -2242,7 +2555,7 @@ void subalign::add_NC_terminal(char *query_name, char *query_seq) {
 
    right_numbers = string(query_seq).find(tmpstring, 0);
    if(right_numbers == string::npos) {
-	cout << "Warning: cannot find the sequence in " << query_name << endl;
+	cout << "Warning subalign: cannot find the sequence in " << query_name << endl;
 	return;
    }
    left_numbers =strlen(query_seq) - right_numbers - strlen(tmpstring);
@@ -2304,5 +2617,218 @@ void subalign::add_NC_terminal(char *query_name, char *query_seq) {
                 alignment[i][j] = am2num(aseq[i-1][j-1]);
            }
    }
+}
+
+// assume a directory contains .fa file and psitmp.chk file
+// the record in .fa file matches that in the psitmp.chk file
+// however, .fa file sequence contains lowercase letters, which we would like to ignore for ss prediction
+// create a new .fa file and a new psitmp.chk file, in which the small letters are removed
+// run psipred command to get the results, and insert small letters into the result file,
+// the inserted secondary structure types are 'C' and confidence level the lowest, equal probability
+void run_psipred_check_lowercase_letters(char *repres_name, char *runpsipred1_command) {
+
+        int i, j, k, l;
+        char origseq[10000], newseq[10000];
+        char command[1000];
+        int psipred_status;
+
+        //1. read the fasta file, assume it contains only two lines: defline and sequence
+        char fastafile[500];
+        sprintf(fastafile, "%s.fa", repres_name);
+        ifstream fp(fastafile, ios::in);
+        fp.getline(origseq, 10000);
+        fp.getline(origseq, 10000);
+        fp.close();
+
+        //2. check for lowercase letters, get newseq and lowercase_mark, a 0 and 1 array
+        int origseqlen = strlen(origseq);
+        int lowercase_mark[origseqlen];
+        char *ss = newseq;
+        for(i=0;i<strlen(origseq);i++) {
+                lowercase_mark[i] = 1;
+                if(origseq[i]>='A') if(origseq[i]<='Z') {
+                        *ss = origseq[i];
+                        ss++;
+                        lowercase_mark[i] = 0;
+                }
+        }
+        *ss = '\0';
+
+        // if no small letters found, just run the command and return
+        if(strlen(newseq)==origseqlen) {
+	        sprintf(command, "%s %s.fa 2>/dev/null 1>/dev/null", runpsipred1_command, repres_name);
+	        if(debug>-1)cout << command << endl;
+	        psipred_status = system(command);
+                cout << "psipred_status: " << psipred_status << endl;
+                if(psipred_status!=0) {
+                        cout << "Error running psipred for " << repres_name << endl;
+                        exit(1);
+                }
+                return;
+        }        
+
+        //3. read the psitmp.chk file, write it to psitmp.chk1
+        FILE *pfp, *opfp;
+        if( (pfp=fopen("psitmp.chk", "rb"))==NULL ) {
+                cout << "cannot read the psitmp.chk file " << repres_name << endl;
+                exit(1);
+        }
+        if( (opfp=fopen("psitmp.chk1", "wb"))==NULL ) {
+                cout << "cannot read the psitmp.chk1 file for writing" << repres_name << endl;
+                exit(1);
+        }
+        int chklen;
+        fread(&chklen, sizeof(int), 1, pfp);
+        assert(chklen == origseqlen); // check lengthes match
+        char chkseq[chklen+1];
+        fread(chkseq, sizeof(char), chklen, pfp);
+        chkseq[chklen] = '\0';
+        if(debug>1)cout << "chkseq: " << chkseq << endl;
+        int newseqlen = strlen(newseq);
+        fwrite(&newseqlen, sizeof(int), 1, opfp);
+        fwrite(&newseq, sizeof(char), newseqlen, opfp);
+        double aa_prof[20];
+        for(i=1;i<=chklen;i++) {
+                fread(aa_prof, sizeof(double), 20, pfp);
+                if(debug>1)cout << chkseq[i-1] << " ";
+                if(debug>1)for(j=0;j<20;j++) {fprintf(stdout, "%4.3f ", aa_prof[j]); }
+                if(debug>1)cout << endl;
+                if(lowercase_mark[i-1]==1) continue;
+                fwrite(aa_prof, sizeof(double), 20, opfp);
+        }
+        fclose(pfp);
+        fclose(opfp);
+
+        //4. update .fa and .chk files
+        ofstream fafp(fastafile, ios::out);
+        fafp << ">" << repres_name << "\n";
+        fafp << newseq << "\n";
+        fafp.close();
+        system("cp psitmp.chk1 psitmp.chk");
+        system("cp psitmp.chk1 tmp.chk1");
+
+        //5. run psipred
+	sprintf(command, "%s %s.fa 2>/dev/null 1>/dev/null", runpsipred1_command, repres_name);
+	if(debug>1)cout << command << endl;
+	psipred_status = system(command);
+        cout << "psipred_status: " << psipred_status << endl;
+        if(psipred_status!=0) {
+                cout << "Error running psipred for " << repres_name << endl;
+                exit(1);
+        }
+
+        //6. update the .ss2 file and .horiz file
+        sprintf(command, "mv %s.ss2 %s.ss2_1", repres_name, repres_name);
+        system(command);
+        sprintf(command, "mv %s.horiz %s.horiz_1", repres_name, repres_name);
+        system(command);
+        FILE *ssfp_1, *ssfp, *horizfp_1, *horizfp;
+        if( (ssfp = fopen( (string(repres_name)+".ss2").c_str(), "w")) == NULL ) {
+                cout << "canoot open the .ss2 file for write " << repres_name << endl;
+                exit(0);
+        }
+        if( (ssfp_1=fopen( (string(repres_name)+".ss2_1").c_str(), "r")) == NULL ) {
+                cout << "canoot open the .ss2_1 file for read " << repres_name << endl;
+                exit(0);
+        }
+        char ss2line[200];
+        while(!feof(ssfp_1) ) {
+                fgets(ss2line, 200, ssfp_1);
+                if(strlen(ss2line)==1) {
+                        fputs(ss2line, ssfp);
+                        break;
+                }
+                if(ss2line[0]=='#') {
+                        fputs(ss2line, ssfp);
+                        continue;
+                }
+        }
+        for(i=0;i<origseqlen;i++) {
+                if(lowercase_mark[i] == 0) {
+                        fgets(ss2line, 200, ssfp_1);
+                        for(ss=ss2line;*ss==' ';ss++);
+                        for(ss=ss;isdigit(*ss);ss++);
+                        sprintf(ss2line, "%4d%s", i+1, ss);
+                        fputs(ss2line, ssfp);
+                }
+                else {
+                        sprintf(ss2line, "%4d%2c C   0.333  0.333  0.334\n", i+1, toupper(origseq[i]));
+                        fputs(ss2line, ssfp);
+                }
+        }
+        fclose(ssfp); 
+        fclose(ssfp_1);
+                
+        if( (horizfp = fopen( (string(repres_name)+".horiz").c_str(), "w")) == NULL ) {
+                cout << "canoot open the .horiz file for write " << repres_name << endl;
+                exit(0);
+        }
+        if( (horizfp_1=fopen( (string(repres_name)+".horiz_1").c_str(), "r")) == NULL ) {
+                cout << "canoot open the .horiz_1 file for read " << repres_name << endl;
+                exit(0);
+        }
+        char confline[10000], predline[10000], aaline[10000];
+        strcpy(confline, "");
+        strcpy(aaline, "");
+        strcpy(predline, "");
+        while(!feof(horizfp_1)) {
+                fgets(ss2line, 200, horizfp_1);
+                if(ss2line[strlen(ss2line)-1]=='\n') ss2line[strlen(ss2line)-1]='\0';
+                if(strncmp(ss2line, "Conf:", 5)==0 ){ strcat(confline, ss2line+6); }
+                if(strncmp(ss2line, "Pred:", 5)==0 ){ strcat(predline, ss2line+6); }        
+                if(strncmp(ss2line, "  AA:", 5)==0 ){ strcat(aaline, ss2line+6); }        
+        }
+        if(debug>1) cout << confline << endl;
+        if(debug>1) cout << newseq << endl;
+        assert(strlen(confline)==newseqlen);
+        assert(strlen(predline)==newseqlen);
+        assert(strlen(aaline)==newseqlen);
+        char confline1[10000], predline1[10000], aaline1[10000];
+        strcpy(confline1, "");
+        strcpy(aaline1, "");
+        strcpy(predline1, "");
+        int count = 0;
+        for(i=0;i<origseqlen;i++){
+                if(lowercase_mark[i]) {
+                        confline1[i] = '0';
+                        predline1[i] = 'C';
+                        aaline1[i] = toupper(origseq[i]);
+                }
+                else {
+                        confline1[i] = confline[count];
+                        predline1[i] = predline[count];
+                        aaline1[i] = aaline[count];
+                        count++;
+                }
+        }
+        confline1[i] = '\0';
+        aaline1[i] = '\0';
+        predline[i] = '\0';
+        fclose(horizfp_1);
+        
+        fputs("# PSIPRED HFORMAT (PSIPRED V2.5 by David Jones)", horizfp);
+        fputs("\n\n", horizfp);
+        for(i=0;i<=(strlen(confline1)-1)/60;i++) {
+                fputs("Conf: ", horizfp);
+                for(j=i*60;(j<i*60+60) && (j<origseqlen);j++) { putc(confline1[j], horizfp); }
+                fputs("\n", horizfp);
+                fputs("Pred: ", horizfp);
+                for(j=i*60;(j<i*60+60) && (j<origseqlen);j++) { putc(predline1[j], horizfp); }
+                fputs("\n", horizfp);
+                fputs("  AA: ", horizfp);
+                for(j=i*60;(j<i*60+60) && (j<origseqlen);j++) { putc(aaline1[j], horizfp); }
+                fputs("\n", horizfp);
+                fputs("      ", horizfp);
+                for(j=i*60;(j<i*60+60) && (j<origseqlen);j++) { 
+                        if( (j+1)%10==0) {
+                                sprintf(ss2line, "%10d", j+1);
+                                fputs(ss2line, horizfp); 
+                        }
+                }
+                fputs("\n", horizfp);
+                fputs("\n", horizfp);
+        }
+        fclose(horizfp);
+                
 }
 

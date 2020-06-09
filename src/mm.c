@@ -91,7 +91,6 @@ void MM::dp() {
 void MM::dp(int **smat) {
 	
 	int i,j;
-	sequences a;
 	scoreMat = smat;
 	//for(i=1;i<=M;i++) { for(j=1;j<=N;j++) { cout << scoreMat[i][j] << " "; } cout << endl; }
 	//g = 10; gh =10;
@@ -135,7 +134,7 @@ void MM::palign()
         displ[print_ptr++] = last_print = 0;
 }
 
-void MM::warning(char *s) {
+void MM::warning(const char *s) {
 
      fprintf(stderr, "%s\n", s);
 }
@@ -351,7 +350,7 @@ if (debug>2) fprintf(stdout,"Type 2,2: midj %d\n",(int)midj);
 
 /* calculate the score for opening a gap at residues A[i] and B[j]       */
 
-int MM::open_penalty1(int i, int j)
+inline int MM::open_penalty1(int i, int j)
 {
    if (!endgappenalties &&(i==0 || i==M)) return(0);
    else return (g);
@@ -359,7 +358,7 @@ int MM::open_penalty1(int i, int j)
 
 /* calculate the score for extending an existing gap at A[i] and B[j]    */
 
-int MM::ext_penalty1(int i, int j)
+inline int MM::ext_penalty1(int i, int j)
 {
    if (!endgappenalties &&(i==0 || i==N)) return(0);
    else return (gh);
@@ -367,7 +366,7 @@ int MM::ext_penalty1(int i, int j)
 
 /* calculate the score for a gap of length k, at residues A[i] and B[j]  */
 
-int MM::gap_penalty1(int i, int j, int k)
+inline int MM::gap_penalty1(int i, int j, int k)
 {
    int gp;
    if (k <= 0) return(0);
@@ -377,7 +376,7 @@ int MM::gap_penalty1(int i, int j, int k)
 }
 /* calculate the score for opening a gap at residues A[i] and B[j]       */
 
-int MM::open_penalty2(int i, int j)
+inline int MM::open_penalty2(int i, int j)
 {
    if (!endgappenalties &&(j==0 || j==N)) return(0);
    else return(g);
@@ -385,7 +384,7 @@ int MM::open_penalty2(int i, int j)
 
 /* calculate the score for extending an existing gap at A[i] and B[j]    */
 
-int MM::ext_penalty2(int i, int j)
+inline int MM::ext_penalty2(int i, int j)
 {
    if (!endgappenalties &&(j==0 || j==N)) return(0);
    else return(gh);
@@ -393,7 +392,7 @@ int MM::ext_penalty2(int i, int j)
 
 /* calculate the score for a gap of length k, at residues A[i] and B[j]  */
 
-int MM::gap_penalty2(int i, int j, int k)
+inline int MM::gap_penalty2(int i, int j, int k)
 {
    int gp;
    if (k <= 0) return(0);

@@ -115,6 +115,7 @@ class  hmm_psipred {
 	//ScoreType ***F, FE;
 	void forward();
 	void forward1();
+	void forward_no_end_penalty();
 	//ScoreType log_odds(int xi, int yj);
 	//ScoreType log_odds_x(int xi);
 	//ScoreType log_odds_y(int yj);
@@ -125,6 +126,7 @@ class  hmm_psipred {
 	float **probMat;
 	void backward();
 	void backward1();
+	void backward_no_end_penalty();
 
 	//
 	void forward2();

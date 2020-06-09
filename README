@@ -1,0 +1,153 @@
+promals with 3D information
+
+This program is free for academic use.
+Please read the file 'license' for additional information.
+
+1. Install promals
+
+   Operating system: Linux; Mac OS X
+   System requirements: g++; gcc; g77; python; awk
+                
+   This whole package is about 8GB. The main disk-consuming part is
+   sequence and structure databases. Please check if your computer 
+   has enough free disk space before installation.
+        
+   Installation instructions:  
+                
+       1.1 Download 'promals_package.tar.gz' to your computer. 
+           Extract files using gunzip and tar.
+
+              gunzip promals_package.tar.gz
+              tar xf promals_package.tar
+                
+       1.2 Go to the directory 'promals_package':
+
+              cd promals_package
+
+       1.3 Run the following command:
+
+              python install.py
+              (pay attention to error or warning messages)
+
+              This will install promals and other programs promals uses, 
+              including:
+                  - blastpgp (for running PSI-BLAST)
+                  - cd-hit (for initial clustering of sequences)
+                  - mafft (for alignment of closely related sequences)
+                  - psipred (for secondary structure prediction)
+                  - TMalign (for structural alignment)
+
+              You need to install the following programs by yourself.
+                - 'DaliLite' (for structural alignment) is not installed by this
+              package. To use this program, you need to install it by yourself 
+              (due to license of DaliLite), and put the 'DaliLite' executable 
+              in the 'bin/' directory inside this package. DaliLite is available
+              at: http://ekhidna.biocenter.helsinki.fi/dali_lite/downloads
+
+                - 'fast' (for structural alignment) is not installed by this package.
+              To use this program, you need to install it by yourself, and put
+              the 'fast' executable in the 'bin/' directory inside this package.
+              'fast' is available at: http://biowulf.bu.edu/FAST/download.htm
+              Make sure you have 'fast' executable of the correct platform.
+        
+       1.4 Check if the python script file 'promals' is generated in
+           the 'bin/' directory, which should also include executables of
+           blastpgp, cd-hit, fast, TMalign, mafft, runpsipred1, makemat, 
+           al2co_consensus and promals_c.
+
+2. Run promals
+
+        Use the 'promals' (a python script) in the bin/ direcory.
+        
+        Command: 
+
+            promals input_file [options] > input_file.log
+                    or 
+            python promals input_file [options] > input_file.log
+
+            Example: 
+                      promals yfp.fa > yfp.fa.log
+                      promals yfp.fa -id_thr 0.6 -blast_dir yfp.fa_blast -outfile yfp.promals.aln > yfp.fa.log
+               To disable using any 3D information:
+                      promals yfp.fa -fast 0 -tmalign 0 -dali 0 > yfp.fa.log
+        
+        Input: 
+                input_file needs to be in fasta format
+
+        Output: 
+                Two alignment files will be generated. One is a clustal 
+                format alignment (file name can be specified by option -outfile). 
+                The other file is an html file of colored alignment.
+ 
+        Options:
+
+        Any option name (starting with '-') and its value are separated by white space.  
+
+        For alignment strategies:
+         -id_thr [0, 1]          Identity threshold that determined the partition of
+                                 fast and slow alignment processes. If two groups of
+                                 sequences has average identity above this threshold,
+                                 align them in a fast way. Otherwise, use slower but
+                                 more accurate way (by profile-profile alignment with
+                                 predicted secondary structures and available 3D 
+                                 constraints). Default: 0.6 (corresponding to 60% identity)
+
+        For using 3D information:
+         -dali [0 or 1]          Use DaliLite structural alignment (1) or not use 
+                                 fast alignment (0) ("DaliLite" executable needs to 
+                                 be present in bin/ directory). Default: 0 (it is 
+                                 relatively slow to run DaliLite)
+         -fast [0 or 1]          Use fast structural alignment (1) or not use fast 
+                                 alignment (0) ("fast" executable needs to be present 
+                                 in bin/ directory). Default: 1
+         -tmalign [0 or 1]       Use TMalign structural alignment (1) or not use fast 
+                                 TMalign alignment (0) ("TMalign" executable needs to 
+                                 be present in bin/ directory). Default: 1
+         -struct_weight [0, inf[ Weight of structural constraints relative to sequence 
+                                 constraints. Default: 1.5
+
+        For profile scoring:
+         -ss_weight [0,inf[      Weight of predicted secondary structure in profile-
+                                 profile scoring. Default: 0.2
+         -score_weight [0,inf[   Weight of amino acids in profile-profile scoring. 
+                                 Default: 0.8
+
+        For running PSI-BLAST to get sequence profile:
+         -iter_number <int>      Number of PSI-BLAST iterations for profile generation. 
+                                 Default: 3
+         -evalue [0, inf[        PSI-BLAST evalue cutoff for inclusion. Default: 0.001
+         -low_id_thr [0,1]       Remove PSI-BLAST hits with identity to the query less 
+                                 than this value.  Default: 0.2
+         -blast_dir <file>       Directory of running PSI-BLAST and store other 
+                                 intermediate results.
+         -clean_blast_before [0 or 1]  Remove any file in the directory that stores 
+                                 intermediate results (specified by -blast_dir option) 
+                                 before running PSI-BLAST. Default: 0. 
+         -clean_blast_after [0 or 1] Remove any file in the PSI-BLAST directory after 
+                                 running PSI-BLAST. Default: 0
+
+        For output:
+         -outfile <file>         The name of output alignment file.
+         -blocksize <int>        Number of letters in clustal-format alignment blocks. 
+                                 Default: 70
+         -resnum [0 or 1]        In colored html alignment, show residue numbers for 
+                                 alignment blocks. Default: 1
+         -caa_freq [0, 1]        In colored html alignment, show amino acid consensus
+                                 symbol if the fraction of a class of residues is higher
+                                 than this threshold. Default: 0.8
+
+3. Contact: Jimin Pei (jpei [AT] chop [DOT] swmed [DOT] edu)
+   Please report bugs during installation or when running promals.
+
+4. References
+
+Altschul SF, Madden TL, Schaffer AA, Zhang J, Zhang Z, Miller W, Lipman DJ: Gapped BLAST and PSI-BLAST: a new generation of protein database search programs. Nucleic Acids Res 1997, 25:3389-3402.
+Holm L, Sander C: Mapping the protein universe. Science 1996, 273:595-603.
+Jones DT: Protein secondary structure prediction based on position-specific scoring matrices. J Mol Biol 1999, 292:195-202.
+Katoh K, Kuma K, Toh H, Miyata T: MAFFT version 5: improvement in accuracy of multiple sequence alignment. Nucleic Acids Res 2005, 33:511-518.
+Li W, Godzik A: Cd-hit: a fast program for clustering and comparing large sets of protein or nucleotide sequences. Bioinformatics 2006, 22:1658-1659.
+Pei J, Grishin NV: PROMALS: towards accurate multiple sequence alignments of distantly related proteins. Bioinformatics 2007, 23:802-808.
+Pei J, Kim BH, Grishin NV: PROMALS3D: a tool for multiple protein sequence and structure alignments. Nucleic Acids Res 2008, 36:2295-2300.
+Zhang Y, Skolnick J: TM-align: a protein structure alignment algorithm based on the TM-score. Nucleic Acids Res 2005, 33:2302-2309.
+Zhu J, Weng Z: FAST: a novel protein structure alignment algorithm. Proteins 2005, 58:618-627.
+

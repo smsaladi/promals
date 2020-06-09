@@ -116,7 +116,7 @@ void hmm_psipred_parameters::read_parameters(char *filename, int num, int log_ma
 	fp.close();
 }
 
-float hmm_psipred_parameters::mylog(float a) {
+inline float hmm_psipred_parameters::mylog(float a) {
 	
 	if(a==0) return log(0.0000001);
 	if(a<0) {
@@ -126,7 +126,7 @@ float hmm_psipred_parameters::mylog(float a) {
 	return log(a);
 }
 
-float hmm_psipred_parameters::mylog0(float a) {
+inline float hmm_psipred_parameters::mylog0(float a) {
 	
 	if(a==0) return LOG_ZERO;
 	if(a<0) {
@@ -759,7 +759,7 @@ void hmm_psipred::forward() {
 
 	//cout << "tran_y[y_alphabet[leny]][3]: " << tran_y[y_alphabet[leny]][3] << endl;
 
-	if(debug>1) fprintf(stdout, "FE: %f\n", FE); //cout << "FE: " << FE << endl;
+	if(debug>1) fprintf(stdout, "FE: %f\t", FE); fflush(stdout);//cout << "FE: " << FE << endl;
 }
 
 void hmm_psipred::backward() {
@@ -1252,7 +1252,239 @@ void hmm_psipred::backward1() {
 	//fprintf(stdout, "================\n");
 
 }
+
+void hmm_psipred::forward_no_end_penalty() {
+
+	int i,j,k,m;
+	int *ax = x->alignment[1];
+	int *ay = y->alignment[1];
+
+	int alphax, alphay;
+	int alphax_1, alphay_1;
+	int axi, ayj;
+
+	Fm = gmatrix<float>(lenx, leny);
+	Fx = gmatrix<float>(lenx, leny);
+	Fy = gmatrix<float>(lenx, leny);
+
+	if(debug>1) cout << "Forward algorithm:" << endl;
+
+	cout << setprecision(10);
+
+	for(i=0;i<=lenx;i++) {
+	    for(j=0;j<=leny;j++) {
+
+		if( (i==0)&&(j==0) ){
+			Fm[i][j] = Fx[i][j] = Fy[i][j] = LOG_ZERO;
+			if(debug>1) cout << i << " " << j << " " << Fm[i][j] << " " << Fx[i][j] << " " << Fy[i][j] << endl;
+			continue;
+		}
 	
+		if( (i==0) && (j==1) ) {
+			//cout << tran_begin[3]<<" "<<y_alphabet[j]<<" "<< ay[j]<<" " << aa_loop[y_alphabet[j]][ay[j]]<<endl;
+			//Fy[i][j] = tran_begin[3] + aa_loop[y_alphabet[j]][ay[j]];
+			Fy[i][j] = tran_begin[3] + score_bg_y[1];
+			//cout << i << " " << j << " " << Fy[i][j] << endl;
+			Fx[i][j] = Fm[i][j] = LOG_ZERO;
+			if(debug>1) cout << i << " " << j << " " << Fm[i][j] << " " << Fx[i][j] << " " << Fy[i][j] << endl;
+			continue;
+		}
+		if( (i==0) && (j>1)) {
+			//cout << Fy[i][j-1] << " " << tran_y[y_alphabet[j-1]][2] << " " << aa_loop[y_alphabet[j]][ay[j]] << endl;
+			//Fy[i][j] = Fy[i][j-1] + tran_y[y_alphabet[j-1]][2] + aa_loop[y_alphabet[j]][ay[j]];
+			////Fy[i][j] = Fy[i][j-1] + tran_y[0][2] + score_bg_y[j];
+			Fy[i][j] = Fy[i][j-1] + tran_y[0][2] * weight_end_penalty + score_bg_y[j];
+			Fx[i][j] = Fm[i][j] = LOG_ZERO;
+			//cout << i << " " << j << " " << Fy[i][j] << endl;
+			if(debug>1) cout << i << " " << j << " " << Fm[i][j] << " " << Fx[i][j] << " " << Fy[i][j] << endl;
+			continue;
+		}
+		if( (i==1)&&(j==0) ){
+			//cout << tran_begin[2] << " " << aa_loop[x_alphabet[i]][ax[i]] << endl;
+			//Fx[i][j] = tran_begin[2] + aa_loop[x_alphabet[i]][ax[i]];
+			Fx[i][j] = tran_begin[2] + score_bg_x[1];
+			Fy[i][j] = Fm[i][j] = LOG_ZERO;
+			//cout << i << " " << j << " " << Fx[i][j] << endl;
+			if(debug>1) cout << i << " " << j << " " << Fm[i][j] << " " << Fx[i][j] << " " << Fy[i][j] << endl;
+			continue;
+		}
+		if( (i>1) && (j==0) ) {
+			//Fx[i][j] = Fx[i-1][j] + tran_x[x_alphabet[i-1]][2] + aa_loop[x_alphabet[i]][ax[i]];
+			////Fx[i][j] = Fx[i-1][j] + tran_x[0][2] + score_bg_x[i];
+			Fx[i][j] = Fx[i-1][j] + tran_x[0][2]*weight_end_penalty + score_bg_x[i];
+			//cout << i << " " << j << " " << Fx[i][j] << endl;
+			Fy[i][j] = Fm[i][j] = LOG_ZERO;
+			if(debug>1) cout << i << " " << j << " " << Fm[i][j] << " " << Fx[i][j] << " " << Fy[i][j] << endl;
+			continue;
+		}	
+		alphax = x_alphabet[i];
+		alphay = y_alphabet[j];
+		axi = ax[i];
+		ayj = ay[j];
+		if( (i==1)&&(j==1) ) {
+			//Fm[i][j] = tran_begin[1] + aa_pair[alphax][axi][ayj] + ss_pair[alphax][alphay];
+			Fm[i][j] = tran_begin[1] + score_matrix[1][1]; 
+			//cout << i << " " << j << " " << Fm[i][j] << endl;
+			Fx[i][j] = Fy[i][j] = LOG_ZERO;
+			if(debug>1) cout << i << " " << j << " " << Fm[i][j] << " " << Fx[i][j] << " " << Fy[i][j] << endl;
+			continue;
+		}	
+
+		alphax_1 = x_alphabet[i-1];
+		alphay_1 = y_alphabet[j-1];
+		if(i==1) alphax_1 = 1;
+		if(j==1) alphay_1 = 3;
+		//Fm[i][j] = LOG_ADD(tran_match[alphax_1][1]+Fm[i-1][j-1], tran_x[0][1]+Fx[i-1][j-1], tran_y[0][1]+Fy[i-1][j-1]) + p->aa_pair[alphax][axi][ayj] + p->ss_pair[alphax][alphay];
+		//Fx[i][j] = LOG_ADD(tran_match[alphax_1][2]+Fm[i-1][j], tran_x[0][2]+Fx[i-1][j]) + p->aa_loop[alphax][axi];
+		//Fy[i][j] = LOG_ADD(tran_match[alphax][3]+Fm[i][j-1], tran_y[alphay_1][2]+Fy[i][j-1]) + p->aa_loop[alphay][ayj];
+                if(i==1) {
+		        Fm[i][j] = LOG_ADD(tran_match[alphax_1][1]+Fm[i-1][j-1], tran_x[0][1]*weight_end_penalty + Fx[i-1][j-1], tran_y[0][1]*weight_end_penalty + Fy[i-1][j-1]) + score_matrix[i][j];
+                }
+                else if(j==1) {
+		        Fm[i][j] = LOG_ADD(tran_match[alphax_1][1]+Fm[i-1][j-1], tran_x[0][1]*weight_end_penalty + Fx[i-1][j-1], tran_y[0][1]*weight_end_penalty + Fy[i-1][j-1]) + score_matrix[i][j];
+                }
+                else {
+		        Fm[i][j] = LOG_ADD(tran_match[alphax_1][1]+Fm[i-1][j-1], tran_x[0][1]+Fx[i-1][j-1], tran_y[0][1]+Fy[i-1][j-1]) + score_matrix[i][j];
+                }
+                
+                if(j!=leny) {
+		        Fx[i][j] = LOG_ADD(tran_match[alphax_1][2]+Fm[i-1][j], tran_x[0][2]+Fx[i-1][j]) + score_bg_x[i];
+                }
+                else {
+                        Fx[i][j] = LOG_ADD(tran_match[alphax_1][2]*weight_end_penalty + Fm[i-1][j], tran_x[0][2]*weight_end_penalty + Fx[i-1][j]) + score_bg_x[i];
+                }
+                if(i!=lenx) {
+		        Fy[i][j] = LOG_ADD(tran_match[alphax][3]+Fm[i][j-1], tran_y[0][2]+Fy[i][j-1]) + score_bg_y[j];
+                }
+                else {
+                        Fy[i][j] = LOG_ADD(tran_match[alphax][3]*weight_end_penalty + Fm[i][j-1], tran_y[0][2]*weight_end_penalty + Fy[i][j-1]) + score_bg_y[j];
+                }
+
+		if(debug>1) cout << i << " " << j << " " << Fm[i][j] << " " << Fx[i][j] << " " << Fy[i][j] << endl;
+		//cout << "Fy[i][j]: " << i << " " << j << " " << tran_match[alphax_1][3] << " " << Fm[i][j-1] << " " << tran_y[alphay_1][2] << " " << Fy[i][j-1] << " " << p->aa_loop[alphay][ayj] << endl;
+	    }
+	}
+			
+	// the ending state
+	//FE = LOG_ADD(Fm[lenx][leny]+tran_match[x_alphabet[lenx]][4], Fx[lenx][leny]+tran_x[x_alphabet[lenx]][3], Fy[lenx][leny]+tran_y[y_alphabet[leny]][3]);
+	FE = LOG_ADD(Fm[lenx][leny]+tran_match[x_alphabet[lenx]][4], Fx[lenx][leny]+tran_x[0][3], Fy[lenx][leny]+tran_y[0][3]);
+	//cout << Fm[lenx][leny]+tran_match[x_alphabet[lenx]][4] << " " << Fx[lenx][leny]+tran_x[x_alphabet[lenx]][3] << " " << Fy[lenx][leny]+tran_y[y_alphabet[leny]][3] << endl;
+
+	//cout << "tran_y[y_alphabet[leny]][3]: " << tran_y[y_alphabet[leny]][3] << endl;
+
+	if(debug>-1) fprintf(stdout, "FE: %12.5f\t", FE); fflush(stdout);//cout << "FE: " << FE << endl;
+}
+
+void hmm_psipred::backward_no_end_penalty() {
+
+	int i,j,k,m;
+	int *ax = x->alignment[1];
+	int *ay = y->alignment[1];
+
+	int alphax, alphay;
+	int alphax_1, alphay_1;
+	int axi_1, ayj_1;
+
+	Bm = gmatrix<float>(lenx, leny);
+	Bx = gmatrix<float>(lenx, leny);
+	By = gmatrix<float>(lenx, leny);
+
+	for(i=lenx;i>=0;i--) {
+	    for(j=leny;j>=0;j--) {
+		//match states and insertion states together
+		alphax = x_alphabet[i];
+		alphay = y_alphabet[j];
+		if( (i==lenx)&&(j==leny) ) {
+			Bm[i][j] = tran_match[alphax][4];
+			Bx[i][j] = tran_x[0][3];
+			By[i][j] = tran_y[0][3];
+			//cout << "By[i][j]: " << i << " " << j << " " << By[i][j] << endl;
+			if(debug>1) cout << i << " " << j << " " << Bm[i][j] << " " << Bx[i][j] << " " << By[i][j] << endl;
+			continue;
+		}
+		if(i==lenx) {
+			//By[i][j] = By[i][j+1]+tran_y[0][2]+aa_loop[y_alphabet[j+1]][ay[j+1]];
+			//Bm[i][j] = By[i][j+1]+tran_match[alphax][3]+aa_loop[y_alphabet[j+1]][ay[j+1]];
+			////By[i][j] = By[i][j+1]+tran_y[0][2]+score_bg_y[j+1]; 
+			////Bm[i][j] = By[i][j+1]+tran_match[alphax][3]+score_bg_y[j+1];
+			By[i][j] = By[i][j+1]+tran_y[0][2]*weight_end_penalty+score_bg_y[j+1]; 
+			Bm[i][j] = By[i][j+1]+tran_match[alphax][3]*weight_end_penalty+score_bg_y[j+1];
+			//cout << "By[i][j]: " << i << " " << j << " " << By[i][j] << endl;
+			//cout << "Bm[i][j]: " << i << " " << j << " " << Bm[i][j] << endl;
+			Bx[i][j] = LOG_ZERO;
+			if(debug>1) cout << i << " " << j << " " << Bm[i][j] << " " << Bx[i][j] << " " << By[i][j] << endl;
+			continue;
+		}
+		if(j==leny) {
+			//Bx[i][j] = Bx[i+1][j]+tran_x[alphax][2]+aa_loop[x_alphabet[i+1]][ax[i+1]];
+			//Bm[i][j] = Bx[i+1][j]+tran_match[alphax][2]+aa_loop[x_alphabet[i+1]][ax[i+1]];
+			////Bx[i][j] = Bx[i+1][j]+tran_x[0][2]+score_bg_x[i+1];
+			////Bm[i][j] = Bx[i+1][j]+tran_match[alphax][2]+score_bg_x[i+1];
+			Bx[i][j] = Bx[i+1][j]+tran_x[0][2]*weight_end_penalty+score_bg_x[i+1];
+			Bm[i][j] = Bx[i+1][j]+tran_match[alphax][2]*weight_end_penalty+score_bg_x[i+1];
+			By[i][j] = LOG_ZERO;
+			//cout << "Bx[i][j]: " << i << " " << j << " " << Bx[i][j] << endl;
+			//cout << "Bm[i][j]: " << i << " " << j << " " << Bm[i][j] << endl;
+			if(debug>1) cout << i << " " << j << " " << Bm[i][j] << " " << Bx[i][j] << " " << By[i][j] << endl;
+			continue;
+		}
+		alphax_1 = x_alphabet[i+1];
+		alphay_1 = y_alphabet[j+1];
+		axi_1 = ax[i+1];
+		ayj_1 = ay[j+1];
+		
+		//Bm[i][j] = LOG_ADD(Bm[i+1][j+1]+tran_match[alphax][1]+aa_pair[alphax_1][axi_1][ayj_1]+ss_pair[alphax_1][alphay_1], Bx[i+1][j]+tran_match[alphax][2]+aa_loop[alphax_1][axi_1], By[i][j+1]+tran_match[alphax][3]+aa_loop[alphay_1][ayj_1]);
+		//Bx[i][j] = LOG_ADD(Bm[i+1][j+1]+tran_x[alphax][1]+aa_pair[alphax_1][axi_1][ayj_1]+ss_pair[alphax_1][alphay_1], Bx[i+1][j]+tran_x[alphax][2]+aa_loop[alphax_1][axi_1]);
+		//By[i][j] = LOG_ADD(Bm[i+1][j+1]+tran_y[alphay][1]+aa_pair[alphax_1][axi_1][ayj_1]+ss_pair[alphax_1][alphay_1], By[i][j+1]+tran_y[alphay][2]+aa_loop[alphay_1][ayj_1]);
+		Bm[i][j] = LOG_ADD(Bm[i+1][j+1]+tran_match[alphax][1]+score_matrix[i+1][j+1], Bx[i+1][j]+tran_match[alphax][2]+score_bg_x[i+1], By[i][j+1]+tran_match[alphax][3]+score_bg_y[j+1]);
+                if(j!=0) {
+		        Bx[i][j] = LOG_ADD(Bm[i+1][j+1]+tran_x[0][1]+score_matrix[i+1][j+1], Bx[i+1][j]+tran_x[0][2]+score_bg_x[i+1]);
+                }
+                else {
+                        Bx[i][j] = LOG_ADD(Bm[i+1][j+1]+tran_x[0][1]*weight_end_penalty+score_matrix[i+1][j+1], Bx[i+1][j]+tran_x[0][2]*weight_end_penalty+score_bg_x[i+1]);
+                }
+                if(i!=0) {
+		        By[i][j] = LOG_ADD(Bm[i+1][j+1]+tran_y[0][1]+score_matrix[i+1][j+1], By[i][j+1]+tran_y[0][2]+score_bg_y[j+1]);
+                }
+                else {
+                        By[i][j] = LOG_ADD(Bm[i+1][j+1]+tran_y[0][1]*weight_end_penalty+score_matrix[i+1][j+1], By[i][j+1]+tran_y[0][2]*weight_end_penalty+score_bg_y[j+1]);
+                }
+                if(debug>1) cout << i << " " << j << " " << Bm[i][j] << " " << Bx[i][j] << " " << By[i][j] << endl;
+			//cout << "Bx[i][j]: " << i << " " << j << " " << Bx[i][j] << endl;
+			//cout << "By[i][j]: " << i << " " << j << " " << By[i][j] << endl;
+			//cout << "Bm[i][j]: " << i << " " << j << " " << Bm[i][j] << endl;
+	    }
+	}
+
+	//cout << tran_begin[1] << " " << tran_match[x_alphabet[1]][3] << " " << tran_y[y_alphabet[2]][3] << " " << aa_pair[x_alphabet[1]][ax[1]][ay[1]] << " " << ss_pair[x_alphabet[1]][y_alphabet[1]] << " " << aa_loop[y_alphabet[2]][ay[2]] << endl;
+
+	//Bm[0][0] = Bm[1][1]+tran_begin[1]+aa_pair[x_alphabet[1]][ax[1]][ay[1]]+ss_pair[x_alphabet[1]][y_alphabet[1]];
+	//Bx[0][0] = Bx[1][0]+tran_begin[2]+aa_loop[x_alphabet[1]][ax[1]];
+	//By[0][0] = By[0][1]+tran_begin[3]+aa_loop[y_alphabet[1]][ay[1]];
+
+	//BE = LOG_ADD(Bm[1][1]+tran_begin[1]+aa_pair[x_alphabet[1]][ax[1]][ay[1]]+ss_pair[x_alphabet[1]][y_alphabet[1]], Bx[1][0]+tran_begin[2]+aa_loop[x_alphabet[1]][ax[1]], By[0][1]+tran_begin[3]+aa_loop[y_alphabet[1]][ay[1]]);
+	BE = LOG_ADD(Bm[1][1]+tran_begin[1]+score_matrix[1][1], Bx[1][0]+tran_begin[2]+score_bg_x[1], By[0][1]+tran_begin[3]+score_bg_y[1]);
+
+	//cout << Bm[1][1]+tran_begin[1]+aa_pair[x_alphabet[1]][ax[1]][ay[1]]+ss_pair[x_alphabet[1]][y_alphabet[1]] << " " << Bx[1][0]+tran_begin[2]+aa_loop[x_alphabet[1]][ax[1]] << " " <<  By[0][1]+tran_begin[3]+aa_loop[y_alphabet[1]][ay[1]] << endl;
+
+	if(debug>-1) fprintf(stdout, "BE: %f\n", BE);
+
+	//ScoreType full_prob;
+	if(debug>1) cout << "Obtain posterior probabilities (>0.01): " << x->aname[0] << "\t" << y->aname[0] << endl;
+	probMat = gmatrix<float>(lenx, leny);
+	for(i=1;i<=lenx;i++) {
+		for(j=1;j<=leny;j++) {
+			probMat[i][j] = exp(Fm[i][j]+Bm[i][j]-FE);
+                        //double tmp = exp(Fm[i][j]+Bm[i][j]-FE) + exp(Fx[i][j]+Bx[i][j]-FE) + exp(Fy[i][j]+By[i][j]-FE);
+                        //cout << "all three - i: " << i << " j: " << j << " "  << tmp << endl;
+			if(debug>1) cout << "probMat: " << i << " " << j << " " <<setprecision(7)<< probMat[i][j] << endl;
+		}
+	}
+
+	//fprintf(stdout, "================\n");
+
+}
+
 int * hmm_psipred::posteriorAlignment() {
 
 	int i,j,k;

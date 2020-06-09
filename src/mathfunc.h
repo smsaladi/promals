@@ -3,7 +3,7 @@
 
 #include "mathnr.h"
 
-void nrerror(char error_text[]);
+void nrerror(const char error_text[]);
 double erfcc(double x);
 double gammln(double xx);
 double betacf(double a, double b, double x);

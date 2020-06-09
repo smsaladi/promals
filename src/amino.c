@@ -32,10 +32,10 @@ void get_log_robinson_freq() {
 
 }
 
-char *am="-WFYMLIVACGPTSNQDEHRKBZX*.wfymlivacgptsnqdehrkbzx";
+const char *am="-WFYMLIVACGPTSNQDEHRKBZX*.wfymlivacgptsnqdehrkbzx";
 
-char *am_dayhoff="-ARNDCQEGHILKMFPSTWYV";
-char *am3[]={
+const char *am_dayhoff="-ARNDCQEGHILKMFPSTWYV";
+const char *am3[]={
 "---",
 "TRP",
 "PHE",

@@ -129,6 +129,7 @@ void refinegap(subalign *aln, double gap_thr_lowest, int use_hwt, int remove_fra
 		}
 	}
 	//for(i=1;i<=csv->alilen;i++) cout << gap_flag[i]; cout << endl;
+        //for(i=1;i<=csv->alilen;i++) cout << am[csv->alignment[1][i]]; cout << endl;
 
 	int starts[alilen], ends[alilen];
 	int start_count=0, end_count=0;
@@ -189,7 +190,18 @@ void adjust_gap(subalign *aln, int start, int end) {
 	int **alignment = aln->alignment;
 	char **aseq = aln->aseq;
 
+        int num_letters_in_real_gap;
 	for(i=1;i<=nal;i++) {
+		num_letters_in_real_gap = 0;
+                // see if from start+1 to end-1 (real gapped region), if there are any letters.
+                // if there are no letters, do nothing
+                for(j=start+1;j<=end-1;j++) {
+                        if(aln->alignment[i][j]!=0) {
+                                num_letters_in_real_gap++;
+                                break;
+                        }
+                }
+                if(!num_letters_in_real_gap) continue;
 		num_letters_in_gap = 0;
 		for(j=start;j<=end;j++) {
 			if(aln->alignment[i][j]!=0) {

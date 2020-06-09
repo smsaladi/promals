@@ -1,5 +1,6 @@
 #include "refine.h"
 #include <algorithm>
+#include "progressiveAlignHMM.h"
 
 static int debug_here = 1;
 void GetLower(string& str);
@@ -548,7 +549,11 @@ void alignrefine::get_sw() {
 	double total_hwt = 0;
         for(i=1;i<=csv->nal;i++) {
                 total_hwt += csv->hwt_all[i];
-		sw[i] = csv->hwt_all[i];
+                total_hwt += 0.00001;
+		sw[i] = csv->hwt_all[i] + 0.00001;
+        }
+        for(i=1;i<=csv->nal;i++) {
+		sw[i] = sw[i]/total_hwt;
         }
 	if(debug_here>1) cout << "========+++++++++" << endl;
 
@@ -731,6 +736,9 @@ void alignrefine::deal_with_gappy(int gb, int ge, int filter_length) {
 
 	int i, j, k;
 
+        //cout << "gb: " << gb << " ge: " << ge << endl;
+        //cout << aseq[0] << endl;
+
   if(ge-gb+1< filter_length)  {
 
 	for(i=1;i<=nal;i++) deal_with_gappy_individual(gb, ge, i, 0);
@@ -738,8 +746,14 @@ void alignrefine::deal_with_gappy(int gb, int ge, int filter_length) {
 	// find if there is any columns with entired gaps
 	// if found, delete those positions
 	int all_gap_begin=-1, all_gap_end=-1;
+        //for(i=1;i<=nal;i++) cout << aseq[i-1] << endl;  // newline
+        //for(i=1;i<=nal;i++) cout << i << "\t" << sw[i] << endl;  // newline
 	for(i=gb;i<=ge;i++) {
-		if(fabs(vaaw[i])<1e-6) {all_gap_begin=i; break;}
+		if(fabs(vaaw[i])<1e-6) {
+                        //cout << "vaaw i" << i << "\t" << vaaw[i] << endl;  // newline
+                        all_gap_begin=i; 
+                        break;
+                }
 	}
      if(all_gap_begin!=-1) {
 	for(i=all_gap_begin+1;i<=ge;i++) {
@@ -751,7 +765,7 @@ void alignrefine::deal_with_gappy(int gb, int ge, int filter_length) {
 	for(i=1;i<=nal;i++) {
 		if(debug_here>1) cout << aseq[i-1] << endl;
 	}
-	alilen = alilen - all_gap_end + all_gap_begin  - 1;
+	//alilen = alilen - all_gap_end + all_gap_begin  - 1;
 	for(i=1;i<=alilen;i++) {
 		if(debug_here>1) cout << i << "\t" << isgappy[i] << "\t" << vaaw[i] << endl;
 	}
@@ -856,6 +870,8 @@ void alignrefine::deal_with_gappy_individual(int gb, int ge, int n, int lmr) {
 
 	int i, j, k;
 
+        //if(n==107) debug_here= 11; else debug_here = 1;
+
 	if(debug_here>1) cout << "n: " << n << endl;
 	if(debug_here>1) cout << aseq[n-1] << endl;
 
@@ -953,18 +969,21 @@ void alignrefine::deal_with_gappy_individual(int gb, int ge, int n, int lmr) {
 		if(debug_here>1) cout << right_core_pos[i] << endl;
 	}
 
+      if(n==107) {
 	if(debug_here>1) cout << "n: " << n << endl;
 	if(debug_here>1) cout << "left bound: " << left_bound << " " << nstr << " " << lmn << endl;
 	if(debug_here>1) cout << "right bound: " << right_bound << " " << cstr << " " << rmn << endl;
 	if(debug_here>1) cout << gappy_aa << " " << lbm << endl;
-
+      }
 	nstr = tstr.substr(0, left_bound-1);
 	cstr = tstr.substr(right_bound);
 	mstr = tstr.substr(left_bound-1, right_bound-left_bound+1);
 	//if(debug_here>1) cout << tstr << endl;
-	if(debug_here>1) cout << nstr << endl;
-	if(debug_here>1) cout << mstr << endl;
-	if(debug_here>1) cout << cstr << endl;
+      if(n==107) {
+	if(debug_here>1) cout << "nstr: " << nstr << endl;
+	if(debug_here>1) cout << "mstr: " << mstr << endl;
+	if(debug_here>1) cout << "cstr: " << cstr << endl;
+      }
 		
 	// 4. if gappy_aa cannot be moved, push the amino acids aside depending on the position of the gaps
 	if(lmn+rmn==0) {
@@ -1067,7 +1086,6 @@ void alignrefine::deal_with_gappy_individual(int gb, int ge, int n, int lmr) {
 		if(debug_here>1) cout << after_move<< endl;
 		if(debug_here>1) cout << "=======================" << endl;
 		if(debug_here>1) cout << endl;
-		
 		oc_both = compare_score(before_move, after_move, both_core_pos, n);
 		if(debug_here>1) cout << "oc_both: " << oc_both << " " << max_oc_both << endl;
 		if(oc_both>max_oc_both) {
