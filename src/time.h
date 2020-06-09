@@ -1,13 +1,13 @@
 #ifndef __time___
 #define __time___
 
-#include        <sys/types.h>
-#include        <sys/times.h>
-#include        <unistd.h>
-#include <ctime>
+#include <sys/times.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <cstdio>
+#include <ctime>
 
-extern struct tms      tmsstart, tmsend;
+extern struct tms tmsstart, tmsend;
 
 double timeDiff();
 

@@ -1,693 +1,708 @@
 
-// this is the class that calculate various types of sequence frequencies and conservations
-// fq[][]:  raw frequencies
-// hfq[][]: henikoff weighted frequencies
+// this is the class that calculate various types of sequence frequencies and
+// conservations fq[][]:  raw frequencies hfq[][]: henikoff weighted frequencies
 // icfq[][]: independent count frequencies
 
 #include "consv1.h"
 
 consv::consv() {
+  alignment = 0;
+  fq = 0;
+  hfq = 0;
+  icfq = 0;
+  effcount = 0;
+  gap_fraction = 0;
+  goodpos = 0;
+  oaf_ip = 0;
+  h_oaf_ip = 0;
+  u_oaf = 0;
+  h_oaf = 0;
+  h_oafq = 0;
+  hwt_all = 0;
 
-	alignment = 0;
-	fq = 0;
-        hfq = 0;
-        icfq = 0;
-        effcount = 0;
-        gap_fraction = 0;
-        goodpos = 0;
-	oaf_ip = 0;
-        h_oaf_ip = 0;
-        u_oaf = 0;
-	h_oaf = 0;
-	h_oafq = 0;
-	hwt_all = 0;
-
-	gap_thr = 0.5;
-	
+  gap_thr = 0.5;
 }
 
 // copy constructor: only copy the alignment
-consv::consv(const consv &init ) {
-	int i,j;
-	nal = init.nal;
-	alilen = init.alilen;
-	alignment = imatrix(nal, alilen);
-	for(i=1;i<=nal;i++) {
-	    for(j=1;j<=alilen;j++) {
-		alignment[i][j] = init.alignment[i][j];
-	    }
-	}
-	gap_thr = init.gap_thr;
-	goodposnum = init.goodposnum;
+consv::consv(const consv &init) {
+  int i, j;
+  nal = init.nal;
+  alilen = init.alilen;
+  alignment = imatrix(nal, alilen);
+  for (i = 1; i <= nal; i++) {
+    for (j = 1; j <= alilen; j++) {
+      alignment[i][j] = init.alignment[i][j];
+    }
+  }
+  gap_thr = init.gap_thr;
+  goodposnum = init.goodposnum;
 
-        fq = 0;
-        hfq = 0;
-        icfq = 0;
-        effcount = 0;
-        gap_fraction = 0;
-        goodpos = 0;
-        oaf_ip = 0;
-        h_oaf_ip = 0;
-        u_oaf = 0;
-        h_oaf = 0;
-	h_oafq=0;
-	hwt_all = 0;
+  fq = 0;
+  hfq = 0;
+  icfq = 0;
+  effcount = 0;
+  gap_fraction = 0;
+  goodpos = 0;
+  oaf_ip = 0;
+  h_oaf_ip = 0;
+  u_oaf = 0;
+  h_oaf = 0;
+  h_oafq = 0;
+  hwt_all = 0;
 
-	if(init.gap_fraction) {
-	    gap_fraction = dvector(alilen);
-	    for(i=1;i<=alilen;i++) gap_fraction[i] = init.gap_fraction[i];
-	}
-	if(init.goodpos) {
-	    goodpos = ivector(alilen);	
-	    for(i=1;i<=alilen;i++) goodpos[i] = init.goodpos[i];
-	}
-	if(init.fq) {
-	    fq = dmatrix(alilen, 20);
-	    for(i=1;i<=alilen;i++) for(j=1;j<=20;j++) {
-		fq[i][j] = init.fq[i][j];
-	    }
-     	}
-	if(init.hfq) {
-            hfq = dmatrix(alilen, 20);
-            for(i=1;i<=alilen;i++) for(j=1;j<=20;j++) {
-                hfq[i][j] = init.hfq[i][j];
-            }
-        }   
-	if(init.icfq) {
-            icfq = dmatrix(alilen, 20);
-            for(i=1;i<=alilen;i++) for(j=1;j<=20;j++) {
-                icfq[i][j] = init.icfq[i][j];
-            }
-        }   
-	if(init.h_oafq) {
-	    h_oafq = dvector(20);
-	    for(i=1;i<=20;i++) {
-		h_oafq[i] = init.h_oafq[i];
-	    }
-	}
-	if(init.hwt_all) {
-	    hwt_all = dvector(nal);
-	    for(i=1;i<=nal;i++) hwt_all[i] = init.hwt_all[i];
-	}
-
+  if (init.gap_fraction) {
+    gap_fraction = dvector(alilen);
+    for (i = 1; i <= alilen; i++) gap_fraction[i] = init.gap_fraction[i];
+  }
+  if (init.goodpos) {
+    goodpos = ivector(alilen);
+    for (i = 1; i <= alilen; i++) goodpos[i] = init.goodpos[i];
+  }
+  if (init.fq) {
+    fq = dmatrix(alilen, 20);
+    for (i = 1; i <= alilen; i++)
+      for (j = 1; j <= 20; j++) {
+        fq[i][j] = init.fq[i][j];
+      }
+  }
+  if (init.hfq) {
+    hfq = dmatrix(alilen, 20);
+    for (i = 1; i <= alilen; i++)
+      for (j = 1; j <= 20; j++) {
+        hfq[i][j] = init.hfq[i][j];
+      }
+  }
+  if (init.icfq) {
+    icfq = dmatrix(alilen, 20);
+    for (i = 1; i <= alilen; i++)
+      for (j = 1; j <= 20; j++) {
+        icfq[i][j] = init.icfq[i][j];
+      }
+  }
+  if (init.h_oafq) {
+    h_oafq = dvector(20);
+    for (i = 1; i <= 20; i++) {
+      h_oafq[i] = init.h_oafq[i];
+    }
+  }
+  if (init.hwt_all) {
+    hwt_all = dvector(nal);
+    for (i = 1; i <= nal; i++) hwt_all[i] = init.hwt_all[i];
+  }
 }
 
-	
-
 consv::consv(const subalign &aln) {
-	int i,j;
-	nal = aln.nal;
-	alilen = aln.alilen;
-	alignment = imatrix(nal, alilen);
-        for(i=1;i<=nal;i++) {
-            for(j=1;j<=alilen;j++) {
-                alignment[i][j] = aln.alignment[i][j];
-            }
-        }
-	//if(align->done_profile==0) align->profile();
-	// default gap threshold
-	gap_thr = 0.5;
+  int i, j;
+  nal = aln.nal;
+  alilen = aln.alilen;
+  alignment = imatrix(nal, alilen);
+  for (i = 1; i <= nal; i++) {
+    for (j = 1; j <= alilen; j++) {
+      alignment[i][j] = aln.alignment[i][j];
+    }
+  }
+  // if(align->done_profile==0) align->profile();
+  // default gap threshold
+  gap_thr = 0.5;
 
-        fq = 0;
-        hfq = 0;
-        icfq = 0;
-        effcount = 0;
-        gap_fraction = 0;
-        goodpos = 0;
-        oaf_ip = 0;
-        h_oaf_ip = 0;
-        u_oaf = 0;
-        h_oaf = 0;
-	h_oafq = 0;
-	hwt_all = 0;
+  fq = 0;
+  hfq = 0;
+  icfq = 0;
+  effcount = 0;
+  gap_fraction = 0;
+  goodpos = 0;
+  oaf_ip = 0;
+  h_oaf_ip = 0;
+  u_oaf = 0;
+  h_oaf = 0;
+  h_oafq = 0;
+  hwt_all = 0;
 }
 
 consv::~consv() {
-	
-	int i,j,k;
+  int i, j, k;
 
-	if(alignment) {
-	   for(i=0;i<=nal;i++) delete [] alignment[i];
-	   delete [] alignment;
-	}
-        if(fq) {
-	   for(i=0;i<=alilen;i++) delete [] fq[i];
-	   delete [] fq;
-	}
-	if(hfq) {
-           for(i=0;i<=alilen;i++) delete [] hfq[i];
-           delete [] hfq;
-        }
-	if(icfq) {
-           for(i=0;i<=alilen;i++) delete [] icfq[i];
-           delete [] icfq;
-        }
-	if(effcount) {
-           for(i=0;i<=alilen;i++) delete [] effcount[i];
-           delete [] effcount;
-        }
-        if(gap_fraction) {delete [] gap_fraction; }
-        if(goodpos) {delete [] goodpos; }
-        if(oaf_ip) {delete [] oaf_ip; }
-        if(h_oaf_ip) {delete [] h_oaf_ip; }
-        if(u_oaf) {
-	    for(i=0;i<=20;i++) delete [] u_oaf[i];	
-	    delete [] u_oaf;
-	}
-	if(h_oaf) {
-	    for(i=0;i<=20;i++) delete [] h_oaf[i];
-	    delete [] h_oaf;
-	}
-	if(h_oafq) {
-	     delete [] h_oafq;
-	}
-	if(hwt_all) delete [] hwt_all;
+  if (alignment) {
+    for (i = 0; i <= nal; i++) delete[] alignment[i];
+    delete[] alignment;
+  }
+  if (fq) {
+    for (i = 0; i <= alilen; i++) delete[] fq[i];
+    delete[] fq;
+  }
+  if (hfq) {
+    for (i = 0; i <= alilen; i++) delete[] hfq[i];
+    delete[] hfq;
+  }
+  if (icfq) {
+    for (i = 0; i <= alilen; i++) delete[] icfq[i];
+    delete[] icfq;
+  }
+  if (effcount) {
+    for (i = 0; i <= alilen; i++) delete[] effcount[i];
+    delete[] effcount;
+  }
+  if (gap_fraction) {
+    delete[] gap_fraction;
+  }
+  if (goodpos) {
+    delete[] goodpos;
+  }
+  if (oaf_ip) {
+    delete[] oaf_ip;
+  }
+  if (h_oaf_ip) {
+    delete[] h_oaf_ip;
+  }
+  if (u_oaf) {
+    for (i = 0; i <= 20; i++) delete[] u_oaf[i];
+    delete[] u_oaf;
+  }
+  if (h_oaf) {
+    for (i = 0; i <= 20; i++) delete[] h_oaf[i];
+    delete[] h_oaf;
+  }
+  if (h_oafq) {
+    delete[] h_oafq;
+  }
+  if (hwt_all) delete[] hwt_all;
 }
 
 // assignment: only copy the alignment
-const consv &consv::operator=( const consv &right) {
-	int i,j,k;
-	if(&right != this) {
-	    nal = right.nal;
-	    alilen = right.alilen;
-	    gap_thr = right.gap_thr;
-	    goodposnum = right.goodposnum;
-	    alignment = imatrix(nal, alilen);
-	    for(i=1;i<=nal;i++) for(j=1;j<=alilen;j++) 
-		alignment[i][j] = right.alignment[i][j];
-	}
-	return *this;
+const consv &consv::operator=(const consv &right) {
+  int i, j, k;
+  if (&right != this) {
+    nal = right.nal;
+    alilen = right.alilen;
+    gap_thr = right.gap_thr;
+    goodposnum = right.goodposnum;
+    alignment = imatrix(nal, alilen);
+    for (i = 1; i <= nal; i++)
+      for (j = 1; j <= alilen; j++) alignment[i][j] = right.alignment[i][j];
+  }
+  return *this;
 }
 
 // raw frequencies
 void consv::freq() {
-	int i,j;
-	int aacount[21], totalcount;
-	fq = dmatrix(alilen, 20);
-	gap_fraction = dvector(alilen);
-	goodpos = ivector(alilen);
-	goodposnum = 0;
-	for(i=1;i<=alilen;i++) {
-	     for(j=0;j<=20;j++) aacount[j] = 0; totalcount=0;
-	     for(j=1;j<=nal;j++) {
-		aacount[alignment[j][i]]++; 
-		if( (alignment[j][i]>=1) && (alignment[j][i]<=20) ) totalcount++;
-	     }
-	     //cout << i << " " << totalcount << endl;;
-	     for(j=1;j<=20;j++) fq[i][j] = 1.0*aacount[j]/totalcount;
-	     gap_fraction[i] = 1.0 * aacount[0] / ( aacount[0]+totalcount);
-	     if(gap_fraction[i]<gap_thr) {
-		goodpos[i] = 1; 
-		goodposnum++;
-	     }
-	     else goodpos[i] = 0;
-	     /* testing  
-	     for(j=1;j<=20;j++) { fprintf(stdout, "%3.2f ", fq[i][j]); }
-	     fprintf(stdout, "\n");
-	     fprintf(stdout, "%d %d %f \n", aacount[0], totalcount, gap_fraction[i]);
-	     */
-	}
+  int i, j;
+  int aacount[21], totalcount;
+  fq = dmatrix(alilen, 20);
+  gap_fraction = dvector(alilen);
+  goodpos = ivector(alilen);
+  goodposnum = 0;
+  for (i = 1; i <= alilen; i++) {
+    for (j = 0; j <= 20; j++) aacount[j] = 0;
+    totalcount = 0;
+    for (j = 1; j <= nal; j++) {
+      aacount[alignment[j][i]]++;
+      if ((alignment[j][i] >= 1) && (alignment[j][i] <= 20)) totalcount++;
+    }
+    // cout << i << " " << totalcount << endl;;
+    for (j = 1; j <= 20; j++) fq[i][j] = 1.0 * aacount[j] / totalcount;
+    gap_fraction[i] = 1.0 * aacount[0] / (aacount[0] + totalcount);
+    if (gap_fraction[i] < gap_thr) {
+      goodpos[i] = 1;
+      goodposnum++;
+    } else
+      goodpos[i] = 0;
+    /* testing
+    for(j=1;j<=20;j++) { fprintf(stdout, "%3.2f ", fq[i][j]); }
+    fprintf(stdout, "\n");
+    fprintf(stdout, "%d %d %f \n", aacount[0], totalcount, gap_fraction[i]);
+    */
+  }
 }
 
 void consv::setgap_thr(double t) {
-	gap_thr = t;
-	if( (gap_thr>1) || (gap_thr <0) ) {
-		cout << "Warning: gap threshold in conservation not in range 0~1: "<< gap_thr << endl;
-		cout << "Gap threshold is set to 0.5" << endl;
-		gap_thr = 0.5;
-	}
+  gap_thr = t;
+  if ((gap_thr > 1) || (gap_thr < 0)) {
+    cout << "Warning: gap threshold in conservation not in range 0~1: "
+         << gap_thr << endl;
+    cout << "Gap threshold is set to 0.5" << endl;
+    gap_thr = 0.5;
+  }
 }
 
+void consv::h_weight(int **ali, int ip, double *hwt) {
+  int count[21];
+  int amtypes;
+  int i, j, k;
+  int maxstart, maxs, miniend, minie;
+  int mark[nal + 1];
+  int gapcount, totalcount, wsign;
 
-void consv::h_weight(int **ali, int ip, double *hwt)
-{
-	int count[21];
-        int amtypes;
-	int i,j,k;
-	int maxstart, maxs, miniend,minie;
-	int mark[nal+1];
-	int gapcount,totalcount,wsign;
+  for (i = 1; i <= 20; i++) h_oaf_ip[i] = 0;
 
-	for(i=1;i<=20;i++) h_oaf_ip[i] = 0;
+  /* mark the sequences with gaps */
+  for (i = 1; i <= nal; i++) {
+    // NEW: fix a typo 05/06/03
+    mark[i] = 0;
+    if ((ali[i][ip] > 0 && ali[i][ip] <= 20) ||
+        (ali[i][ip] > 25 && ali[i][ip] <= 45))
+      mark[i] = 1;
+    else if (ali[i][ip] == 0)
+      mark[i] = 0;
+  }
 
-	/* mark the sequences with gaps */
-	for(i=1;i<=nal;i++) {
-		// NEW: fix a typo 05/06/03
-		mark[i] = 0;
-		if((ali[i][ip]>0&&ali[i][ip]<=20)||(ali[i][ip]>25&&ali[i][ip]<=45)) mark[i]=1;
-		else if (ali[i][ip]==0)mark[i]=0;
-			    }
-	
-	/* find the maxstart and miniend positions */
-	maxstart = 1;
-	for(i=1;i<=nal;i++){
-		if(mark[i]==0) continue;
-		maxs = 1;
- 	    	for(j=1;j<=alilen;j++) {
-			if(ali[i][j]==0) maxs++;
-			if(ali[i][j]>0) break;
-					}
-		if(maxstart<maxs) maxstart = maxs;
-			   }
-	miniend = alilen;
-	for(i=1;i<=nal;i++){
-		if(!mark[i]) continue;
-		minie = alilen;
-		for(j=alilen;j>0;j--) {
-			if(ali[i][j]==0) minie--;
-			if(ali[i][j]>0) break;
-				      }
-		if(miniend>minie) miniend = minie;
- 			   }
-	/* NEW: 05/06/03 */
-	if(maxstart > miniend) maxstart = miniend;
+  /* find the maxstart and miniend positions */
+  maxstart = 1;
+  for (i = 1; i <= nal; i++) {
+    if (mark[i] == 0) continue;
+    maxs = 1;
+    for (j = 1; j <= alilen; j++) {
+      if (ali[i][j] == 0) maxs++;
+      if (ali[i][j] > 0) break;
+    }
+    if (maxstart < maxs) maxstart = maxs;
+  }
+  miniend = alilen;
+  for (i = 1; i <= nal; i++) {
+    if (!mark[i]) continue;
+    minie = alilen;
+    for (j = alilen; j > 0; j--) {
+      if (ali[i][j] == 0) minie--;
+      if (ali[i][j] > 0) break;
+    }
+    if (miniend > minie) miniend = minie;
+  }
+  /* NEW: 05/06/03 */
+  if (maxstart > miniend) maxstart = miniend;
 
-/* special case where only one site is not gap */
-        j=0;
-        for(i=1;i<=nal;i++) {if(mark[i]>0) j++;}
-        if(j==1) {
-                for(i=1;i<=nal;i++) hwt[i]=mark[i];
-                overall_freq_wgt(ali,maxstart,miniend,mark,hwt, h_oaf_ip);
-                overall_freq(ali,1,alilen,mark, oaf_ip);
-                return;
-                 }
+  /* special case where only one site is not gap */
+  j = 0;
+  for (i = 1; i <= nal; i++) {
+    if (mark[i] > 0) j++;
+  }
+  if (j == 1) {
+    for (i = 1; i <= nal; i++) hwt[i] = mark[i];
+    overall_freq_wgt(ali, maxstart, miniend, mark, hwt, h_oaf_ip);
+    overall_freq(ali, 1, alilen, mark, oaf_ip);
+    return;
+  }
 
-	for(i=1;i<=nal;i++) hwt[i]=0;
-	for(j=maxstart;j<=miniend;j++){
-		
-		amtypes = 0;
-		for(i=0;i<=20;i++) count[i]=0;
-		for(i=1;i<=nal;i++){
-			if(mark[i]==0) continue;
-			if(ali[i][j]>=0&&ali[i][j]<=20) count[ali[i][j]]++;
-			else if(ali[i][j]>25&&ali[i][j]<=45) count[ali[i][j]-25]++;
-				   }
-		for(i=0;i<=20;i++) {
-			if(count[i]>0) amtypes++;
-				   }
-		if(amtypes==1) continue; /* identical positions are excluded */
-		gapcount=totalcount=0;
-		for(i=1;i<=nal;i++){
-			if(mark[i]==0) continue;
-			if(ali[i][j]==0) gapcount++;
-			totalcount++;
-				   }
-		if(gapcount>totalcount*0.5) continue;/*gap>50% excluded*/
+  for (i = 1; i <= nal; i++) hwt[i] = 0;
+  for (j = maxstart; j <= miniend; j++) {
+    amtypes = 0;
+    for (i = 0; i <= 20; i++) count[i] = 0;
+    for (i = 1; i <= nal; i++) {
+      if (mark[i] == 0) continue;
+      if (ali[i][j] >= 0 && ali[i][j] <= 20)
+        count[ali[i][j]]++;
+      else if (ali[i][j] > 25 && ali[i][j] <= 45)
+        count[ali[i][j] - 25]++;
+    }
+    for (i = 0; i <= 20; i++) {
+      if (count[i] > 0) amtypes++;
+    }
+    if (amtypes == 1) continue; /* identical positions are excluded */
+    gapcount = totalcount = 0;
+    for (i = 1; i <= nal; i++) {
+      if (mark[i] == 0) continue;
+      if (ali[i][j] == 0) gapcount++;
+      totalcount++;
+    }
+    if (gapcount > totalcount * 0.5) continue; /*gap>50% excluded*/
 
-		for(i=1;i<=nal;i++){
-			if(mark[i]==0) continue;
-			if(ali[i][j]>=0&&ali[i][j]<=20) {
-				if(count[ali[i][j]]>0)  {
-				    hwt[i]+=1.0/(count[ali[i][j]]*amtypes);
-							}
-						       }
-			if(ali[i][j]>25&&ali[i][j]<=45) {
-				if(count[ali[i][j]-25]>0)  {
-				    hwt[i]+=1.0/(count[ali[i][j]-25]*amtypes);
-							   }
-							}
-				   }
-				}
-	/* test if all henikoff weights are zero for all sequences */
-	wsign=0;
-	for(i=1;i<=nal;i++) {
-		if(hwt[i]>0) { wsign=1;break;}
-			    }
-	gapcount=0;
-	if(wsign==0) {
-		for(i=1;i<=nal;i++){
-			if(ali[i][ip]==0) gapcount++;
-				   }
-		//if(gapcount==nal){fprintf(stderr, "This position contains only gaps\n");}
-		for(i=1;i<=nal;i++){
-			if(ali[i][ip]!=0) hwt[i]=1.0/(nal-gapcount);
-				   }
-		     }
+    for (i = 1; i <= nal; i++) {
+      if (mark[i] == 0) continue;
+      if (ali[i][j] >= 0 && ali[i][j] <= 20) {
+        if (count[ali[i][j]] > 0) {
+          hwt[i] += 1.0 / (count[ali[i][j]] * amtypes);
+        }
+      }
+      if (ali[i][j] > 25 && ali[i][j] <= 45) {
+        if (count[ali[i][j] - 25] > 0) {
+          hwt[i] += 1.0 / (count[ali[i][j] - 25] * amtypes);
+        }
+      }
+    }
+  }
+  /* test if all henikoff weights are zero for all sequences */
+  wsign = 0;
+  for (i = 1; i <= nal; i++) {
+    if (hwt[i] > 0) {
+      wsign = 1;
+      break;
+    }
+  }
+  gapcount = 0;
+  if (wsign == 0) {
+    for (i = 1; i <= nal; i++) {
+      if (ali[i][ip] == 0) gapcount++;
+    }
+    // if(gapcount==nal){fprintf(stderr, "This position contains only gaps\n");}
+    for (i = 1; i <= nal; i++) {
+      if (ali[i][ip] != 0) hwt[i] = 1.0 / (nal - gapcount);
+    }
+  }
 
-	overall_freq_wgt(ali,maxstart,miniend,mark,hwt, h_oaf_ip);
-	overall_freq(ali,1,alilen,mark, oaf_ip);
-	return;
+  overall_freq_wgt(ali, maxstart, miniend, mark, hwt, h_oaf_ip);
+  overall_freq(ali, 1, alilen, mark, oaf_ip);
+  return;
 }
 
 // gap is not considered as the 21st letter
-void consv::h_weight_all()
-{
-	int count[21];
-        int amtypes;
-	int i,j,k;
-	int maxstart, maxs, miniend,minie;
-	int mark[nal+1];
-	int gapcount,totalcount,wsign;
+void consv::h_weight_all() {
+  int count[21];
+  int amtypes;
+  int i, j, k;
+  int maxstart, maxs, miniend, minie;
+  int mark[nal + 1];
+  int gapcount, totalcount, wsign;
 
-	int effp= 0;
+  int effp = 0;
 
-	hwt_all = dvector(nal);
+  hwt_all = dvector(nal);
 
-	for(i=1;i<=nal;i++) hwt_all[i]=0;
-	for(j=1;j<=alilen;j++){
-		
-		amtypes = 0;
-		for(i=0;i<=20;i++) count[i]=0;
-		for(i=1;i<=nal;i++){
-			// if(mark[i]==0) continue;
-			if(alignment[i][j]>=0&&alignment[i][j]<=20) count[alignment[i][j]]++;
-			else if(alignment[i][j]>25&&alignment[i][j]<=45) count[alignment[i][j]-25]++;
-				   }
-		// gap is not considered as the 21st letter
-		for(i=1;i<=20;i++) {
-			if(count[i]>0) amtypes++;
-				   }
-		if(amtypes==1) continue; /* identical positions are excluded */
-		gapcount=totalcount=0;
-		for(i=1;i<=nal;i++){
-			// if(mark[i]==0) continue;
-			if(alignment[i][j]==0) gapcount++;
-			totalcount++;
-				   }
-		if(gapcount>totalcount*0.5) continue;/*gap>50% excluded*/
+  for (i = 1; i <= nal; i++) hwt_all[i] = 0;
+  for (j = 1; j <= alilen; j++) {
+    amtypes = 0;
+    for (i = 0; i <= 20; i++) count[i] = 0;
+    for (i = 1; i <= nal; i++) {
+      // if(mark[i]==0) continue;
+      if (alignment[i][j] >= 0 && alignment[i][j] <= 20)
+        count[alignment[i][j]]++;
+      else if (alignment[i][j] > 25 && alignment[i][j] <= 45)
+        count[alignment[i][j] - 25]++;
+    }
+    // gap is not considered as the 21st letter
+    for (i = 1; i <= 20; i++) {
+      if (count[i] > 0) amtypes++;
+    }
+    if (amtypes == 1) continue; /* identical positions are excluded */
+    gapcount = totalcount = 0;
+    for (i = 1; i <= nal; i++) {
+      // if(mark[i]==0) continue;
+      if (alignment[i][j] == 0) gapcount++;
+      totalcount++;
+    }
+    if (gapcount > totalcount * 0.5) continue; /*gap>50% excluded*/
 
-		effp ++;
+    effp++;
 
-		for(i=1;i<=nal;i++){
-			// if(mark[i]==0) continue;
-			// gap is not considered as the 21st letter
-			if(alignment[i][j]>0&&alignment[i][j]<=20) {
-				if(count[alignment[i][j]]>0)  {
-				    hwt_all[i]+=1.0/(count[alignment[i][j]]*amtypes);
-							}
-						       }
-			if(alignment[i][j]>25&&alignment[i][j]<=45) {
-				if(count[alignment[i][j]-25]>0)  {
-				    hwt_all[i]+=1.0/(count[alignment[i][j]-25]*amtypes);
-							   }
-							}
-				   }
-				}
+    for (i = 1; i <= nal; i++) {
+      // if(mark[i]==0) continue;
+      // gap is not considered as the 21st letter
+      if (alignment[i][j] > 0 && alignment[i][j] <= 20) {
+        if (count[alignment[i][j]] > 0) {
+          hwt_all[i] += 1.0 / (count[alignment[i][j]] * amtypes);
+        }
+      }
+      if (alignment[i][j] > 25 && alignment[i][j] <= 45) {
+        if (count[alignment[i][j] - 25] > 0) {
+          hwt_all[i] += 1.0 / (count[alignment[i][j] - 25] * amtypes);
+        }
+      }
+    }
+  }
 
-	for(i=1;i<=nal;i++) hwt_all[i]/=effp;
-	return;
-}
-	
-
-void consv::h_freq()
-{
-	int i,j;	
-	double *hwt;
-	double sumofweight;
-
-	u_oaf = dmatrix(20,alilen);
-	h_oaf = dmatrix(20,alilen);
-	oaf_ip = dvector(20);
-        h_oaf_ip = dvector(20);
-	hfq = dmatrix(alilen,20);
-	h_oafq = dvector(20);
-	
-	hwt = dvector(nal);
-	for(j=1;j<=alilen;j++) {
-		//if(f[0][j]==INDI) {hfr[0][j]=INDI;continue;}
-		h_weight(alignment, j, hwt); /* assign position specific weight */
-		for(i=1;i<=20;i++) {
-			u_oaf[i][j]=oaf_ip[i];
-			h_oaf[i][j]=h_oaf_ip[i];
-		}
-
- 		sumofweight = 0;
-		for(i=1;i<=nal;i++) {
-			if(alignment[i][j]>0) sumofweight+=hwt[i];
-			//cout << j<< "\t" << i << "\t" << hwt[i] << endl; 
-		}
-		//cout << "sumofweight: "<< sumofweight << endl;
-		for(i=1;i<=20;i++) hfq[j][i] = 0;
-		for(i=1;i<=nal;i++) {
-			if(alignment[i][j]>0&&alignment[i][j]<=20) {
-				hfq[j][alignment[i][j]]+=hwt[i]/sumofweight;
-			}
-			else if(alignment[i][j]>25&&alignment[i][j]<=45) {
-				hfq[j][alignment[i][j]-25]+=hwt[i]/sumofweight;
-			}
-	  	}
-	}
-
-	// calculate the overall frequencies
-	double sumfreq=0;
-	for(i=1;i<=20;i++) {
-	     for(j=1;j<=alilen;j++) {
-		if(goodpos[j]) {
-		     h_oafq[i] += hfq[j][i];
-		     sumfreq += hfq[j][i];
-		}
-	     }
-	}
-	for(i=1;i<=20;i++) {
-	      h_oafq[i] /= sumfreq;
-	}
-
-	     /* testing 
-	   for(i=1;i<=alilen;i++) {
-             for(j=1;j<=20;j++) { if(j==5) fprintf(stdout, "%d %3.2f ", i, hfq[i][j]); }
-             fprintf(stdout, "\n");
-	     if(i==alilen) cout << endl;
-	   } */
-             //fprintf(stdout, "%d %d %f \n", aacount[0], totalcount, gap_fraction[i]);
-             
-
+  for (i = 1; i <= nal; i++) hwt_all[i] /= effp;
+  return;
 }
 
+void consv::h_freq() {
+  int i, j;
+  double *hwt;
+  double sumofweight;
 
-double *consv::entro_conv(double **f, int **ali, double *econv)
-{
-	int i,j;
+  u_oaf = dmatrix(20, alilen);
+  h_oaf = dmatrix(20, alilen);
+  oaf_ip = dvector(20);
+  h_oaf_ip = dvector(20);
+  hfq = dmatrix(alilen, 20);
+  h_oafq = dvector(20);
 
-	for (j=1;j<=alilen;j++){
-		econv[j]=0;
-		//if(f[0][j]==INDI) {econv[j]=INDI;continue;}
-		for(i=1;i<=20;i++) {
-			if(f[i][j]==0) continue;
-			econv[j]+=f[i][j]*log(f[i][j]);
-				   }
-				}
-}
-		
-void consv::overall_freq(int **ali, int startp, int endp, int *mark, double *oaf)
-{
-	int gapcount,totalcount;
-	int total=0;
-	int i,j;
+  hwt = dvector(nal);
+  for (j = 1; j <= alilen; j++) {
+    // if(f[0][j]==INDI) {hfr[0][j]=INDI;continue;}
+    h_weight(alignment, j, hwt); /* assign position specific weight */
+    for (i = 1; i <= 20; i++) {
+      u_oaf[i][j] = oaf_ip[i];
+      h_oaf[i][j] = h_oaf_ip[i];
+    }
 
-	for(i=1;i<=20;i++) oaf[i]=0;
-	if(startp>endp) {
-		fprintf(stderr, "start position larger than ending position\n");
-		exit(1);
-			}
-	for(j=startp;j<=endp;j++) {
-		/* excluding those that have >50% gaps*/
-		gapcount=totalcount=0;
-		for(i=1;i<=nal;i++){
-			if(mark[i]==0) continue;
-			totalcount++;
-			if(ali[i][j]==0) gapcount++;
-				   }
-		if(gapcount>totalcount*0.5) continue;
+    sumofweight = 0;
+    for (i = 1; i <= nal; i++) {
+      if (alignment[i][j] > 0) sumofweight += hwt[i];
+      // cout << j<< "\t" << i << "\t" << hwt[i] << endl;
+    }
+    // cout << "sumofweight: "<< sumofweight << endl;
+    for (i = 1; i <= 20; i++) hfq[j][i] = 0;
+    for (i = 1; i <= nal; i++) {
+      if (alignment[i][j] > 0 && alignment[i][j] <= 20) {
+        hfq[j][alignment[i][j]] += hwt[i] / sumofweight;
+      } else if (alignment[i][j] > 25 && alignment[i][j] <= 45) {
+        hfq[j][alignment[i][j] - 25] += hwt[i] / sumofweight;
+      }
+    }
+  }
 
-		for(i=1;i<=nal;i++) {
-			if(mark[i]==0) continue;
-			if(ali[i][j]>0&&ali[i][j]<=20) {
-				oaf[ali[i][j]]+=1;
-				total++;
-							}
-			if(ali[i][j]>25&&ali[i][j]<=45) {
-				oaf[ali[i][j]-25]+=1;
-				total++;
-							}
-				  }
-				}
-	for(i=1;i<=20;i++) {
-		oaf[i]=oaf[i]/total;
-			   }		
-	return;
-}
+  // calculate the overall frequencies
+  double sumfreq = 0;
+  for (i = 1; i <= 20; i++) {
+    for (j = 1; j <= alilen; j++) {
+      if (goodpos[j]) {
+        h_oafq[i] += hfq[j][i];
+        sumfreq += hfq[j][i];
+      }
+    }
+  }
+  for (i = 1; i <= 20; i++) {
+    h_oafq[i] /= sumfreq;
+  }
 
-void consv::overall_freq_wgt(int **ali,int startp,int endp,int *mark,double *wgt, double *oaf)
-{
-        double total=0;
-	int totalcount,gapcount;
-        int i,j;
-
-        for(i=1;i<=20;i++) oaf[i]=0;
-        if(startp>endp) {
-                fprintf(stderr, "start position larger than ending position\n");                exit(1);
-                        }
-        for(j=startp;j<=endp;j++) {
-		/* excluding those that have >50% gaps*/
-		gapcount=totalcount=0;
-		for(i=1;i<=nal;i++){
-			if(mark[i]==0) continue;
-			totalcount++;
-			if(ali[i][j]==0) gapcount++;
-				   }
-		if(gapcount>totalcount*0.5) continue;
-                for(i=1;i<=nal;i++) {
-                        if(mark[i]==0) continue;
-                        if(ali[i][j]>0&&ali[i][j]<=20) {
-                                oaf[ali[i][j]]+=wgt[i];
-                                total+=wgt[i];
-                                                        }
-                        if(ali[i][j]>25&&ali[i][j]<=45) {
-                                oaf[ali[i][j]-25]+=wgt[i];
-                                total+=wgt[i];
-                                                        }
-                                  }
-	//if(total==0) fprintf(stderr,"total=0\n");
-                                }
-        if(total>0) for(i=1;i<=20;i++) {
-                oaf[i]=oaf[i]/total;
-                           }
-        return;
+  /* testing
+for(i=1;i<=alilen;i++) {
+  for(j=1;j<=20;j++) { if(j==5) fprintf(stdout, "%d %3.2f ", i, hfq[i][j]); }
+  fprintf(stdout, "\n");
+  if(i==alilen) cout << endl;
+} */
+  // fprintf(stdout, "%d %d %f \n", aacount[0], totalcount, gap_fraction[i]);
 }
 
+double *consv::entro_conv(double **f, int **ali, double *econv) {
+  int i, j;
 
-double consv::effective_number_nogaps(int **ali, int *marks, int n, int start, int end){
-
-/* from the alignment of n sequences ali[1..n][1..l]
-calculates effective number of sequences that are marked by 1 in mark[1..n]
-for the segment of positions ali[][start..end]
-Neff=ln(1-0.05*N-of-different-letters-per-site)/ln(0.95)
-*/
-
-int i,k,a,flag;
-int *amco,lettercount=0,sitecount=0;
-double letpersite=0,neff;
-amco=ivector(20);
-for(k=start;k<=end;++k){
-      flag=0;for(i=1;i<=n;++i)if(marks[i]==1 && ali[i][k]==0)flag=1;
-      if(flag==1)continue;
-      for(a=0;a<=20;++a)amco[a]=0;
-      for(i=1;i<=n;++i)if(marks[i]==1)amco[ali[i][k]]++;
-      flag=0;for(a=1;a<=20;++a)if(amco[a]>0){flag=1;lettercount++;}
-      if(flag==1)sitecount++;
-                     }
-if(sitecount==0)letpersite=0;
-else letpersite=1.0*lettercount/sitecount;
-
-
-neff=-log(1.0-0.05*letpersite)/0.05129329438755;
-return neff;
+  for (j = 1; j <= alilen; j++) {
+    econv[j] = 0;
+    // if(f[0][j]==INDI) {econv[j]=INDI;continue;}
+    for (i = 1; i <= 20; i++) {
+      if (f[i][j] == 0) continue;
+      econv[j] += f[i][j] * log(f[i][j]);
+    }
+  }
 }
 
+void consv::overall_freq(int **ali, int startp, int endp, int *mark,
+                         double *oaf) {
+  int gapcount, totalcount;
+  int total = 0;
+  int i, j;
 
-void consv::ic_freq()
-{
-        int i,j,k;
-        int ele;
-        double  *effnu;
-        int *mark;
+  for (i = 1; i <= 20; i++) oaf[i] = 0;
+  if (startp > endp) {
+    fprintf(stderr, "start position larger than ending position\n");
+    exit(1);
+  }
+  for (j = startp; j <= endp; j++) {
+    /* excluding those that have >50% gaps*/
+    gapcount = totalcount = 0;
+    for (i = 1; i <= nal; i++) {
+      if (mark[i] == 0) continue;
+      totalcount++;
+      if (ali[i][j] == 0) gapcount++;
+    }
+    if (gapcount > totalcount * 0.5) continue;
 
-        mark = ivector(nal+10);
-        effnu = dvector(20);
-	icfq = dmatrix(alilen,20);
-	effcount = dmatrix(alilen,20);
-        for(i=1;i<=alilen;i++) for(j=0;j<=20;j++) icfq[i][j]=0;
-        for(i=0;i<=nal;i++) mark[i]=0;
-
-        for(j=1;j<=alilen;j++){
-                //if(f[0][j]==INDI) {icfq[0][j]=INDI;continue;}
-                for(k=0;k<=20;++k)effnu[k]=0;
-                for(k=1;k<=20;++k){
-                        for(i=1;i<=nal;++i){
-                                mark[i]=0;
-                                ele=alignment[i][j];
-                                if(ele==k)mark[i]=1;
-                                ele=alignment[i][j]-25;
-                                if(ele==k) mark[i]=1;
-                                         }
-                        effnu[k]=effective_number_nogaps(alignment,mark,nal,1,alilen);
-                        effnu[0]+=effnu[k];
-                                  }
-                //if(effnu[0]==0){fprintf(stderr,"all counts are zeros at the column %d: FATAL\n",j);exit(0);}
-		for(k=0;k<=20;k++) effcount[j][k] = effnu[k];
-                if(effnu[0]>0)for(k=1;k<=20;k++) icfq[j][k]=effnu[k]/effnu[0];
-                               }
-
-	   /* testing 
-           for(i=1;i<=alilen;i++) {
-             for(j=1;j<=20;j++) { fprintf(stdout, "%3.2f ", effcount[i][j]); }
-             fprintf(stdout, "\n");
-           }*/
-
-
-	delete [] mark;
-	delete [] effnu;
+    for (i = 1; i <= nal; i++) {
+      if (mark[i] == 0) continue;
+      if (ali[i][j] > 0 && ali[i][j] <= 20) {
+        oaf[ali[i][j]] += 1;
+        total++;
+      }
+      if (ali[i][j] > 25 && ali[i][j] <= 45) {
+        oaf[ali[i][j] - 25] += 1;
+        total++;
+      }
+    }
+  }
+  for (i = 1; i <= 20; i++) {
+    oaf[i] = oaf[i] / total;
+  }
+  return;
 }
 
-double *consv::variance_conv(double **f, int **ali, double **oaf, double *vconv)
-{
-	int i,j;
+void consv::overall_freq_wgt(int **ali, int startp, int endp, int *mark,
+                             double *wgt, double *oaf) {
+  double total = 0;
+  int totalcount, gapcount;
+  int i, j;
 
-	for(i=1;i<=alilen;i++) vconv[i]=0;
-	for(j=1;j<=alilen;j++) {
-		//if(f[0][j]==INDI) {vconv[j]=INDI;continue;}
-		for(i=1;i<=20;i++) {
-			vconv[j]+=(f[i][j]-oaf[i][j])*(f[i][j]-oaf[i][j]);
-				   }
-		vconv[j]=sqrt(vconv[j]);
-			       }
+  for (i = 1; i <= 20; i++) oaf[i] = 0;
+  if (startp > endp) {
+    fprintf(stderr, "start position larger than ending position\n");
+    exit(1);
+  }
+  for (j = startp; j <= endp; j++) {
+    /* excluding those that have >50% gaps*/
+    gapcount = totalcount = 0;
+    for (i = 1; i <= nal; i++) {
+      if (mark[i] == 0) continue;
+      totalcount++;
+      if (ali[i][j] == 0) gapcount++;
+    }
+    if (gapcount > totalcount * 0.5) continue;
+    for (i = 1; i <= nal; i++) {
+      if (mark[i] == 0) continue;
+      if (ali[i][j] > 0 && ali[i][j] <= 20) {
+        oaf[ali[i][j]] += wgt[i];
+        total += wgt[i];
+      }
+      if (ali[i][j] > 25 && ali[i][j] <= 45) {
+        oaf[ali[i][j] - 25] += wgt[i];
+        total += wgt[i];
+      }
+    }
+    // if(total==0) fprintf(stderr,"total=0\n");
+  }
+  if (total > 0)
+    for (i = 1; i <= 20; i++) {
+      oaf[i] = oaf[i] / total;
+    }
+  return;
 }
 
-double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pconv)
-{
-	int i,j,k;
-	double **matrix2, **matrix3;
-  	FILE *fp;
+double consv::effective_number_nogaps(int **ali, int *marks, int n, int start,
+                                      int end) {
+  /* from the alignment of n sequences ali[1..n][1..l]
+  calculates effective number of sequences that are marked by 1 in mark[1..n]
+  for the segment of positions ali[][start..end]
+  Neff=ln(1-0.05*N-of-different-letters-per-site)/ln(0.95)
+  */
 
-	matrix2 = dmatrix(25,25);
-	matrix3 = dmatrix(25,25);
-	for(i=0;i<=25;i++){
-		for(j=0;j<=25;j++) {
-			matrix2[i][j]=0;
-			matrix3[i][j]=0;
-				   }
-			  }
+  int i, k, a, flag;
+  int *amco, lettercount = 0, sitecount = 0;
+  double letpersite = 0, neff;
+  amco = ivector(20);
+  for (k = start; k <= end; ++k) {
+    flag = 0;
+    for (i = 1; i <= n; ++i)
+      if (marks[i] == 1 && ali[i][k] == 0) flag = 1;
+    if (flag == 1) continue;
+    for (a = 0; a <= 20; ++a) amco[a] = 0;
+    for (i = 1; i <= n; ++i)
+      if (marks[i] == 1) amco[ali[i][k]]++;
+    flag = 0;
+    for (a = 1; a <= 20; ++a)
+      if (amco[a] > 0) {
+        flag = 1;
+        lettercount++;
+      }
+    if (flag == 1) sitecount++;
+  }
+  if (sitecount == 0)
+    letpersite = 0;
+  else
+    letpersite = 1.0 * lettercount / sitecount;
 
-	/* get the matrices */
-	for(i=1;i<=24;i++){
-		if(matrix1[i][i]==0) {
-			fprintf(stderr, "diagonal elements zero: %d\n",i);
-			exit(0);
-				    }
-		for(j=1;j<=24;j++)  {
-			matrix2[i][j]=matrix1[i][j]*1.0/sqrt( (double) (matrix1[i][i]*matrix1[j][j]));
-			matrix3[i][j]=matrix1[i][j]*2-0.5*(matrix1[i][i]+matrix1[j][j]);
-				    }
-				      }
-	
-	for(j=1;j<=alilen;j++) {
-		//if(f[0][j]==INDI){pconv[j]=INDI; continue;}
-		pconv[j]=0;
-		for(i=1;i<=20;i++) {
-			for(k=1;k<=20;k++) {
-			   if(indx==0){
-				pconv[j]+=(f[k][j]*f[i][j])*matrix1[i][k];
-				continue;}
-			   if(indx==1){
-				pconv[j]+=(f[k][j]*f[i][j])*matrix2[i][k];
-				continue;}
-			   if(indx==2){
-				pconv[j]+=(f[k][j]*f[i][j])*matrix3[i][k];
-			        continue;} 
-			   fprintf(stderr,"not good index number of matrix\n");
-			   exit(0);
-					   }
-				   }
-				}
+  neff = -log(1.0 - 0.05 * letpersite) / 0.05129329438755;
+  return neff;
+}
+
+void consv::ic_freq() {
+  int i, j, k;
+  int ele;
+  double *effnu;
+  int *mark;
+
+  mark = ivector(nal + 10);
+  effnu = dvector(20);
+  icfq = dmatrix(alilen, 20);
+  effcount = dmatrix(alilen, 20);
+  for (i = 1; i <= alilen; i++)
+    for (j = 0; j <= 20; j++) icfq[i][j] = 0;
+  for (i = 0; i <= nal; i++) mark[i] = 0;
+
+  for (j = 1; j <= alilen; j++) {
+    // if(f[0][j]==INDI) {icfq[0][j]=INDI;continue;}
+    for (k = 0; k <= 20; ++k) effnu[k] = 0;
+    for (k = 1; k <= 20; ++k) {
+      for (i = 1; i <= nal; ++i) {
+        mark[i] = 0;
+        ele = alignment[i][j];
+        if (ele == k) mark[i] = 1;
+        ele = alignment[i][j] - 25;
+        if (ele == k) mark[i] = 1;
+      }
+      effnu[k] = effective_number_nogaps(alignment, mark, nal, 1, alilen);
+      effnu[0] += effnu[k];
+    }
+    // if(effnu[0]==0){fprintf(stderr,"all counts are zeros at the column %d:
+    // FATAL\n",j);exit(0);}
+    for (k = 0; k <= 20; k++) effcount[j][k] = effnu[k];
+    if (effnu[0] > 0)
+      for (k = 1; k <= 20; k++) icfq[j][k] = effnu[k] / effnu[0];
+  }
+
+  /* testing
+  for(i=1;i<=alilen;i++) {
+    for(j=1;j<=20;j++) { fprintf(stdout, "%3.2f ", effcount[i][j]); }
+    fprintf(stdout, "\n");
+  }*/
+
+  delete[] mark;
+  delete[] effnu;
+}
+
+double *consv::variance_conv(double **f, int **ali, double **oaf,
+                             double *vconv) {
+  int i, j;
+
+  for (i = 1; i <= alilen; i++) vconv[i] = 0;
+  for (j = 1; j <= alilen; j++) {
+    // if(f[0][j]==INDI) {vconv[j]=INDI;continue;}
+    for (i = 1; i <= 20; i++) {
+      vconv[j] += (f[i][j] - oaf[i][j]) * (f[i][j] - oaf[i][j]);
+    }
+    vconv[j] = sqrt(vconv[j]);
+  }
+}
+
+double *consv::pairs_conv(double **f, int **ali, int **matrix1, int indx,
+                          double *pconv) {
+  int i, j, k;
+  double **matrix2, **matrix3;
+  FILE *fp;
+
+  matrix2 = dmatrix(25, 25);
+  matrix3 = dmatrix(25, 25);
+  for (i = 0; i <= 25; i++) {
+    for (j = 0; j <= 25; j++) {
+      matrix2[i][j] = 0;
+      matrix3[i][j] = 0;
+    }
+  }
+
+  /* get the matrices */
+  for (i = 1; i <= 24; i++) {
+    if (matrix1[i][i] == 0) {
+      fprintf(stderr, "diagonal elements zero: %d\n", i);
+      exit(0);
+    }
+    for (j = 1; j <= 24; j++) {
+      matrix2[i][j] =
+          matrix1[i][j] * 1.0 / sqrt((double)(matrix1[i][i] * matrix1[j][j]));
+      matrix3[i][j] = matrix1[i][j] * 2 - 0.5 * (matrix1[i][i] + matrix1[j][j]);
+    }
+  }
+
+  for (j = 1; j <= alilen; j++) {
+    // if(f[0][j]==INDI){pconv[j]=INDI; continue;}
+    pconv[j] = 0;
+    for (i = 1; i <= 20; i++) {
+      for (k = 1; k <= 20; k++) {
+        if (indx == 0) {
+          pconv[j] += (f[k][j] * f[i][j]) * matrix1[i][k];
+          continue;
+        }
+        if (indx == 1) {
+          pconv[j] += (f[k][j] * f[i][j]) * matrix2[i][k];
+          continue;
+        }
+        if (indx == 2) {
+          pconv[j] += (f[k][j] * f[i][j]) * matrix3[i][k];
+          continue;
+        }
+        fprintf(stderr, "not good index number of matrix\n");
+        exit(0);
+      }
+    }
+  }
 }
 //
 //
-//		
-
-
-
-
-
+//
 
 //#define NUM_METHOD 9
 //#define MAX_WINDOW 20
@@ -696,50 +711,51 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //#define INDI -100
 //#define MAXSEQNUM 10000
 
-//char *digit="0123456789";
-//void nrerror(char error_text[]);
-//char *cvector(long nl, long nh);
-//int *ivector(long nl, long nh);
-//double *dvector(long nl, long nh);
-//int **imatrix(long nrl, long nrh, long ncl, long nch);
-//double **dmatrix(long nrl, long nrh, long ncl, long nch);
-//double ***d3tensor(long nrl,long nrh,long ncl,long nch,long ndl,long ndh);
+// char *digit="0123456789";
+// void nrerror(char error_text[]);
+// char *cvector(long nl, long nh);
+// int *ivector(long nl, long nh);
+// double *dvector(long nl, long nh);
+// int **imatrix(long nrl, long nrh, long ncl, long nch);
+// double **dmatrix(long nrl, long nrh, long ncl, long nch);
+// double ***d3tensor(long nrl,long nrh,long ncl,long nch,long ndl,long ndh);
 //
-//int a3let2num(char *let);
-//int am2num_c(int c);
-//int am2num(int c);
-//int am2numBZX(int c);
+// int a3let2num(char *let);
+// int am2num_c(int c);
+// int am2num(int c);
+// int am2numBZX(int c);
 //
-//static void *mymalloc(int size);
-//char *strsave(char *str);
-//char *strnsave(char *str, int l);
-//static char **incbuf(int n, char **was);
-//static int *incibuf(int n, int *was);
+// static void *mymalloc(int size);
+// char *strsave(char *str);
+// char *strnsave(char *str, int l);
+// static char **incbuf(int n, char **was);
+// static int *incibuf(int n, int *was);
 //
-//void err_readali(int err_num);
-//void readali(char *filename);
-//static void printali(char *argt, int chunk, int n, int len, char **name, char **seq, int *start,int *csv);
-//int **ali_char2int(char **aseq,int start_num, int start_seq);
-//int **read_alignment2int(char *filename,int start_num,int start_seq);
+// void err_readali(int err_num);
+// void readali(char *filename);
+// static void printali(char *argt, int chunk, int n, int len, char **name, char
+// **seq, int *start,int *csv); int **ali_char2int(char **aseq,int start_num, int
+// start_seq); int **read_alignment2int(char *filename,int start_num,int
+// start_seq);
 //
-//void counter(int b);
-//double effective_number(int **ali, int *marks, int n, int start, int end);
-//double effective_number_nogaps(int **ali, int *marks, int n, int start, int end);
-//double effective_number_nogaps_expos(int **ali, int *marks, int n, int start, int end, int pos);
+// void counter(int b);
+// double effective_number(int **ali, int *marks, int n, int start, int end);
+// double effective_number_nogaps(int **ali, int *marks, int n, int start, int
+// end); double effective_number_nogaps_expos(int **ali, int *marks, int n, int
+// start, int end, int pos);
 //
-//void **freq(int **ali,double **f,int *num_gaps,int *effindiarr,double gap_threshold);
-//double *overall_freq(int **ali, int startp, int endp, int *mark);
-//double *overall_freq_wgt(int **ali,int startp,int endp,int *mark,double *wgt);
-//double *h_weight(int **ali, int ip);
-//double **h_freq(int **ali, double **f, double **hfr);
-//double *entro_conv(double **f, int **ali, double *econv);
-//double **ic_freq(int **ali, double **f, double **icf);
-//double *variance_conv(double **f, int **ali, double **oaf, double *vconv);
-//double *pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pconv);
+// void **freq(int **ali,double **f,int *num_gaps,int *effindiarr,double
+// gap_threshold); double *overall_freq(int **ali, int startp, int endp, int
+// *mark); double *overall_freq_wgt(int **ali,int startp,int endp,int
+// *mark,double *wgt); double *h_weight(int **ali, int ip); double **h_freq(int
+// **ali, double **f, double **hfr); double *entro_conv(double **f, int **ali,
+// double *econv); double **ic_freq(int **ali, double **f, double **icf); double
+// *variance_conv(double **f, int **ali, double **oaf, double *vconv); double
+// *pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pconv);
 //
 //
 //
-//typedef struct _conv_info{
+// typedef struct _conv_info{
 //        double **fq, **hfq, **icfq;
 //        char *alifilename;
 //        int alignlen;
@@ -752,12 +768,12 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	double *avc,*csi;
 //        double ***conv;
 //            } conv_info;
-//char **aname, **aseq;
-//int nal, alilen, *astart, *alen;
-//int **alignment;
-//double **u_oaf,**h_oaf;
-//char *am="-WFYMLIVACGPTSNQDEHRKBZX*.wfymlivacgptsnqdehrkbzx";
-//char *am3[]={
+// char **aname, **aseq;
+// int nal, alilen, *astart, *alen;
+// int **alignment;
+// double **u_oaf,**h_oaf;
+// char *am="-WFYMLIVACGPTSNQDEHRKBZX*.wfymlivacgptsnqdehrkbzx";
+// char *am3[]={
 //"---",
 //"TRP",
 //"PHE",
@@ -786,13 +802,15 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //"...",
 //};
 //
-//double *nmlconv(double *conv, conv_info cvf, int wn,int mi);
-//int  **read_aa_imatrix(FILE *fmat);
-//int  **identity_imat(long n);
-//void argument();
-//void print_parameters(FILE *outfile,char *argi,char *argo,int nt,char *argt,int argb,char *args,int argm,int argf,int argc, int argw, char *argn,char *arga, char *arge, double argg, char *argp,char *argd);
+// double *nmlconv(double *conv, conv_info cvf, int wn,int mi);
+// int  **read_aa_imatrix(FILE *fmat);
+// int  **identity_imat(long n);
+// void argument();
+// void print_parameters(FILE *outfile,char *argi,char *argo,int nt,char
+// *argt,int argb,char *args,int argm,int argf,int argc, int argw, char
+// *argn,char *arga, char *arge, double argg, char *argp,char *argd);
 //
-//main(int argc, char *argv[])
+// main(int argc, char *argv[])
 //{
 //	FILE *fout, *fpdb,*matrixfile,*fpdbout,*fp,*ft;
 //	conv_info convinfo;
@@ -806,7 +824,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	double *consv;
 //	double **consvall;
 //	int markali[MAXSEQNUM];
-//	char ARG_I[50],ARG_O[50],ARG_T[50],ARG_P[50],ARG_D[50],ARG_S[50],ARG_N[50],ARG_A[50],ARG_E[50];
+//	char
+//ARG_I[50],ARG_O[50],ARG_T[50],ARG_P[50],ARG_D[50],ARG_S[50],ARG_N[50],ARG_A[50],ARG_E[50];
 //	int ARG_F=2,ARG_C=0,ARG_W=1,ARG_M=0,ARG_B=60;
 //	double ARG_G=0.5;
 //	double max_index, mini_index;
@@ -827,36 +846,42 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	    if(strcmp(argv[i],"-n")==0) {strcpy(ARG_N,argv[i+1]);i++;continue;}
 //	    if(strcmp(argv[i],"-a")==0) {strcpy(ARG_A,argv[i+1]);i++;continue;}
 //	    if(strcmp(argv[i],"-e")==0) {strcpy(ARG_E,argv[i+1]);i++;continue;}
-//	    if(strcmp(argv[i],"-f")==0) {sscanf(argv[i+1],"%d",&ARG_F);i++;continue;}
-//	    if(strcmp(argv[i],"-b")==0) {sscanf(argv[i+1],"%d",&ARG_B);i++;continue;}
-//	    if(strcmp(argv[i],"-c")==0) {sscanf(argv[i+1],"%d",&ARG_C);i++;continue;}
-//	    if(strcmp(argv[i],"-w")==0) {sscanf(argv[i+1],"%d",&ARG_W);i++;continue;}
-//	    if(strcmp(argv[i],"-m")==0) {sscanf(argv[i+1],"%d",&ARG_M);i++;continue;}
-//	    if(strcmp(argv[i],"-g")==0) {sscanf(argv[i+1],"%lf",&ARG_G);i++;continue;}
+//	    if(strcmp(argv[i],"-f")==0)
+//{sscanf(argv[i+1],"%d",&ARG_F);i++;continue;} 	    if(strcmp(argv[i],"-b")==0)
+//{sscanf(argv[i+1],"%d",&ARG_B);i++;continue;} 	    if(strcmp(argv[i],"-c")==0)
+//{sscanf(argv[i+1],"%d",&ARG_C);i++;continue;} 	    if(strcmp(argv[i],"-w")==0)
+//{sscanf(argv[i+1],"%d",&ARG_W);i++;continue;} 	    if(strcmp(argv[i],"-m")==0)
+//{sscanf(argv[i+1],"%d",&ARG_M);i++;continue;} 	    if(strcmp(argv[i],"-g")==0)
+//{sscanf(argv[i+1],"%lf",&ARG_G);i++;continue;}
 //				}
-//	
-//        if((ARG_F>2)||(ARG_F<0)){fprintf(stderr,"frequency calculation method(-f): \n0, unweighted; 1, Henikoff weight; 2, independent count\n");
+//
+//        if((ARG_F>2)||(ARG_F<0)){fprintf(stderr,"frequency calculation
+//        method(-f): \n0, unweighted; 1, Henikoff weight; 2, independent
+//        count\n");
 //                    exit(0);}
-//        if((ARG_C>2)||(ARG_C<0)){fprintf(stderr,"conservation calculation strategy(-c):\n0,entropy;1,variance;2,sumofpairs\n");
+//        if((ARG_C>2)||(ARG_C<0)){fprintf(stderr,"conservation calculation
+//        strategy(-c):\n0,entropy;1,variance;2,sumofpairs\n");
 //                    exit(0);}
-//        if((ARG_M>2)||(ARG_M<0)){fprintf(stderr,"matrix transform(-m):\n0, no transform;1,normalization;2,adjustment\n");
+//        if((ARG_M>2)||(ARG_M<0)){fprintf(stderr,"matrix transform(-m):\n0, no
+//        transform;1,normalization;2,adjustment\n");
 //                    exit(0);}
-//	if((ARG_G>1.0)||(ARG_G<=0)){fprintf(stderr,"gap percentage(-g) to suppress calculation must be no more than 1 and more than 0 \n");
-//		    exit(0);}
-//	
+//	if((ARG_G>1.0)||(ARG_G<=0)){fprintf(stderr,"gap percentage(-g) to
+//suppress calculation must be no more than 1 and more than 0 \n"); 		    exit(0);}
+//
 //	/* smatrix:  identity matrix if reading from input failed */
 //        if((matrixfile=fopen(ARG_S,"r"))==NULL){
-//                if(strlen(ARG_S)!=0)fprintf(stderr, "Warning: not readable  matrixfile: %s; default: identity matrix\n",ARG_S);
-//                smatrix = identity_imat(24);   }
+//                if(strlen(ARG_S)!=0)fprintf(stderr, "Warning: not readable
+//                matrixfile: %s; default: identity matrix\n",ARG_S); smatrix =
+//                identity_imat(24);   }
 //        else {smatrix=read_aa_imatrix(matrixfile);
 //	      /*for(i=1;i<=20;i++){
 //		for(j=1;j<=20;j++){
 //			fprintf(stderr, "%d ",smatrix[i][j]);
-//			
+//
 //				  }
 //		fprintf(stderr,"\n");
 //				}*/
-//			
+//
 //	      fclose(matrixfile); }
 //
 //	/* read alignment */
@@ -866,15 +891,15 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //		alignment = alignment + 1;
 //		NAL = nal;
 //		nal = nal -1;
-//	} 
+//	}
 //	else {
 //		alignment=read_alignment2int(ARG_I,1,1);
 //		NAL = nal;
 //	}
 //
 //	if(nal>=MAXSEQNUM) {
-//	    fprintf(stderr, "Error: Number of sequences exceeds %d\n", MAXSEQNUM);
-//	    exit(0);
+//	    fprintf(stderr, "Error: Number of sequences exceeds %d\n",
+//MAXSEQNUM); 	    exit(0);
 //	}
 //	if(alignment==NULL){
 //		fprintf(stderr, "alignment file not readable\n");
@@ -917,7 +942,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //
 //
 //	/* get the conservation indeces for method[1..NUM_METHOD] */
-//	entro_conv(convinfo.fq,alignment,convinfo.conv[1][1]);	
+//	entro_conv(convinfo.fq,alignment,convinfo.conv[1][1]);
 //	entro_conv(convinfo.hfq,alignment,convinfo.conv[1][2]);
 //	entro_conv(convinfo.icfq,alignment,convinfo.conv[1][3]);
 //	variance_conv(convinfo.fq,alignment,u_oaf,convinfo.conv[1][4]);
@@ -942,7 +967,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //        ptoc1=convinfo.eff_indi_arr;
 //        for(i=1;i<=NUM_METHOD;i++){
 //		j=ARG_W;
-//                if(j>*ptoc1){fprintf(stderr,"window size too big!\nARG_W:%d;   ptoc1:%d\n",j,*ptoc1);exit(0);}
+//                if(j>*ptoc1){fprintf(stderr,"window size too big!\nARG_W:%d;
+//                ptoc1:%d\n",j,*ptoc1);exit(0);}
 //                for(k=(j+1)/2;k<=convinfo.eff_indi_arr[0]-j/2;k++){
 //                        sumofconv=0;
 //                        for(l=k-(j-1)/2;l<=k+j/2;l++){
@@ -995,35 +1021,36 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //                fclose(ft);
 //                if(ARG_B){;}
 //                else{ARG_B=60;}
-//                /*printali(ARG_T, ARG_B, nal, alilen, aname, aseq, astart, csv_index);*/
-//		printali(ARG_T, ARG_B, NAL, alilen, aname, aseq, astart, csv_index);
+//                /*printali(ARG_T, ARG_B, nal, alilen, aname, aseq, astart,
+//                csv_index);*/
+//		printali(ARG_T, ARG_B, NAL, alilen, aname, aseq, astart,
+//csv_index);
 //            }
 //
 //	/* change b-factor to conservation index */
-//if((fpdb=fopen(ARG_P,"r"))==NULL){
+// if((fpdb=fopen(ARG_P,"r"))==NULL){
 //	if(strlen(ARG_P)!=0){fprintf(stderr,"please give the right pdb file\n");
 //				}
 //				 }
-//else{
+// else{
 //        if((fpdbout=fopen(ARG_D,"w"))==NULL){
-//                if(strlen(ARG_D)!=0){fprintf(stderr,"output pdb file using default name\n");}
-//                fpdbout=stdout;}
+//                if(strlen(ARG_D)!=0){fprintf(stderr,"output pdb file using
+//                default name\n");} fpdbout=stdout;}
 //
 //	convstr=cvector(0,200);
 //	while(fgets(fstr,MAXSTR,fpdb)!=NULL){
 //		if(strncmp(fstr,"ATOM   ",7)==0)break;
 //					    }
-//	if(feof(fpdb)){fprintf(stderr,"end of the file reached: not a good pdb file");exit(0);}
+//	if(feof(fpdb)){fprintf(stderr,"end of the file reached: not a good pdb
+//file");exit(0);}
 //
 //	ptoc=fstr+23;
 //	j=atoi(ptoc);i=1;
 //	for(i=1;ALIGNMENT[1][i]==0;i++);
 //	ptoc=fstr+17;
 //	if(strncmp(ptoc,am3[ALIGNMENT[1][i]],3)!=0){
-//		fprintf(stderr,"The first sequence does not match the pdb file\n");
-//		exit(0);			}
-//	while(!feof(fpdb)){
-//		ptoc=fstr+66;
+//		fprintf(stderr,"The first sequence does not match the pdb
+//file\n"); 		exit(0);			} 	while(!feof(fpdb)){ 		ptoc=fstr+66;
 //		strcpy(tmpstr, ptoc);
 //		*(fstr+61)='\0';
 //		/*if(strncmp(fstr,"HETATM ",7)==0){
@@ -1055,13 +1082,12 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //			if(i>alilen) {fprintf(fpdbout,"END\n");break;}
 //			if(strncmp(ptoc,am3[ALIGNMENT[1][i]],3)!=0){
 //			   if(strncmp(fstr,"HETATM ",7)!=0){
-//				fprintf(stderr,"The first sequence does not match the pdb file\n");
-//				fprintf(stderr,"%s %s", am3[ALIGNMENT[1][i]], ptoc);
-//				exit(0);
+//				fprintf(stderr,"The first sequence does not match the
+//pdb file\n"); 				fprintf(stderr,"%s %s", am3[ALIGNMENT[1][i]], ptoc); 				exit(0);
 //							   }
 //								  }
 //							}
-//			   }	
+//			   }
 //	fclose(fpdb);fclose(fpdbout);
 //	}
 //
@@ -1075,7 +1101,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //                if(convinfo.conv[ARG_W][j][i]==INDI)
 //                        consvall[j][i]=0-convinfo.csi[j]+convinfo.avc[j];
 //                else consvall[j][i]=convinfo.conv[ARG_W][j][i];
-//            }                              
+//            }
 //           }
 //	}
 //
@@ -1089,8 +1115,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //		fprintf(fout,"     *\n");
 //	    } else fprintf(fout, "\n");
 //        }
-//        fprintf(fout,"* gap fraction no less than %5.2f; conservation set to M-S\n", ARG_G);
-//        fprintf(fout,"  M: mean;  S: standard deviation\n");
+//        fprintf(fout,"* gap fraction no less than %5.2f; conservation set to
+//        M-S\n", ARG_G); fprintf(fout,"  M: mean;  S: standard deviation\n");
 //	print_parameters(fout,ARG_I,ARG_O,nt,ARG_T,ARG_B,ARG_S,ARG_M,ARG_F,ARG_C,ARG_W,ARG_N,ARG_A,ARG_E,ARG_G,ARG_P,ARG_D);
 //	fclose(fout);
 //
@@ -1099,27 +1125,33 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //        if((fout=fopen(ARG_O,"w"))==NULL){
 //        for(i=1;i<=convinfo.alignlen;i++){
 //                if(convinfo.conv[ARG_W][ARG_C*3+ARG_F+1][i]==INDI){
-//                fprintf(stdout, "%-5d %c      %6.3f    *\n", i,am[alignment[1][i]], consv[i]);
+//                fprintf(stdout, "%-5d %c      %6.3f    *\n",
+//                i,am[alignment[1][i]], consv[i]);
 //                                                                  }
 //                else{
-//                fprintf(stdout, "%-5d %c      %6.3f\n", i,am[alignment[1][i]], consv[i]);
+//                fprintf(stdout, "%-5d %c      %6.3f\n", i,am[alignment[1][i]],
+//                consv[i]);
 //                    }
 //                                         }
 //
-//        fprintf(stdout,"* gap fraction no less than %5.2f; conservation set to M-S\n", ARG_G);
+//        fprintf(stdout,"* gap fraction no less than %5.2f; conservation set to
+//        M-S\n", ARG_G);
 //	fprintf(stdout,"  M: mean;  S: standard deviation\n");
 //        print_parameters(stdout,ARG_I,ARG_O,nt,ARG_T,ARG_B,ARG_S,ARG_M,ARG_F,ARG_C,ARG_W,ARG_N,ARG_A,ARG_E,ARG_G,ARG_P,ARG_D);
 //                                         }
 //        else{
 //        for(i=1;i<=convinfo.alignlen;i++){
 //                if(convinfo.conv[ARG_W][ARG_C*3+ARG_F+1][i]==INDI){
-//                fprintf(fout, "%-5d %c      %6.3f *\n", i,am[alignment[1][i]], consv[i]);
+//                fprintf(fout, "%-5d %c      %6.3f *\n", i,am[alignment[1][i]],
+//                consv[i]);
 //                                                                  }
 //                else{
-//                fprintf(fout, "%-5d %c      %6.3f\n", i,am[alignment[1][i]], consv[i]);
+//                fprintf(fout, "%-5d %c      %6.3f\n", i,am[alignment[1][i]],
+//                consv[i]);
 //                    }
 //                                         }
-//        fprintf(fout,"* gap fraction no less than %5.2f; conservation set to M-S\n", ARG_G);
+//        fprintf(fout,"* gap fraction no less than %5.2f; conservation set to
+//        M-S\n", ARG_G);
 //	fprintf(fout,"  M: mean;  S: standard deviation\n");
 //        print_parameters(fout,ARG_I,ARG_O,nt,ARG_T,ARG_B,ARG_S,ARG_M,ARG_F,ARG_C,ARG_W,ARG_N,ARG_A,ARG_E,ARG_G,ARG_P,ARG_D);
 //        fclose(fout);
@@ -1128,9 +1160,9 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	/*print_parameters(stderr,ARG_I,ARG_O,nt,ARG_T,ARG_B,ARG_S,ARG_M,ARG_F,ARG_C,ARG_W,ARG_N,ARG_G,ARG_P,ARG_D);*/
 //	exit(0);
 //
-//}			
+//}
 //
-//double *nmlconv(double *conv, conv_info cvf, int wn,int mi)
+// double *nmlconv(double *conv, conv_info cvf, int wn,int mi)
 //{
 //        double mean=0,vc=0;
 //        int i,cps=0;
@@ -1160,51 +1192,49 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //                              }
 //}
 //
-//int  **read_aa_imatrix(FILE *fmat){
+// int  **read_aa_imatrix(FILE *fmat){
 //
 ///* read matrix from file *fmat */
 //
-//int i,ri,rj,c,flag,j,t;
-//int col[31],row[31];
-//char stri[11];
-//int **mat;
+// int i,ri,rj,c,flag,j,t;
+// int col[31],row[31];
+// char stri[11];
+// int **mat;
 //
-//mat=imatrix(0,25,0,25);
-//for(i=0;i<=25;++i)for(j=0;j<=25;++j)mat[i][j]=0;
+// mat=imatrix(0,25,0,25);
+// for(i=0;i<=25;++i)for(j=0;j<=25;++j)mat[i][j]=0;
 //
-//i=0;
-//ri=0;
-//rj=0;
+// i=0;
+// ri=0;
+// rj=0;
 //
-//flag=0;
+// flag=0;
 //
 //
-//while( (c=getc(fmat)) != EOF){
+// while( (c=getc(fmat)) != EOF){
 //
-//if(flag==0 && c=='#'){flag=-1;continue;}
-//else if(flag==-1 && c=='\n'){flag=0;continue;}
-//else if(flag==-1){continue;}
-//else if(flag==0 && c==' '){flag=1;continue;}
-//else if(flag==1 && c=='\n'){flag=0;continue;}
-//else if(flag==1 && c==' '){continue;}
-//else if(flag==1){
+// if(flag==0 && c=='#'){flag=-1;continue;}
+// else if(flag==-1 && c=='\n'){flag=0;continue;}
+// else if(flag==-1){continue;}
+// else if(flag==0 && c==' '){flag=1;continue;}
+// else if(flag==1 && c=='\n'){flag=0;continue;}
+// else if(flag==1 && c==' '){continue;}
+// else if(flag==1){
 //                ++i;
-//                if(i>=25){nrerror("matrix has more than 25 columns: FATAL");exit(0);}
-//                col[i]=am2numBZX(c);
-//                continue;
+//                if(i>=25){nrerror("matrix has more than 25 columns:
+//                FATAL");exit(0);} col[i]=am2numBZX(c); continue;
 //                }
-//else if(flag==0 && c!=' ' && c!='#'){
+// else if(flag==0 && c!=' ' && c!='#'){
 //                ri=0;
 //                ++rj;
-//                if(rj>=25){nrerror("matrix has more than 25 rows: FATAL");exit(0);}
-//                row[rj]=am2numBZX(c);
-//                flag=2;
-//                continue;
+//                if(rj>=25){nrerror("matrix has more than 25 rows:
+//                FATAL");exit(0);} row[rj]=am2numBZX(c); flag=2; continue;
 //                }
-//else if (flag==2 && c==' '){for(i=0;i<=10;++i){stri[i]=' ';}j=0;continue;}
-//else if (flag==2 && c=='\n'){flag=0;continue;}
-//else if (flag==2){flag=3;stri[++j]=c;if(j>10){nrerror("string too long:FATAL");exit(0);}continue;}
-//else if (flag==3 && c==' ' || flag==3 && c=='\n'){
+// else if (flag==2 && c==' '){for(i=0;i<=10;++i){stri[i]=' ';}j=0;continue;}
+// else if (flag==2 && c=='\n'){flag=0;continue;}
+// else if (flag==2){flag=3;stri[++j]=c;if(j>10){nrerror("string too
+// long:FATAL");exit(0);}continue;} else if (flag==3 && c==' ' || flag==3 &&
+// c=='\n'){
 //                        j=0;
 //                        ++ri;
 //                        t=atoi(stri);
@@ -1212,125 +1242,124 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //                        if (c=='\n')flag=0;else flag=2;
 //                        continue;
 //                        }
-//else if (flag==3){stri[++j]=c;continue;}
+// else if (flag==3){stri[++j]=c;continue;}
 //
 //}
 //
-//return mat;
+// return mat;
 //}
 //
-//int    **identity_imat(long n){
+// int    **identity_imat(long n){
 ///* allocates square integer identity matrix of length n+1: m[0.n][0.n] */
 //
-//int i,j;
-//int **m;
-//m=imatrix(0,n,0,n);
-//for(i=0;i<=n;++i)for(j=0;j<=n;++j){if(i==j)m[i][j]=1;else m[i][j]=0;}
-//return m;
+// int i,j;
+// int **m;
+// m=imatrix(0,n,0,n);
+// for(i=0;i<=n;++i)for(j=0;j<=n;++j){if(i==j)m[i][j]=1;else m[i][j]=0;}
+// return m;
 //}
 //
-//void argument()
+// void argument()
 //{
-//fprintf(stderr,"      al2co   arguments:\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -i    Input alignment file [File in]\n");
-//fprintf(stderr,"        Format: ClustalW or simple alignment format\n");
-//fprintf(stderr,"        The title (first line) should begin with \"CLUSTAL W\", or\n");
-//fprintf(stderr,"        the title line should be deleted.\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -o    Output file with conservation index for each position in the\n");
-//fprintf(stderr,"        alignment [File out] Optional\n");
-//fprintf(stderr,"        Default = STDOUT\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -t    Output file with conservation index mapped to the alignment\n");
-//fprintf(stderr,"        [File out] Optional\n");
-//fprintf(stderr,"        Conservation indices are linearly rescaled to be from 0\n");
-//fprintf(stderr,"        to 9.99. C'=9.99*(C-MIN)/(MAX-MIN), where C and C' are the\n");
-//fprintf(stderr,"        the indices before and after rescaling respectively, MAX and\n");
-//fprintf(stderr,"        MIN are the highest index and lowest index before rescaling\n");
-//fprintf(stderr,"        respectively. The integer part of each rescaled index is\n");
-//fprintf(stderr,"        written out along with the sequence alignment.\n");
-//fprintf(stderr,"        Default = no output\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -b    Block size of the output alignment file with conservation\n");
-//fprintf(stderr,"        [Integer] Optional\n");
-//fprintf(stderr,"        Default = 60\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -s    Input file with the scoring matrix [File in] Optional\n");
-//fprintf(stderr,"        Format: NCBI\n");
-//fprintf(stderr,"        Notice: Scoring matrix is only used for sum-of-pairs measure\n");
-//fprintf(stderr,"        with option -c  2.\n");
-//fprintf(stderr,"        Default = identity matrix\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -m    Scoring matrix transformation [Integer] Optional\n");
-//fprintf(stderr,"        Options:\n");
-//fprintf(stderr,"        0=no transformation,\n");
-//fprintf(stderr,"        1=normalization S'(a,b)=S(a,b)/sqrt[S(a,a)*S(b,b)],\n");
-//fprintf(stderr,"        2=adjustment S\"(a,b)=2*S(a,b)-(S(a,a)+S(b,b))/2\n");
-//fprintf(stderr,"        Default = 0\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -f    Weighting scheme for amino acid frequency estimation [Integer] Optional\n");
-//fprintf(stderr,"        Options:\n");
-//fprintf(stderr,"        0=unweighted,\n");
-//fprintf(stderr,"        1=weighted by the modified method of Henikoff & Henikoff (2,3),\n");
-//fprintf(stderr,"        2=independent-count based (1)\n");
-//fprintf(stderr,"        Default = 2\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -c    Conservation calculation method [Integer] Optional\n");
-//fprintf(stderr,"        Options:\n");
-//fprintf(stderr,"        0=entropy-based    C(i)=sum_{a=1}^{20}f_a(i)*ln[f_a(i)], where f_a(i)\n");
-//fprintf(stderr,"          is the frequency of amino acid a at position i,\n");
-//fprintf(stderr,"        1=variance-based   C(i)=sqrt[sum_{a=1}^{20}(f_a(i)-f_a)^2], where f_a\n");
-//fprintf(stderr,"          is the overall frequency of amino acid a,\n");
-//fprintf(stderr,"        2=sum-of-pairs measure   C(i)=sum_{a=1}^{20}sum_{b=1}^{20}f_a(i)*f_b(i)*S_{ab},\n");
-//fprintf(stderr,"          where S_{ab} is the element of a scoring matrix for amino acids a and b\n");
-//fprintf(stderr,"        Default = 0\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -w    Window size used for averaging [Integer] Optional\n");
-//fprintf(stderr,"        Default = 1\n");
-//fprintf(stderr,"        Recommended value for motif analysis: 3\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -n    Normalization option [T/F] Optional\n");
-//fprintf(stderr,"        Subtract the mean from each conservation index and divide by the\n");
-//fprintf(stderr,"        standard deviation.\n");
-//fprintf(stderr,"        Default = T\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -a    All methods option [T/F] Optional\n");
-//fprintf(stderr,"        If set to true, the results of all 9 methods will be output.\n");
-//fprintf(stderr,"        1. unweighted entropy measure; 2. Henikoff entropy measure;\n");
-//fprintf(stderr,"        3. independent count entropy measure;\n");
-//fprintf(stderr,"        4. unweighted variance measure; 5. Henikoff variance measure;\n");
-//fprintf(stderr,"        6. independent count variance measure;\n");
-//fprintf(stderr,"        7. unweighted matrix-based sum-of-pairs measure;\n");
-//fprintf(stderr,"        8. Henikoff matrix-based sum-of-pairs measure;\n");
-//fprintf(stderr,"        9. independent count matrix-based sum-of-pairs measure;\n");
-//fprintf(stderr,"        Default = F\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -e    Excluding the first sequence from calculation [T/F] Optional\n");
-//fprintf(stderr,"        If set to true, the first sequence in the alignment will not\n");
-//fprintf(stderr,"	be included in the conservation calculation.\n");
-//fprintf(stderr,"        Default = F\n\n");
-//fprintf(stderr,"  -g    Gap fraction to suppress conservation calculation [Real] Optional\n");
-//fprintf(stderr,"        The value should be more than 0 and no more than 1. Conservation\n");
-//fprintf(stderr,"        indices are calculated only for positions with gap fraction less\n");
-//fprintf(stderr,"        than the specified value. Otherwise, conservation indices will\n");
-//fprintf(stderr,"        be set to M-S, where M is the mean conservation value and S is\n");
-//fprintf(stderr,"        the standard deviation.\n");
-//fprintf(stderr,"        Default = 0.5\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -p    Input pdb file [File in] Optional\n");
-//fprintf(stderr,"        The sequence in the pdb file should match exactly the first sequence of\n");
-//fprintf(stderr,"        the alignment.\n");
-//fprintf(stderr,"\n");
-//fprintf(stderr,"  -d    Output pdb file [File Out] Optional\n");
-//fprintf(stderr,"        The B-factors are replaced by the conservation indices.\n");
-//fprintf(stderr,"        Default = STDOUT\n");
-//fprintf(stderr,"\n");
+// fprintf(stderr,"      al2co   arguments:\n");
+// fprintf(stderr,"\n");
+// fprintf(stderr,"  -i    Input alignment file [File in]\n");
+// fprintf(stderr,"        Format: ClustalW or simple alignment format\n");
+// fprintf(stderr,"        The title (first line) should begin with \"CLUSTAL
+// W\", or\n"); fprintf(stderr,"        the title line should be deleted.\n");
+// fprintf(stderr,"\n");
+// fprintf(stderr,"  -o    Output file with conservation index for each position
+// in the\n"); fprintf(stderr,"        alignment [File out] Optional\n");
+// fprintf(stderr,"        Default = STDOUT\n");
+// fprintf(stderr,"\n");
+// fprintf(stderr,"  -t    Output file with conservation index mapped to the
+// alignment\n"); fprintf(stderr,"        [File out] Optional\n");
+// fprintf(stderr,"        Conservation indices are linearly rescaled to be from
+// 0\n"); fprintf(stderr,"        to 9.99. C'=9.99*(C-MIN)/(MAX-MIN), where C and
+// C' are the\n"); fprintf(stderr,"        the indices before and after rescaling
+// respectively, MAX and\n"); fprintf(stderr,"        MIN are the highest index
+// and lowest index before rescaling\n"); fprintf(stderr,"        respectively.
+// The integer part of each rescaled index is\n"); fprintf(stderr," written out
+// along with the sequence alignment.\n"); fprintf(stderr,"        Default = no
+// output\n"); fprintf(stderr,"\n"); fprintf(stderr,"  -b    Block size of the
+// output alignment file with conservation\n"); fprintf(stderr,"        [Integer]
+// Optional\n"); fprintf(stderr,"        Default = 60\n"); fprintf(stderr,"\n");
+// fprintf(stderr,"  -s    Input file with the scoring matrix [File in]
+// Optional\n"); fprintf(stderr,"        Format: NCBI\n"); fprintf(stderr,"
+// Notice: Scoring matrix is only used for sum-of-pairs measure\n");
+// fprintf(stderr,"        with option -c  2.\n");
+// fprintf(stderr,"        Default = identity matrix\n");
+// fprintf(stderr,"\n");
+// fprintf(stderr,"  -m    Scoring matrix transformation [Integer] Optional\n");
+// fprintf(stderr,"        Options:\n");
+// fprintf(stderr,"        0=no transformation,\n");
+// fprintf(stderr,"        1=normalization
+// S'(a,b)=S(a,b)/sqrt[S(a,a)*S(b,b)],\n"); fprintf(stderr,"        2=adjustment
+// S\"(a,b)=2*S(a,b)-(S(a,a)+S(b,b))/2\n"); fprintf(stderr,"        Default =
+// 0\n"); fprintf(stderr,"\n"); fprintf(stderr,"  -f    Weighting scheme for
+// amino acid frequency estimation [Integer] Optional\n"); fprintf(stderr,"
+// Options:\n"); fprintf(stderr,"        0=unweighted,\n"); fprintf(stderr,"
+// 1=weighted by the modified method of Henikoff & Henikoff (2,3),\n");
+// fprintf(stderr,"        2=independent-count based (1)\n");
+// fprintf(stderr,"        Default = 2\n");
+// fprintf(stderr,"\n");
+// fprintf(stderr,"  -c    Conservation calculation method [Integer]
+// Optional\n"); fprintf(stderr,"        Options:\n"); fprintf(stderr,"
+// 0=entropy-based    C(i)=sum_{a=1}^{20}f_a(i)*ln[f_a(i)], where f_a(i)\n");
+// fprintf(stderr,"          is the frequency of amino acid a at position
+// i,\n"); fprintf(stderr,"        1=variance-based
+// C(i)=sqrt[sum_{a=1}^{20}(f_a(i)-f_a)^2], where f_a\n"); fprintf(stderr," is
+// the overall frequency of amino acid a,\n"); fprintf(stderr," 2=sum-of-pairs
+// measure   C(i)=sum_{a=1}^{20}sum_{b=1}^{20}f_a(i)*f_b(i)*S_{ab},\n");
+// fprintf(stderr,"          where S_{ab} is the element of a scoring matrix for
+// amino acids a and b\n"); fprintf(stderr,"        Default = 0\n");
+// fprintf(stderr,"\n");
+// fprintf(stderr,"  -w    Window size used for averaging [Integer]
+// Optional\n"); fprintf(stderr,"        Default = 1\n"); fprintf(stderr,"
+// Recommended value for motif analysis: 3\n"); fprintf(stderr,"\n");
+// fprintf(stderr,"  -n    Normalization option [T/F] Optional\n");
+// fprintf(stderr,"        Subtract the mean from each conservation index and
+// divide by the\n"); fprintf(stderr,"        standard deviation.\n");
+// fprintf(stderr,"        Default = T\n");
+// fprintf(stderr,"\n");
+// fprintf(stderr,"  -a    All methods option [T/F] Optional\n");
+// fprintf(stderr,"        If set to true, the results of all 9 methods will be
+// output.\n"); fprintf(stderr,"        1. unweighted entropy measure; 2.
+// Henikoff entropy measure;\n"); fprintf(stderr,"        3. independent count
+// entropy measure;\n"); fprintf(stderr,"        4. unweighted variance
+// measure; 5. Henikoff variance measure;\n"); fprintf(stderr,"        6.
+// independent count variance measure;\n"); fprintf(stderr,"        7. unweighted
+// matrix-based sum-of-pairs measure;\n"); fprintf(stderr,"        8. Henikoff
+// matrix-based sum-of-pairs measure;\n"); fprintf(stderr,"        9. independent
+// count matrix-based sum-of-pairs measure;\n"); fprintf(stderr,"        Default
+// = F\n"); fprintf(stderr,"\n"); fprintf(stderr,"  -e    Excluding the first
+// sequence from calculation [T/F] Optional\n"); fprintf(stderr,"        If set
+// to true, the first sequence in the alignment will not\n"); fprintf(stderr,"
+// be included in the conservation calculation.\n"); fprintf(stderr," Default =
+// F\n\n"); fprintf(stderr,"  -g    Gap fraction to suppress conservation
+// calculation [Real] Optional\n"); fprintf(stderr,"        The value should be
+// more than 0 and no more than 1. Conservation\n"); fprintf(stderr," indices are
+// calculated only for positions with gap fraction less\n"); fprintf(stderr,"
+// than the specified value. Otherwise, conservation indices will\n");
+// fprintf(stderr,"        be set to M-S, where M is the mean conservation value
+// and S is\n"); fprintf(stderr,"        the standard deviation.\n");
+// fprintf(stderr,"        Default = 0.5\n");
+// fprintf(stderr,"\n");
+// fprintf(stderr,"  -p    Input pdb file [File in] Optional\n");
+// fprintf(stderr,"        The sequence in the pdb file should match exactly the
+// first sequence of\n"); fprintf(stderr,"        the alignment.\n");
+// fprintf(stderr,"\n");
+// fprintf(stderr,"  -d    Output pdb file [File Out] Optional\n");
+// fprintf(stderr,"        The B-factors are replaced by the conservation
+// indices.\n"); fprintf(stderr,"        Default = STDOUT\n");
+// fprintf(stderr,"\n");
 //
 //
 //}
 //
-//void print_parameters(FILE *outfile,char *argi,char *argo,int nt,char *argt,int argb,char *args,int argm,int argf,int argc, int argw, char *argn,char *arga, char *arge, double argg, char *argp,char *argd)
+// void print_parameters(FILE *outfile,char *argi,char *argo,int nt,char
+// *argt,int argb,char *args,int argm,int argf,int argc, int argw, char
+// *argn,char *arga, char *arge, double argg, char *argp,char *argd)
 //{
 //	FILE *fp;
 //	char *mt[]={
@@ -1355,36 +1384,39 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	if((fp=fopen(argo,"r"))==NULL){
 //		fprintf(outfile, "Output conservation - STDOUT\n");
 //					 }
-//	else{	fprintf(outfile, "Output conservation file - %s\n", argo); fclose(fp);} 
+//	else{	fprintf(outfile, "Output conservation file - %s\n", argo);
+//fclose(fp);}
 //
 //	if(nt==0){;}
-//	else if(nt==1) 	{   
-//		fprintf(outfile, "Output alignment file with index - %s;", argt);
-//		fprintf(outfile, " Block size - %d\n",argb); 
+//	else if(nt==1) 	{
+//		fprintf(outfile, "Output alignment file with index - %s;",
+//argt); 		fprintf(outfile, " Block size - %d\n",argb);
 //			}
 //
 //	if((fp=fopen(args,"r"))==NULL){;}
 //	else {
 //		if(argc==2) {
 //			fprintf(outfile,"Input matrix file - %s\n",args);
-//			fprintf(outfile,"Matrix transformation -  %s\n",mt[argm]);
+//			fprintf(outfile,"Matrix transformation -
+//%s\n",mt[argm]);
 //			    }
 //		else {
 //			fprintf(outfile,"Input matrix file - %s\n",args);
-//			if( (strcmp(arga,"T")==0) || (strcmp(arga, "t")==0) ) {;}
-//			else fprintf(outfile,"Warning - Matrix not used: matrix is for sum-of-pairs measure, -c 2\n"); }
-//		fclose(fp);
+//			if( (strcmp(arga,"T")==0) || (strcmp(arga, "t")==0) )
+//{;} 			else fprintf(outfile,"Warning - Matrix not used: matrix is for
+//sum-of-pairs measure, -c 2\n"); } 		fclose(fp);
 //	      }
 //
 //	if( (strcmp(arga,"T")==0) || (strcmp(arga, "t")==0) ) {
 //	     fprintf(outfile, "All 9 methods are used - true \n");
-//	     fprintf(outfile, "   1. unweighted entropy measure; 2. Henikoff entropy measure;\n");
-//	     fprintf(outfile, "   3. independent count entropy measure;\n");
-//	     fprintf(outfile, "   4. unweighted variance measure; 5. Henikoff variance measure;\n");
-//	     fprintf(outfile, "   6. independent count variance measure;\n");
-//	     fprintf(outfile, "   7. unweighted matrix-based sum-of-pairs measure;\n");
-//	     fprintf(outfile, "   8. Henikoff matrix-based sum-of-pairs measure;\n");
-//	     fprintf(outfile, "   9. independent count matrix-based sum-of-pairs measure;\n");
+//	     fprintf(outfile, "   1. unweighted entropy measure; 2. Henikoff
+//entropy measure;\n"); 	     fprintf(outfile, "   3. independent count entropy
+//measure;\n"); 	     fprintf(outfile, "   4. unweighted variance measure; 5. Henikoff
+//variance measure;\n"); 	     fprintf(outfile, "   6. independent count variance
+//measure;\n"); 	     fprintf(outfile, "   7. unweighted matrix-based sum-of-pairs
+//measure;\n"); 	     fprintf(outfile, "   8. Henikoff matrix-based sum-of-pairs
+//measure;\n"); 	     fprintf(outfile, "   9. independent count matrix-based
+//sum-of-pairs measure;\n");
 //   	}
 //	else {
 //	  fprintf(outfile, "Weighting scheme - %s\n", ws[argf]);
@@ -1392,14 +1424,16 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	}
 //
 //	if( (strcmp(arge, "T")==0) || (strcmp(arge, "t")==0 ) ) {
-//		fprintf(outfile, "The first sequence is not used in calculation\n");
+//		fprintf(outfile, "The first sequence is not used in
+//calculation\n");
 //	}
 //
 //	fprintf(outfile, "Window size - %d\n", argw);
-//	 
+//
 //	if((strcmp(argn,"f")==0)||(strcmp(argn,"F")==0)){
 //		fprintf(outfile, "Conservation not normalized\n");}
-//	else fprintf(outfile, "Conservation normalized to zero mean and unity variance\n");
+//	else fprintf(outfile, "Conservation normalized to zero mean and unity
+//variance\n");
 //
 //	fprintf(outfile, "Gap fraction to suppress calculation - %5.2f\n",argg);
 //	if((fp=fopen(argp,"r"))==NULL){;}
@@ -1413,211 +1447,212 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //			fclose(fp);
 //			}
 //		}
-//	
+//
 //}
 //#define NR_END 1
 //#define FREE_ARG char*
 //
 //
-//void nrerror(char error_text[]){
-//fprintf(stderr,"%s\n",error_text);
-//fprintf(stderr,"FATAL - execution terminated\n");
-//exit(1);
+// void nrerror(char error_text[]){
+// fprintf(stderr,"%s\n",error_text);
+// fprintf(stderr,"FATAL - execution terminated\n");
+// exit(1);
 //}
 //
 //
-//char *cvector(long nl, long nh){
-//char *v;
-//v=(char *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(int)));
-//if (!v) nrerror("allocation failure in ivector()");
-//return v-nl+NR_END;
+// char *cvector(long nl, long nh){
+// char *v;
+// v=(char *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(int)));
+// if (!v) nrerror("allocation failure in ivector()");
+// return v-nl+NR_END;
 //}
 //
 //
-//int *ivector(long nl, long nh){
-//int *v;
-//v=(int *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(int)));
-//if (!v) nrerror("allocation failure in ivector()");
-//return v-nl+NR_END;
+// int *ivector(long nl, long nh){
+// int *v;
+// v=(int *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(int)));
+// if (!v) nrerror("allocation failure in ivector()");
+// return v-nl+NR_END;
 //}
 //
-//long *lvector(long nl, long nh){
-//long int *v;
-//v=(long int *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(long int)));
-//if (!v) nrerror("allocation failure in lvector()");
-//return v-nl+NR_END;
+// long *lvector(long nl, long nh){
+// long int *v;
+// v=(long int *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(long int)));
+// if (!v) nrerror("allocation failure in lvector()");
+// return v-nl+NR_END;
 //}
 //
-//double *dvector(long nl, long nh){
-//double *v;
-//v=(double *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(double)));
-//if (!v) nrerror("allocation failure in dvector()");
-//return v-nl+NR_END;
-//}
-//
-//
-//int **imatrix(long nrl, long nrh, long ncl, long nch){
-//long i, nrow=nrh-nrl+1,ncol=nch-ncl+1;
-//int **m;
-//m=(int **)malloc((size_t)((nrow+NR_END)*sizeof(int*)));
-//if (!m) nrerror("allocation failure 1 in imatrix()");
-//m += NR_END;
-//m -= nrl;
-//
-//m[nrl]=(int *)malloc((size_t)((nrow*ncol+NR_END)*sizeof(int)));
-//if (!m[nrl]) nrerror("allocation failure 2 in imatrix()");
-//m[nrl] += NR_END;
-//m[nrl] -= ncl;
-//
-//for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
-//
-//return m;
-//
+// double *dvector(long nl, long nh){
+// double *v;
+// v=(double *)malloc((size_t) ((nh-nl+1+NR_END)*sizeof(double)));
+// if (!v) nrerror("allocation failure in dvector()");
+// return v-nl+NR_END;
 //}
 //
 //
-//double **dmatrix(long nrl, long nrh, long ncl, long nch){
-//long i, nrow=nrh-nrl+1,ncol=nch-ncl+1;
-//double **m;
-//m=(double **)malloc((size_t)((nrow+NR_END)*sizeof(double*)));
-//if (!m) nrerror("allocation failure 1 in dmatrix()");
-//m += NR_END;
-//m -= nrl;
+// int **imatrix(long nrl, long nrh, long ncl, long nch){
+// long i, nrow=nrh-nrl+1,ncol=nch-ncl+1;
+// int **m;
+// m=(int **)malloc((size_t)((nrow+NR_END)*sizeof(int*)));
+// if (!m) nrerror("allocation failure 1 in imatrix()");
+// m += NR_END;
+// m -= nrl;
 //
-//m[nrl]=(double *)malloc((size_t)((nrow*ncol+NR_END)*sizeof(double)));
-//if (!m[nrl]) nrerror("allocation failure 2 in dmatrix()");
-//m[nrl] += NR_END;
-//m[nrl] -= ncl;
+// m[nrl]=(int *)malloc((size_t)((nrow*ncol+NR_END)*sizeof(int)));
+// if (!m[nrl]) nrerror("allocation failure 2 in imatrix()");
+// m[nrl] += NR_END;
+// m[nrl] -= ncl;
 //
-//for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
+// for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
 //
-//return m;
+// return m;
 //
 //}
 //
 //
+// double **dmatrix(long nrl, long nrh, long ncl, long nch){
+// long i, nrow=nrh-nrl+1,ncol=nch-ncl+1;
+// double **m;
+// m=(double **)malloc((size_t)((nrow+NR_END)*sizeof(double*)));
+// if (!m) nrerror("allocation failure 1 in dmatrix()");
+// m += NR_END;
+// m -= nrl;
 //
-//double ***d3tensor(long nrl,long nrh,long ncl,long nch,long ndl,long ndh){
-//long i,j,nrow=nrh-nrl+1,ncol=nch-ncl+1,ndep=ndh-ndl+1;
-//double ***t;
+// m[nrl]=(double *)malloc((size_t)((nrow*ncol+NR_END)*sizeof(double)));
+// if (!m[nrl]) nrerror("allocation failure 2 in dmatrix()");
+// m[nrl] += NR_END;
+// m[nrl] -= ncl;
 //
-//t=(double ***) malloc((size_t)((nrow+NR_END)*sizeof(double**)));
-//if(!t)nrerror("allocation failure 1 in d3tensor()");
-//t += NR_END;
-//t -= nrl;
+// for(i=nrl+1;i<=nrh;i++) m[i]=m[i-1]+ncol;
 //
-//t[nrl]=(double **) malloc((size_t)((nrow*ncol+NR_END)*sizeof(double*)));
-//if(!t[nrl])nrerror("allocation failure 2 in d3tensor()");
-//t[nrl] += NR_END;
-//t[nrl] -= ncl;
+// return m;
 //
-//t[nrl][ncl]=(double *) malloc((size_t)((nrow*ncol*ndep+NR_END)*sizeof(double)));
-//if(!t[nrl][ncl])nrerror("allocation failure 3 in d3tensor()");
-//t[nrl][ncl] += NR_END;
-//t[nrl][ncl] -= ndl;
+//}
 //
-//for(j=ncl+1;j<=nch;j++) t[nrl][j]=t[nrl][j-1]+ndep;
-//for(i=nrl+1;i<=nrh;i++){
+//
+//
+// double ***d3tensor(long nrl,long nrh,long ncl,long nch,long ndl,long ndh){
+// long i,j,nrow=nrh-nrl+1,ncol=nch-ncl+1,ndep=ndh-ndl+1;
+// double ***t;
+//
+// t=(double ***) malloc((size_t)((nrow+NR_END)*sizeof(double**)));
+// if(!t)nrerror("allocation failure 1 in d3tensor()");
+// t += NR_END;
+// t -= nrl;
+//
+// t[nrl]=(double **) malloc((size_t)((nrow*ncol+NR_END)*sizeof(double*)));
+// if(!t[nrl])nrerror("allocation failure 2 in d3tensor()");
+// t[nrl] += NR_END;
+// t[nrl] -= ncl;
+//
+// t[nrl][ncl]=(double *)
+// malloc((size_t)((nrow*ncol*ndep+NR_END)*sizeof(double)));
+// if(!t[nrl][ncl])nrerror("allocation failure 3 in d3tensor()");
+// t[nrl][ncl] += NR_END;
+// t[nrl][ncl] -= ndl;
+//
+// for(j=ncl+1;j<=nch;j++) t[nrl][j]=t[nrl][j-1]+ndep;
+// for(i=nrl+1;i<=nrh;i++){
 //	t[i]=t[i-1]+ncol;
 //	t[i][ncl]=t[i-1][ncl]+ncol*ndep;
 //	for(j=ncl+1;j<=nch;j++)t[i][j]=t[i][j-1]+ndep;
 //	}
-//return t;
+// return t;
 //}
 //
-//int am2num_c(c)
+// int am2num_c(c)
 //{
-//switch (c) {
+// switch (c) {
 //           	 case 'W':
 //                	c=1; break;
 //		 case 'w':
 //			c=26; break;
-//           	 case 'F': 
+//           	 case 'F':
 //                	c=2; break;
 //                 case 'f':
 //			c=27; break;
-//           	 case 'Y': 
+//           	 case 'Y':
 //                	c=3; break;
 //		 case 'y':
 //                        c=28; break;
-//           	 case 'M': 
+//           	 case 'M':
 //                	c=4; break;
 //		 case 'm':
 //                        c=29; break;
-//           	 case 'L': 
+//           	 case 'L':
 //                	c=5; break;
 //		 case 'l':
 //                        c=30; break;
-//           	 case 'I': 
+//           	 case 'I':
 //          		c=6; break;
 //		 case 'i':
 //                        c=31; break;
-//           	 case 'V': 
+//           	 case 'V':
 //           		c=7; break;
 //		 case 'v':
 //                        c=32; break;
-//          	 case 'A': 
+//          	 case 'A':
 //			c=8; break;
 //		 case 'a':
-//                        c=33; break; 
-//           	 case 'C': 
+//                        c=33; break;
+//           	 case 'C':
 //                	c=9; break;
 //		 case 'c':
 //                        c=34; break;
-//		 case 'G': 
+//		 case 'G':
 //			c=10; break;
 //		 case 'g':
 //                        c=35; break;
-//           	 case 'P': 
+//           	 case 'P':
 //             	 	c=11; break;
 //		 case 'p':
 //                        c=36; break;
-//       		 case 'T': 
+//       		 case 'T':
 //			c=12; break;
 //		 case 't':
 //                        c=37; break;
-//	         case 'S': 
+//	         case 'S':
 //			c=13; break;
 //		 case 's':
 //                        c=38; break;
-//           	 case 'N': 
+//           	 case 'N':
 //                	c=14; break;
 //		 case 'n':
 //                        c=39; break;
-//           	 case 'Q': 
+//           	 case 'Q':
 //                	c=15; break;
 //		 case 'q':
 //                        c=40; break;
-//           	 case 'D': 
+//           	 case 'D':
 //                	c=16; break;
 //		 case 'd':
 //                        c=41; break;
-//           	 case 'E': 
+//           	 case 'E':
 //                	c=17; break;
 //		 case 'e':
 //                        c=42; break;
-//           	 case 'H': 
+//           	 case 'H':
 //                	c=18; break;
 //		 case 'h':
 //                        c=43; break;
-//           	 case 'R': 
+//           	 case 'R':
 //                	c=19; break;
 //		 case 'r':
 //                        c=44; break;
-//           	 case 'K': 
+//           	 case 'K':
 //                	c=20; break;
 //		 case 'k':
 //                        c=45; break;
-//           	 default : 
-//			c=0; 
+//           	 default :
+//			c=0;
 //		}
-//return (c);
+// return (c);
 //}
 //
 //
-//int am2num(c)
+// int am2num(c)
 //{
-//switch (c) {
+// switch (c) {
 //           	 case 'W': case 'w':
 //                	c=1; break;
 //           	 case 'F': case 'f':
@@ -1632,7 +1667,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //          		c=6; break;
 //           	 case 'V': case 'v':
 //           		c=7; break;
-//          	 case 'A': case 'a': 
+//          	 case 'A': case 'a':
 //			c=8; break;
 //           	 case 'C': case 'c':
 //                	c=9; break;
@@ -1658,15 +1693,15 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //                	c=19; break;
 //           	 case 'K': case 'k':
 //                	c=20; break;
-//           	 default : 
-//			c=0; 
+//           	 default :
+//			c=0;
 //		}
-//return (c);
+// return (c);
 //}
 //
-//int am2numBZX(c)
+// int am2numBZX(c)
 //{
-//switch (c) {
+// switch (c) {
 //                 case 'W': case 'w':
 //                        c=1; break;
 //                 case 'F': case 'f':
@@ -1718,38 +1753,39 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //                 default :
 //                        c=0;
 //                }
-//return (c);
+// return (c);
 //}
 //
 //
-//static char str[MAXSTR+1];
+// static char str[MAXSTR+1];
 //
 ///*char **aname, **aseq;
-//int nal, alilen, *astart, *alen;
-//int **alignment; 
+// int nal, alilen, *astart, *alen;
+// int **alignment;
 //*/
 //
 //
 //
-//static void *mymalloc(int size);
-//char *strsave(char *str);
-//char *strnsave(char *str, int l);
-//static char **incbuf(int n, char **was);
-//static int *incibuf(int n, int *was);
+// static void *mymalloc(int size);
+// char *strsave(char *str);
+// char *strnsave(char *str, int l);
+// static char **incbuf(int n, char **was);
+// static int *incibuf(int n, int *was);
 //
-//void readali(char *filename);
-//int **ali_char2int(char **aseq,int start_num, int start_seq);
-//int **read_alignment2int(char *filename,int start_num,int start_seq);
+// void readali(char *filename);
+// int **ali_char2int(char **aseq,int start_num, int start_seq);
+// int **read_alignment2int(char *filename,int start_num,int start_seq);
 //
-//void counter(int b);
-//double effective_number(int **ali, int *marks, int n, int start, int end);
-//double effective_number_nogaps(int **ali, int *marks, int n, int start, int end);
-//double effective_number_nogaps_expos(int **ali, int *marks, int n, int start, int end, int pos);
+// void counter(int b);
+// double effective_number(int **ali, int *marks, int n, int start, int end);
+// double effective_number_nogaps(int **ali, int *marks, int n, int start, int
+// end); double effective_number_nogaps_expos(int **ali, int *marks, int n, int
+// start, int end, int pos);
 //
 //
 //
-//static void *mymalloc(size)
-//int size;
+// static void *mymalloc(size)
+// int size;
 //{
 //	void *buf;
 //
@@ -1760,8 +1796,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	return buf;
 //}
 //
-//char *strsave(str)
-//char *str;
+// char *strsave(str)
+// char *str;
 //{
 //	char *buf;
 //	int l;
@@ -1772,9 +1808,9 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	return buf;
 //}
 //
-//char *strnsave(str, l)
-//char *str;
-//int l;
+// char *strnsave(str, l)
+// char *str;
+// int l;
 //{
 //	char *buf;
 //
@@ -1784,9 +1820,9 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	return buf;
 //}
 //
-//static char **incbuf(n, was)
-//int n;
-//char **was;
+// static char **incbuf(n, was)
+// int n;
+// char **was;
 //{
 //	char **buf;
 //	char *aaa;
@@ -1800,8 +1836,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	return buf;
 //}
 //
-//static int *incibuf(n, was)
-//int n, *was;
+// static int *incibuf(n, was)
+// int n, *was;
 //{
 //	int *ibuf;
 //
@@ -1813,13 +1849,13 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	ibuf[n] = 0;
 //	return ibuf;
 //}
-//void err_readali(int err_num)
+// void err_readali(int err_num)
 //{
 //	fprintf(stderr,"Error with reading alignment: %d\n",err_num);
 //}
 //
-//void readali(filename)
-//char *filename;
+// void readali(filename)
+// char *filename;
 //{
 //	FILE *fp;
 //	char *s, *ss, *seqbuf;
@@ -1852,8 +1888,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //				}
 //				nal = n;
 //			} else if (n != nal) {
-//				fprintf(stderr, "Wrong nal, was: %d, now: %d\n", nal, n);
-//				err_readali(3); exit(1);
+//				fprintf(stderr, "Wrong nal, was: %d, now: %d\n", nal,
+//n); 				err_readali(3); exit(1);
 //			}
 //			n = 0;
 //			continue;
@@ -1868,20 +1904,20 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //			aname[n] = strsave(ss);
 //		} else {
 //			if (n < 0 || n >= nal) {
-//				fprintf(stderr, "Bad sequence number: %d of %d\n", n, nal);
-//				err_readali(4);  exit(1);
+//				fprintf(stderr, "Bad sequence number: %d of %d\n", n,
+//nal); 				err_readali(4);  exit(1);
 //			}
 //			if (strcmp(ss, aname[n]) != 0) {
 //				fprintf(stderr, "Names do not match");
-//				fprintf(stderr, ", was: %s, now: %s\n", aname[n], ss);
-//				err_readali(5);  exit(1);
+//				fprintf(stderr, ", was: %s, now: %s\n", aname[n],
+//ss); 				err_readali(5);  exit(1);
 //			}
 //		}
 //		for (ss = s; isspace(*ss); ss++);
 //		if(mark==1){
 //		ii = ss-str;
 //		mark=0;}
-//		
+//
 //		for (s = ss; isdigit(*s); s++) ;
 //		if (isspace(*s)) {
 //			if (nal == 0) {
@@ -1929,7 +1965,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	fclose(fp);
 //}
 //
-//static void printali(char *argt, int chunk, int n, int len, char **name, char **seq, int *start,int *csv)
+// static void printali(char *argt, int chunk, int n, int len, char **name, char
+// **seq, int *start,int *csv)
 //{
 //        int i, j, k, jj, mlen, sta, *pos;
 //	char csv_str[100], arg_t[50];
@@ -1956,7 +1993,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //                }
 //                for (i=0; i < n; i++) {
 //			if(i==0) {
-//				fprintf(fpp,"\n\n"); 
+//				fprintf(fpp,"\n\n");
 //				for(k=0;k<mlen+4;k++){
 //					if(k<strlen(csv_str)){
 //					fprintf(fpp,"%c",csv_str[k]);}
@@ -1982,7 +2019,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //			if(k<strlen(name[i])){
 //			fprintf(fpp,"%c",name[i][k]);}
 //			else fprintf(fpp," ");
-//					   }			
+//					   }
 //                        if (sta) {
 //                                fprintf(fpp, "%4d ", pos[i]);
 //                        }
@@ -2004,85 +2041,88 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	fclose(fpp);
 //}
 //
-//int **ali_char2int(char **aseq, int start_num, int start_seq){
-///* fills the alignment ali[start_num..start_num+nal-1][start_seq..start_seq+alilen-1]
-//convetring charater to integer from aseq[0..nal-1][0..alilen-1]
+// int **ali_char2int(char **aseq, int start_num, int start_seq){
+///* fills the alignment
+///ali[start_num..start_num+nal-1][start_seq..start_seq+alilen-1]
+// convetring charater to integer from aseq[0..nal-1][0..alilen-1]
 //*/
 //
-//int i,j,end_num,end_seq;
-//int **ali;
-//end_num=start_num+nal-1;
-//end_seq=start_seq+alilen-1;
-//ali=imatrix(start_num,end_num,start_seq,end_seq);
-//for(i=start_num;i<=end_num;++i)for(j=start_seq;j<=end_seq;++j)ali[i][j]=am2num(aseq[i-start_num][j-start_seq]);
-//return ali;
+// int i,j,end_num,end_seq;
+// int **ali;
+// end_num=start_num+nal-1;
+// end_seq=start_seq+alilen-1;
+// ali=imatrix(start_num,end_num,start_seq,end_seq);
+// for(i=start_num;i<=end_num;++i)for(j=start_seq;j<=end_seq;++j)ali[i][j]=am2num(aseq[i-start_num][j-start_seq]);
+// return ali;
 //}
 //
-//int **read_alignment2int(char *filename,int start_num,int start_seq){
-//int **ali;
-//readali(filename);
-//ali=ali_char2int(aseq,start_num,start_seq);
-//return ali;
+// int **read_alignment2int(char *filename,int start_num,int start_seq){
+// int **ali;
+// readali(filename);
+// ali=ali_char2int(aseq,start_num,start_seq);
+// return ali;
 //}
 //
 //
 //
-//double effective_number(int **ali, int *marks, int n, int start, int end){
+// double effective_number(int **ali, int *marks, int n, int start, int end){
 //
 ///* from the alignment of n sequences ali[1..n][1..l]
-//calculates effective number of sequences that are marked by 1 in mark[1..n]
-//for the segment of positions ali[][start..end]
-//Neff=ln(1-0.05*N-of-different-letters-per-site)/ln(0.95)
+// calculates effective number of sequences that are marked by 1 in mark[1..n]
+// for the segment of positions ali[][start..end]
+// Neff=ln(1-0.05*N-of-different-letters-per-site)/ln(0.95)
 //*/
 //
-//int i,k,a,flag,ngc;
-//int *amco,lettercount=0,sitecount=0,gsitecount=0;
-//int *nogaps;
-//double letpersite=0,neff,randomcount=0.0;
-//amco=ivector(0,20);
-//nogaps=ivector(0,n);
-//for(i=0;i<=n;++i)nogaps[i]=0;
-//for(k=start;k<=end;++k){
+// int i,k,a,flag,ngc;
+// int *amco,lettercount=0,sitecount=0,gsitecount=0;
+// int *nogaps;
+// double letpersite=0,neff,randomcount=0.0;
+// amco=ivector(0,20);
+// nogaps=ivector(0,n);
+// for(i=0;i<=n;++i)nogaps[i]=0;
+// for(k=start;k<=end;++k){
 //	for(a=0;a<=20;++a)amco[a]=0;
 //	for(i=1;i<=n;++i)if(marks[i]==1)amco[ali[i][k]]++;
 //	flag=0;for(a=1;a<=20;++a)if(amco[a]>0){flag=1;lettercount++;}
 //	if(flag==1)sitecount++;
 //		       }
-//letpersite=1.0*lettercount/sitecount;
-//for(k=start;k<=end;++k){
+// letpersite=1.0*lettercount/sitecount;
+// for(k=start;k<=end;++k){
 //	ngc=0;for(i=1;i<=n;++i)if(marks[i]==1)if(ali[i][k]!=0)ngc++;
 //	if(ngc!=0)gsitecount++;
 //	nogaps[ngc]++;
 //		       }
-//for(i=0;i<=n;++i)fprintf(stderr,"%3d %4d\n",i,nogaps[i]);
+// for(i=0;i<=n;++i)fprintf(stderr,"%3d %4d\n",i,nogaps[i]);
 //
-//if(gsitecount!=sitecount){fprintf(stderr,"Counts didn't match in \"effective_number\": FATAL\n");exit(0);}
+// if(gsitecount!=sitecount){fprintf(stderr,"Counts didn't match in
+// \"effective_number\": FATAL\n");exit(0);}
 //
-//for(i=1;i<=n;++i)randomcount+=nogaps[i]*20.0*(1.0-exp(-0.05129329438755*i));
-//randomcount=randomcount/gsitecount;
-//letpersite=letpersite*20.0*(1.0-exp(-0.05129329438755*n))/randomcount;
+// for(i=1;i<=n;++i)randomcount+=nogaps[i]*20.0*(1.0-exp(-0.05129329438755*i));
+// randomcount=randomcount/gsitecount;
+// letpersite=letpersite*20.0*(1.0-exp(-0.05129329438755*n))/randomcount;
 //
 //
 //
-//neff=-log(1.0-0.05*letpersite)/0.05129329438755;
-//return neff;
+// neff=-log(1.0-0.05*letpersite)/0.05129329438755;
+// return neff;
 //}
 //
 //
 //
-//double effective_number_nogaps(int **ali, int *marks, int n, int start, int end){
+// double effective_number_nogaps(int **ali, int *marks, int n, int start, int
+// end){
 //
 ///* from the alignment of n sequences ali[1..n][1..l]
-//calculates effective number of sequences that are marked by 1 in mark[1..n]
-//for the segment of positions ali[][start..end]
-//Neff=ln(1-0.05*N-of-different-letters-per-site)/ln(0.95)
+// calculates effective number of sequences that are marked by 1 in mark[1..n]
+// for the segment of positions ali[][start..end]
+// Neff=ln(1-0.05*N-of-different-letters-per-site)/ln(0.95)
 //*/
 //
-//int i,k,a,flag;
-//int *amco,lettercount=0,sitecount=0;
-//double letpersite=0,neff;
-//amco=ivector(0,20);
-//for(k=start;k<=end;++k){
+// int i,k,a,flag;
+// int *amco,lettercount=0,sitecount=0;
+// double letpersite=0,neff;
+// amco=ivector(0,20);
+// for(k=start;k<=end;++k){
 //	flag=0;for(i=1;i<=n;++i)if(marks[i]==1 && ali[i][k]==0)flag=1;
 //	if(flag==1)continue;
 //	for(a=0;a<=20;++a)amco[a]=0;
@@ -2090,21 +2130,22 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	flag=0;for(a=1;a<=20;++a)if(amco[a]>0){flag=1;lettercount++;}
 //	if(flag==1)sitecount++;
 //		       }
-//if(sitecount==0)letpersite=0;
-//else letpersite=1.0*lettercount/sitecount;
+// if(sitecount==0)letpersite=0;
+// else letpersite=1.0*lettercount/sitecount;
 //
 //
-//neff=-log(1.0-0.05*letpersite)/0.05129329438755;
-//return neff;
+// neff=-log(1.0-0.05*letpersite)/0.05129329438755;
+// return neff;
 //}
 //
-//int *letters;
+// int *letters;
 //
-//void **freq(int **ali,double **f,int *num_gaps,int *effindiarr,double gap_threshold)
+// void **freq(int **ali,double **f,int *num_gaps,int *effindiarr,double
+// gap_threshold)
 //{
 //	int i,j,k,effnumind;
 //	int count[21];
-//	
+//
 //	letters = ivector(0, alilen+1);
 //	letters[0]=1;
 //
@@ -2128,9 +2169,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //			fprintf(stderr,"gap number>total number\n");
 //			exit(0);
 //			      }
-//		if(f[0][j]>=gap_threshold) {   /* ignore the case where gaps occur >= gap_threshold(percentage of gaps)  */
-//			f[0][j]=INDI;
-//			continue;
+//		if(f[0][j]>=gap_threshold) {   /* ignore the case where gaps occur
+//>= gap_threshold(percentage of gaps)  */ 			f[0][j]=INDI; 			continue;
 //				}
 //		effnumind++;
 //		effindiarr[effnumind]=j;
@@ -2146,10 +2186,10 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	}
 //	effindiarr[effnumind+1]=INDI;/*set the last element negative*/
 //	effindiarr[0]=effnumind;
-//}			
+//}
 //
 ///* calculating the standard error of frequencies */
-//double **sigmaf(double **f)
+// double **sigmaf(double **f)
 //{
 //	double **sigma;
 //	int i,j;
@@ -2170,14 +2210,14 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //			sigma[i][j]=sqrt(f[i][j]*(1-f[i][j])/letters[j]);
 //				   }
 //				}
-//	return sigma;		
+//	return sigma;
 //}
 //
-//int totalw;
-//double *oaf_ip, *h_oaf_ip; /*unweighted,henikoff frequency at position ip */
-//double *overall_freq(int **ali, int startp, int endp, int *mark);
-//double *overall_freq_wgt(int **ali,int startp,int endp,int *mark,double *wgt);
-//double *h_weight(int **ali, int ip)
+// int totalw;
+// double *oaf_ip, *h_oaf_ip; /*unweighted,henikoff frequency at position ip */
+// double *overall_freq(int **ali, int startp, int endp, int *mark);
+// double *overall_freq_wgt(int **ali,int startp,int endp,int *mark,double
+// *wgt); double *h_weight(int **ali, int ip)
 //{
 //	double *hwt;
 //	int count[21];
@@ -2196,10 +2236,10 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	/* mark the sequences with gaps */
 //	for(i=1;i<=nal;i++) {
 //		// NEW: fix a typo 05/06/03
-//		if((ali[i][ip]>0&&ali[i][ip]<=20)||(ali[i][ip]>25&&ali[i][ip]<=45)) mark[i]=1;
-//		else if (ali[i][ip]==0)mark[i]=0;
+//		if((ali[i][ip]>0&&ali[i][ip]<=20)||(ali[i][ip]>25&&ali[i][ip]<=45))
+//mark[i]=1; 		else if (ali[i][ip]==0)mark[i]=0;
 //			    }
-//	
+//
 //	/* find the maxstart and miniend positions */
 //	maxstart = 1;
 //	for(i=1;i<=nal;i++){
@@ -2236,13 +2276,14 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //
 //	for(i=1;i<=nal;i++) hwt[i]=0;
 //	for(j=maxstart;j<=miniend;j++){
-//		
+//
 //		amtypes = 0;
 //		for(i=0;i<=20;i++) count[i]=0;
 //		for(i=1;i<=nal;i++){
 //			if(mark[i]==0) continue;
 //			if(ali[i][j]>=0&&ali[i][j]<=20) count[ali[i][j]]++;
-//			else if(ali[i][j]>25&&ali[i][j]<=45) count[ali[i][j]-25]++;
+//			else if(ali[i][j]>25&&ali[i][j]<=45)
+//count[ali[i][j]-25]++;
 //				   }
 //		for(i=0;i<=20;i++) {
 //			if(count[i]>0) amtypes++;
@@ -2280,9 +2321,9 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //		for(i=1;i<=nal;i++){
 //			if(ali[i][ip]==0) gapcount++;
 //				   }
-//		if(gapcount==nal){fprintf(stderr, "This position contains only gaps\n");exit(0);}
-//		for(i=1;i<=nal;i++){
-//			if(ali[i][ip]!=0) hwt[i]=1.0/(nal-gapcount);
+//		if(gapcount==nal){fprintf(stderr, "This position contains only
+//gaps\n");exit(0);} 		for(i=1;i<=nal;i++){ 			if(ali[i][ip]!=0)
+//hwt[i]=1.0/(nal-gapcount);
 //				   }
 //		     }
 //
@@ -2290,17 +2331,17 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //	oaf_ip = overall_freq(ali,1,alilen,mark);
 //	return hwt;
 //}
-//	
-//double **u_oaf,**h_oaf; /* unweighted and henikoff overall frequency */
-//double **h_freq(int **ali, double **f, double **hfr)
+//
+// double **u_oaf,**h_oaf; /* unweighted and henikoff overall frequency */
+// double **h_freq(int **ali, double **f, double **hfr)
 //{
-//	int i,j;	
+//	int i,j;
 //	double *hwt;
 //	double sumofweight;
 //
 //	u_oaf = dmatrix(0,20,0,alilen);
 //	h_oaf = dmatrix(0,20,0,alilen);
-//	
+//
 //	for(j=1;j<=alilen;j++) {
 //		if(f[0][j]==INDI) {hfr[0][j]=INDI;continue;}
 //		hwt = h_weight(ali, j); /* assign position specific weight */
@@ -2325,7 +2366,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //}
 //
 //
-//double *entro_conv(double **f, int **ali, double *econv)
+// double *entro_conv(double **f, int **ali, double *econv)
 //{
 //	int i,j;
 //
@@ -2338,8 +2379,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //				   }
 //				}
 //}
-//		
-//double *overall_freq(int **ali, int startp, int endp, int *mark)
+//
+// double *overall_freq(int **ali, int startp, int endp, int *mark)
 //{
 //	double *oaf;
 //	int gapcount,totalcount;
@@ -2376,11 +2417,11 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //				}
 //	for(i=1;i<=20;i++) {
 //		oaf[i]=oaf[i]/total;
-//			   }		
+//			   }
 //	return oaf;
 //}
 //
-//double *overall_freq_wgt(int **ali,int startp,int endp,int *mark,double *wgt)
+// double *overall_freq_wgt(int **ali,int startp,int endp,int *mark,double *wgt)
 //{
 //        double *oaf;
 //        double total=0;
@@ -2390,7 +2431,8 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //        oaf = dvector(0,20);
 //        for(i=1;i<=20;i++) oaf[i]=0;
 //        if(startp>endp) {
-//                fprintf(stderr, "start position larger than ending position\n");                exit(1);
+//                fprintf(stderr, "start position larger than ending
+//                position\n");                exit(1);
 //                        }
 //        for(j=startp;j<=endp;j++) {
 //		/* excluding those that have >50% gaps*/
@@ -2420,7 +2462,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //        return oaf;
 //}
 //
-//double **ic_freq(int **ali, double **f, double **icf)
+// double **ic_freq(int **ali, double **f, double **icf)
 //{
 //        int i,j,k;
 //        int ele;
@@ -2448,13 +2490,14 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //                        effnu[k]=effective_number_nogaps(ali,mark,nal,1,alilen);
 //                        effnu[0]+=effnu[k];
 //                                  }
-//                if(effnu[0]==0){fprintf(stderr,"all counts are zeros at the column %d: FATAL\n",j);exit(0);}
-//                for(k=1;k<=20;k++) effnu[k]=effnu[k]/effnu[0];
-//                for(k=1;k<=20;k++) icf[k][j] = effnu[k];
+//                if(effnu[0]==0){fprintf(stderr,"all counts are zeros at the
+//                column %d: FATAL\n",j);exit(0);} for(k=1;k<=20;k++)
+//                effnu[k]=effnu[k]/effnu[0]; for(k=1;k<=20;k++) icf[k][j] =
+//                effnu[k];
 //                               }
 //}
 //
-//double *variance_conv(double **f, int **ali, double **oaf, double *vconv)
+// double *variance_conv(double **f, int **ali, double **oaf, double *vconv)
 //{
 //	int i,j;
 //
@@ -2468,7 +2511,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //			       }
 //}
 //
-//double *pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pconv)
+// double *pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pconv)
 //{
 //	int i,j,k;
 //	double **matrix2, **matrix3;
@@ -2494,7 +2537,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //			matrix3[i][j]=matrix1[i][j]*2-0.5*(matrix1[i][i]+matrix1[j][j]);
 //				    }
 //				      }
-//	
+//
 //	for(j=1;j<=alilen;j++) {
 //		if(f[0][j]==INDI){pconv[j]=INDI; continue;}
 //		pconv[j]=0;
@@ -2508,7 +2551,7 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //				continue;}
 //			   if(indx==2){
 //				pconv[j]+=(f[k][j]*f[i][j])*matrix3[i][k];
-//			        continue;} 
+//			        continue;}
 //			   fprintf(stderr,"not good index number of matrix\n");
 //			   exit(0);
 //					   }
@@ -2517,4 +2560,4 @@ double *consv::pairs_conv(double **f,int **ali,int **matrix1,int indx,double *pc
 //}
 //
 //
-//		
+//

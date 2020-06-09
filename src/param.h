@@ -40,7 +40,7 @@ extern char uniref90_file[500];
 extern char blastpgp_command[500];
 
 // for using ss-dependent amino acid frequencies
-extern int use_ss_freq; // 0, 1, or 2
+extern int use_ss_freq;  // 0, 1, or 2
 
 extern int use_single_sequence;
 extern float ss_w;
@@ -60,11 +60,11 @@ extern double low_id_thr;
 // output alignment
 extern int blocksize;
 
-//clean blastpgp and psipred intermediate results
+// clean blastpgp and psipred intermediate results
 extern int clean_blast_after;
 extern int clean_blast_before;
 
-extern int relax_count; // correponding to N_small in multiple.[ch]
+extern int relax_count;  // correponding to N_small in multiple.[ch]
 
 // maximum number of pre-aligned groups
 extern int max_group_number;

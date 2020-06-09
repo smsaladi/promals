@@ -34,5 +34,5 @@ void useProbconsFrequencies();
 extern float emitPairsDefault[20][20];
 extern string alphabetDefault;
 extern float emitSingleDefault[20];
-	    
+
 #endif

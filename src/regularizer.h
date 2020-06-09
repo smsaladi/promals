@@ -3,7 +3,6 @@
 
 #include "header_cpp.h"
 
-
 extern void read_regularizer(char *filename);
 extern void print_regularizer();
 
@@ -24,18 +23,18 @@ extern float rme[12];
 // transition probabilities among match, insert, delete states
 extern float **rtrans0;
 extern float ***rtrans;
-//extern float rtrans[10][4][4];
+// extern float rtrans[10][4][4];
 
 // background residue pair emission probabilites
 extern float **rqmatrix0;
 extern float ***rqmatrix;
-//extern float rqmatrix[10][21][21];
+// extern float rqmatrix[10][21][21];
 
 // background residue emission probabilites
 extern float *rbfreq0;
 extern float **rbfreq;
 extern float *log_rbfreq0, **log_rbfreq;
-//extern float rbfreq[10][21];
+// extern float rbfreq[10][21];
 
 // predicted secondary structure background probabilities
 extern float rssfreq[4], log_rssfreq[4];
