@@ -101,7 +101,6 @@ resultfile = ""
 start1 = start2 = -1
 end1 = end2 = 1000000
 cleardir = 0
-program_dir = "/usr1/bin"
 for i in range(len(sys.argv)):
         if sys.argv[i] == '-d' or sys.argv[i] == '-dali': use_dali = 1
         if sys.argv[i] == '-f' or sys.argv[i] == '-fast': use_fast = 1
@@ -116,7 +115,6 @@ for i in range(len(sys.argv)):
         if sys.argv[i] == '-end2': end2 = int(sys.argv[i+1])
         if sys.argv[i] == '-clear': cleardir = int(sys.argv[i+1])
         if sys.argv[i] == '-pdbdir': pdb_fa_dir = sys.argv[i+1]
-        if sys.argv[i] == '-progdir': program_dir = sys.argv[i+1]
 
 
 # go to the directory made up of id names
@@ -202,7 +200,7 @@ if start2 > 0:
 if use_dali:
         # get the .dat file
         if start1 > 0:
-                command = "%s/DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(program_dir, pdb1, pdbid1)
+                command = "DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(pdb1, pdbid1)
                 #print command
                 os.system(command)
         else:
@@ -213,11 +211,11 @@ if use_dali:
                         print(command)
                         os.system(command)
                 else:
-                        command = "%s/DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(program_dir, pdb1, pdbid1)
+                        command = "DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(pdb1, pdbid1)
                         print(command)
                         os.system(command)
         if start2 > 0:
-                command = "%s/DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(program_dir, pdb2, pdbid2)
+                command = "DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(pdb2, pdbid2)
                 #print command
                 os.system(command)
         else:
@@ -228,7 +226,7 @@ if use_dali:
                         #print command
                         os.system(command)
                 else:
-                        command = "%s/DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(program_dir, pdb2, pdbid2)
+                        command = "DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(pdb2, pdbid2)
                         #print command
                         os.system(command)
         datlist = glob.glob("DAT/%s*.dat" %id1)
@@ -262,7 +260,7 @@ if use_dali:
 
 
 if use_fast:
-        fast_prog = "%s/fast" %program_dir
+        fast_prog = "fast"
         fast_results = database_util.run_fast(pdb1, pdb2, seq1, seq2, fast_prog)
         if len(fast_results)==6:
                 if ofp:
@@ -281,7 +279,7 @@ if use_fast:
                         for i, j in enumerate(pos1):
                                 print(j, pos2[i])
 if use_tmalign:
-        tmalign_prog = "%s/TMalign" %program_dir
+        tmalign_prog = "TMalign"
         tmalign_results = database_util.run_tmalign(pdb1, pdb2, seq1, seq2, tmalign_prog)
         if len(tmalign_results)==6:
                 if ofp:
