@@ -4,11 +4,8 @@ import os, sys, re, shutil, random
 from tempfile import *
 
 
-# program location
-prog_dir = '/home/jpei/test_promals3d_package/bar/promals_package/bin/'
-
 # program names
-promals_web = prog_dir + "progress_for_web.py"
+promals_web = "progress_for_web.py"
 
 csv_cutoff_g = 5
 
@@ -16,16 +13,16 @@ alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 def run_promals():
 
-	csv_cutoff = csv_cutoff_g
-	# check and parse the command line
-	cmd_line = sys.argv
-	if len(cmd_line) <= 1: 
-		promals_help()
-		sys.exit(1)
-	elif not os.path.isfile(cmd_line[1]):
-                print >> sys.stderr, "Error reading input file:", cmd_line[1]
-		promals_help()
-		sys.exit(1)
+        csv_cutoff = csv_cutoff_g
+        # check and parse the command line
+        cmd_line = sys.argv
+        if len(cmd_line) <= 1: 
+                promals_help()
+                sys.exit(1)
+        elif not os.path.isfile(cmd_line[1]):
+                print("Error reading input file:", cmd_line[1], file=sys.stderr)
+                promals_help()
+                sys.exit(1)
         else:
                 randomstring = ""
                 infile = os.path.abspath(cmd_line[1])
@@ -36,93 +33,92 @@ def run_promals():
                 try:
                         fp = open(ranfile, "w")
                 except:
-                        print >> sys.stderr, "Error:"
-                        print >> sys.stderr, "      The directory containing your input file is not writable:", infiledir
-                        print >> sys.stderr, "      Input file should be in a writable directory"
+                        print("Error:", file=sys.stderr)
+                        print("      The directory containing your input file is not writable:", infiledir, file=sys.stderr)
+                        print("      Input file should be in a writable directory", file=sys.stderr)
                         sys.exit(1)
                 fp.close()
                 os.system("rm -f %s" %ranfile)
 
-	cmd_line1 = []
-	outputfile = ""
+        cmd_line1 = []
+        outputfile = ""
         blast_dir = ""
         resnum = 1
         caa_freq = 0.8
-	for i in range(len(cmd_line)):
-		arg = cmd_line[i]
-		if i == 0: arg = prog_dir + 'promals_c'
+        for i in range(len(cmd_line)):
+                arg = cmd_line[i]
+                if i == 0: arg = 'promals_c'
                 # change inputfile name to full path name
-		if i == 1: 
+                if i == 1: 
                         arg = os.path.abspath(arg)
                         inputfile = arg
                 # change outfile name to full path name
-		if arg == '-outfile':
-			if i+1 < len(cmd_line): 
+                if arg == '-outfile':
+                        if i+1 < len(cmd_line): 
                                 cmd_line[i+1] = os.path.abspath(cmd_line[i+1])
                                 outputfile = cmd_line[i+1]
                 # change blast_dir name to full path name
-		if arg == '-blast_dir':
-			if i+1 < len(cmd_line): 
+                if arg == '-blast_dir':
+                        if i+1 < len(cmd_line): 
                                 cmd_line[i+1] = os.path.abspath(cmd_line[i+1])
-		#if arg == '-ssw': arg = '-ss_weight'
-		#if arg == '-aaw': arg = '-score_weight'
-		#if arg == '-max_homologs': arg = '-max_num_sequences'
-		#if arg == '-iter_num': arg = '-iter_number'
-		if arg == '-csv_index': 
-			if i+1 < len(cmd_line):
-				csv_cutoff = int(cmd_line[i+1])
-				if (csv_cutoff<0) or (csv_cutoff>9):
-					csv_cutoff = 5
+                #if arg == '-ssw': arg = '-ss_weight'
+                #if arg == '-aaw': arg = '-score_weight'
+                #if arg == '-max_homologs': arg = '-max_num_sequences'
+                #if arg == '-iter_num': arg = '-iter_number'
+                if arg == '-csv_index': 
+                        if i+1 < len(cmd_line):
+                                csv_cutoff = int(cmd_line[i+1])
+                                if (csv_cutoff<0) or (csv_cutoff>9):
+                                        csv_cutoff = 5
                 if arg == "-resnum":
                         resnum = int(cmd_line[i+1])
                 if arg == "-caa_freq":
                         caa_freq = float(sys.argv[i+1])
-		cmd_line1.append(arg)
-	
-	if not outputfile:
-		if re.search("\.fa$", inputfile):
-			outputfile = re.sub("\.fa$", "", inputfile) + ".promals.aln"
+                cmd_line1.append(arg)
+        
+        if not outputfile:
+                if re.search("\.fa$", inputfile):
+                        outputfile = re.sub("\.fa$", "", inputfile) + ".promals.aln"
                 else: outputfile = inputfile + ".promals.aln"
-	if not blast_dir:
+        if not blast_dir:
                 blast_dir = "%s_blast" %inputfile
-	
-	promals_c = ' '.join(cmd_line1)
+        
+        promals_c = ' '.join(cmd_line1)
         promals_c = re.sub("\s+-resnum\s+\S+", " ", promals_c)
         promals_c = re.sub("\s+-caa_freq\s+\S+", " ", promals_c)
         promals_c = re.sub("\s+-csv_index\s+\S+", " ", promals_c)
         if "-blast_dir" not in promals_c:
                 promals_c += " -blast_dir %s " %blast_dir
-	outputlogfile = inputfile+".prmls.oUTpUT"
-	promals_c = promals_c + " > " + outputlogfile
-        print "promals command:"
-	print promals_c
-        print
+        outputlogfile = inputfile+".prmls.oUTpUT"
+        promals_c = promals_c + " > " + outputlogfile
+        print("promals command:")
+        print(promals_c)
+        print()
         sys.stdout.flush()
-	
-	# run programs in a temporary directory to avoid .ncbirc problem
+        
+        # run programs in a temporary directory to avoid .ncbirc problem
         cwd = os.getcwd()
         tmpdir = mkdtemp()
         os.chdir(tmpdir)
-        os.system("cp %s.ncbirc ." %prog_dir)
-	s1 = os.system(promals_c)
+        s1 = os.system(promals_c)
         if s1 == 0:
-                print "output alignment file is:", outputfile
-                print "blast intermediate files are in:", blast_dir
-                print
+                print("output alignment file is:", outputfile)
+                print("blast intermediate files are in:", blast_dir)
+                print()
         else:
-                print "Error running promals - check log file for details:", outputlogfile
-                print
-        print "html file command:"
-	print "python %s %s %s -cutoff %d -resnum %d -caa_freq %f" %(promals_web, outputfile, outputlogfile, csv_cutoff, resnum, caa_freq) 
-        print
+                print("Error running promals - check log file for details:", outputlogfile)
+                print()
+        print("html file command:")
+        print("python %s %s %s -cutoff %d -resnum %d -caa_freq %f" %(promals_web, outputfile, outputlogfile, csv_cutoff, resnum, caa_freq)) 
+        print()
         sys.stdout.flush()
-	s2 = os.system("python %s %s %s -cutoff %d -resnum %d -caa_freq %f 2>/dev/null" %(promals_web, outputfile, outputlogfile, csv_cutoff, resnum, caa_freq) )
+        s2 = os.system("python %s %s %s -cutoff %d -resnum %d -caa_freq %f 2>/dev/null" %(promals_web, outputfile, outputlogfile, csv_cutoff, resnum, caa_freq) )
         if s2 == 0:
-                print "output html alignment file is:", outputfile + ".html"
-                print
+                print("output html alignment file is:", outputfile + ".html")
+                print()
         else:
-                print "Error generating html file"
-                print
+                print("Error generating html file")
+                print()
 
         os.chdir(cwd)
         shutil.rmtree(tmpdir)
@@ -202,9 +198,9 @@ promals with 3D information
 
         '''
 
-        print help_content
+        print(help_content)
 
 
 if __name__ == '__main__':
 
-	run_promals()
+        run_promals()
