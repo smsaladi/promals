@@ -22,5 +22,6 @@ extern char parameter_file1[];
 extern char parameter_file2[];
 extern int relax_number;
 extern int reverse_align_order;
+extern double id_thr;
 
 #endif

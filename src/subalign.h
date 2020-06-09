@@ -19,7 +19,9 @@ class subalign {
 
 	void readali(char *filename);
 	void printali(int blocksize);
+	void printali(int blocksize, int header);
 	void printali(char *filename, int blocksize);
+	void printProfile();
 
 	int getNal();
         int getAlilen();
@@ -35,11 +37,13 @@ class subalign {
         void setAname(char **name);
 	void convertAseq2Alignment();
 
+	void set_gapt(double gapt);
+
 	//subalign *sub2align(int *mark);
 	//subalign *sub2align(int *mark, int *mark1);
 	
-	subalign sub2align(int *mark);
-	subalign sub2align(int *mark, int *mark1);
+	subalign *sub2align(int *mark);
+	subalign *sub2align(int *mark, int *mark1);
 
 	static int getsubaligncount();
 	void add_sequence(char *name, char *seq);
@@ -73,6 +77,9 @@ class subalign {
         double *sum_eff_let;
         int *maskgapRegion;
 	double qmatrix[21][21];
+	double average_sum_eff_let;
+	
+	double *gap_content;
 
 	int alilen_mat;
 	double n_eff;
@@ -85,8 +92,43 @@ class subalign {
 	double effective_number_nogaps(int **ali, int *marks, int n, int start, int end);
 	void pseudoCounts(double **matrix, double n_eff, int len, double **pseudoCnt);
 
+	void h_weight_all();
+	double *hwt_all;
+
     public:
 	double **distMat;
+
+
+    public:
+	// purge an alignment by
+	// 1. removing highly similar sequences (id > high_id_thr)
+	// 2. removing highly divergent sequences (id < low_id_thr)
+	// 3. removing sequence fragment (gap_fraction > gap_fraction_thr)
+	// 4. selecting only a subset if remaining num > max_num_kept
+	subalign * purge_align(double low_id_thr, double high_id_thr, int max_num_kept, double gap_fraction_thr);
+
+    // my new version of profile - effective position determined by Henikoff gap weight
+    public:
+	int *prof_pos;
+	double **prof_effn;
+	double **prof_freq;
+	double *prof_sum_eff;
+	double *prof_hwt_all;
+	double *prof_gap_content;
+	double prof_nef;
+	double prof_average_sum_eff_let;
+	int prof_len;
+	double prof_raw_gap_threshold;
+	double prof_gap_threshold;
+	void prof_h_weight_all(double raw_gap_fraction_cutoff);
+	void prof_positions(double prof_gap_threshold_here);
+	void set_prof_raw_gap_threshold(double gapthr);
+	void set_prof_gap_threshold(double gapthr);
+	void prof();
+	void prof_get_effn(int **ali, int n, int len, int prof_len, double **n_effAa, double *sum_eff_let, int *prof_pos, double *nef);
+	int done_prof;
+
+	
 };
 
 

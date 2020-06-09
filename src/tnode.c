@@ -16,7 +16,11 @@ tnode::tnode() {
 	parent = 0;
 	branchlen = 0;
 	n = -1;
+	// position index in the preAligned array
 	p = -1;
+
+	// position index in the allseqs sequence array
+	p_seq = -1;
 
 	aseq = 0;
 	seq = 0;
@@ -27,6 +31,9 @@ tnode::tnode() {
 
 	rootFlag = 0;
 	nodecount++;
+
+	similarSet = NULL;
+	consiston = NULL;
 }
 
 tnode::tnode(const tnode &a) {
@@ -62,6 +69,9 @@ tnode::tnode(const tnode &a) {
 	aligned = a.aligned;
 
 	nodecount++;
+
+	consiston = a.consiston;
+	similarSet = a.similarSet;
 }
 
 tnode::~tnode() {

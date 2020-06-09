@@ -60,6 +60,7 @@ template <typename TNODE> class btree {
 	void profileConsistency_local();
 	void profileConsistency_glocal(float wg);
 	void profileConsistency_multim(hmm_parameters *params);
+	void profileConsistency_multim(hmm_parameters *params, double **dist_matrix, double max_dist_cutoff);
 	void profileConsistency_multim2(hmm_parameters *params1, hmm_parameters *params2, sequences *tmpSeq2, double id_cutoff);
 	//void profileConsistency_multim(char *params);
 	void printAlignmentFromAbs(TNODE *n, char *outfilename);
@@ -71,6 +72,7 @@ template <typename TNODE> class btree {
 	void computeConsistencyAlignment(TNODE *a);
 	int **computeConsistMatrix(TNODE *a, TNODE *b);
 	void relaxConsistMatrix();
+	void relaxConsistMatrix(double **dist_matrix, double max_dist_cutoff);
 	int *computePairwiseAlignment(int **scoreMat, int m, int n, int &len); // by dynamic programming
 
 	static int btreecount;

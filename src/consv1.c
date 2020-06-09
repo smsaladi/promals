@@ -338,59 +338,11 @@ void consv::h_weight_all()
 	int mark[nal+1];
 	int gapcount,totalcount,wsign;
 
+	int effp= 0;
+
 	hwt_all = dvector(nal);
 
-	//for(i=1;i<=20;i++) h_oaf_ip[i] = 0;
-
-	/* mark the sequences with gaps */
-	/* for(i=1;i<=nal;i++) {
-		// NEW: fix a typo 05/06/03
-		mark[i] = 0;
-		if((alignment[i][ip]>0&&alignment[i][ip]<=20)||(alignment[i][ip]>25&&alignment[i][ip]<=45)) mark[i]=1;
-		else if (alignment[i][ip]==0)mark[i]=0;
-			    }
-	*/
-	
-	
-	/* find the maxstart and miniend positions */
-	/* maxstart = 1;
-	for(i=1;i<=nal;i++){
-		if(mark[i]==0) continue;
-		maxs = 1;
- 	    	for(j=1;j<=alilen;j++) {
-			if(ali[i][j]==0) maxs++;
-			if(ali[i][j]>0) break;
-					}
-		if(maxstart<maxs) maxstart = maxs;
-			   }
-	miniend = alilen;
-	for(i=1;i<=nal;i++){
-		if(!mark[i]) continue;
-		minie = alilen;
-		for(j=alilen;j>0;j--) {
-			if(ali[i][j]==0) minie--;
-			if(ali[i][j]>0) break;
-				      }
-		if(miniend>minie) miniend = minie;
- 			   }
-	*/
-	/* NEW: 05/06/03 */
-	// if(maxstart > miniend) maxstart = miniend;
-
-/* special case where only one site is not gap */
-        /* j=0;
-        for(i=1;i<=nal;i++) {if(mark[i]>0) j++;}
-        if(j==1) {
-                for(i=1;i<=nal;i++) hwt_all[i]=mark[i];
-                // overall_freq_wgt(ali,maxstart,miniend,mark,hwt, h_oaf_ip);
-                // overall_freq(ali,1,alilen,mark, oaf_ip);
-                return;
-                 }
-	*/
-
 	for(i=1;i<=nal;i++) hwt_all[i]=0;
-	// for(i=1;i<=nal;i++) cout << i << "\t" << hwt_all[i] << endl;
-	// for(j=maxstart;j<=miniend;j++){
 	for(j=1;j<=alilen;j++){
 		
 		amtypes = 0;
@@ -413,6 +365,8 @@ void consv::h_weight_all()
 				   }
 		if(gapcount>totalcount*0.5) continue;/*gap>50% excluded*/
 
+		effp ++;
+
 		for(i=1;i<=nal;i++){
 			// if(mark[i]==0) continue;
 			// gap is not considered as the 21st letter
@@ -428,26 +382,8 @@ void consv::h_weight_all()
 							}
 				   }
 				}
-	/* test if all henikoff weights are zero for all sequences */
-	/* wsign=0;
-	for(i=1;i<=nal;i++) {
-		if(hwt_all[i]>0) { wsign=1;break;}
-			    }
-	gapcount=0;
-	if(wsign==0) {
-		for(i=1;i<=nal;i++){
-			if(alignment[i][ip]==0) gapcount++;
-				   }
-		//if(gapcount==nal){fprintf(stderr, "This position contains only gaps\n");}
-		for(i=1;i<=nal;i++){
-			if(alignment[i][ip]!=0) hwt_all[i]=1.0/(nal-gapcount);
-				   }
-		     }
-	*/
 
-	// overall_freq_wgt(ali,maxstart,miniend,mark,hwt, h_oaf_ip);
-	// overall_freq(ali,1,alilen,mark, oaf_ip);
-	//for(i=1;i<=nal;i++) cout << i << "\t" << hwt_all[i] << endl;
+	for(i=1;i<=nal;i++) hwt_all[i]/=effp;
 	return;
 }
 	

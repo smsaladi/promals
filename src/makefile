@@ -1,4 +1,5 @@
-install: mummals meta_align
+install: mummals
+install: meta_align
 
 CC = g++
 OTHERFLAGS = -DNumInsertStates=1 -DVERSION="1.09"
@@ -7,21 +8,30 @@ OTHERFLAGS = -DNumInsertStates=1 -DVERSION="1.09"
 CXXFLAGS = -O3
 CFLAGS = -c
 
+meta_align: meta_align.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h hmm_profpair.o smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o
+	g++ meta_align.o sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o hmm_profpair.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o -o meta_align -lm $(CXXFLAGS)
 
-mummals: mummals.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h hmm_profpair.o smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o
-	g++ mummals.o sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o hmm_profpair.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o -o mummals -lm $(CXXFLAGS)
 
-meta_align: meta_align.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h hmm_profpair.o smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o
-	g++ meta_align.o sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o hmm_profpair.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o -o meta_align -lm $(CXXFLAGS)
+mummals: mummals.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h hmm_profpair.o smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o
+	g++ mummals.o sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o hmm_profpair.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o -o mummals -lm $(CXXFLAGS)
 
-mummals.o: mummals.c btree_template.h progressiveAlignHMM.h
-	$(CC) $(CFLAGS) mummals.c $(CXXFLAGS)
+refinegap: refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o
+	g++ refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o -o refinegap -lm
 
-meta_align.o: meta_align.c
-	$(CC) $(CFLAGS) meta_align.c $(CXXFLAGS)
+refinegap.o: refinegap.c refinegap.h
+	$(CC) $(CFLAGS)  refinegap.c $(CXXFLAGS)
 
 consv1.o: consv1.c consv1.h
 	$(CC) $(CFLAGS)  consv1.c $(CXXFLAGS)
+
+multiple.o: multiple.c multiple.h progressiveAlignHMM.h btree_template.h
+	$(CC) $(CFLAGS)  multiple.c $(CXXFLAGS)
+
+meta_align.o: meta_align.c 
+	$(CC) $(CFLAGS)  meta_align.c $(CXXFLAGS)
+
+mummals.o: mummals.c 
+	$(CC) $(CFLAGS)  mummals.c $(CXXFLAGS)
 
 smallnumber.o: smallnumber.c smallnumber.h
 	$(CC) $(CFLAGS) smallnumber.c $(CXXFLAGS)
@@ -64,9 +74,6 @@ param.o: param.c param.h
 
 mm.o: mm.h mm.c
 	$(CC) $(CFLAGS) mm.c $(CXXFLAGS)
-
-refinegap.o: refinegap.c refinegap.h
-	$(CC) $(CFLAGS) refinegap.c $(CXXFLAGS)
 
 .c.o :
 	$(CC) $(CFLAGS) $(CXXFLAGS) $?

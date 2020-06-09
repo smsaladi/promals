@@ -357,6 +357,6 @@ double seqIdentity(const string &c1, const string &c2, int length) {
 		if( isalpha(c1[i]) ) len1++;
 		if( isalpha(c2[i]) ) len2++;
 	}
-	return (1.0*ip/(len1?len2:(len1<len2) ) );
+	return (1.0*ip/((len1<len2)?len1:len2)  );
 }
 

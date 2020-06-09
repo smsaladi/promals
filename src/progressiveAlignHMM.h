@@ -13,6 +13,7 @@
 #include "param.h"
 #include "hmm_multim.h"
 #include <vector>
+#include "multiple.h"
 
 static int Debug = 1;
 
@@ -73,7 +74,8 @@ void btree<TNODE>::progressiveAlignHMM_FastStage(TNODE *n, float distCutoff) {
 		dist += k->childL->branchlen;
 		k = k->childL;
 	}
-	if(dist >= distCutoff) return;
+	//cout << "dist: " << dist << endl;
+	if(dist > distCutoff) return;
 
 	//cout << "======" << endl;
 	a = n->childL->aln; b = n->childR->aln;
@@ -215,6 +217,7 @@ void btree<TNODE>::profileConsistency_multim(hmm_parameters *params) {
 	smat = gmatrix<sparseMatrix *>(preAligned.size()-1, preAligned.size()-1);
 	smat1 = gmatrix<sparseMatrix *>(preAligned.size()-1, preAligned.size()-1);
 
+
 	// pairwise profile alignments; generate probability matrices (sparse)
 	for(i=0;i<(int)preAligned.size();i++) {
 		for(j=i+1;j<(int)preAligned.size();j++) {
@@ -285,6 +288,103 @@ void btree<TNODE>::profileConsistency_multim(hmm_parameters *params) {
 	//relaxConsistMatrix();
 	for(i=0;i<relax_number;i++) {
 	    relaxConsistMatrix();
+	}
+	/*
+	for(i=0;i<(int)preAligned.size();i++) {
+		for(j=i+1;j<(int)preAligned.size();j++) {
+		    cout << "####### " << i << "   " << j << endl;
+		    cout << preAligned[i]->aln->aname[0] << " " << preAligned[j]->aln->aname[0] << endl;
+		    smat[i][j]->printSparseMatrix(1);
+		}
+	}
+	*/
+}
+
+template <typename TNODE>
+void btree<TNODE>::profileConsistency_multim(hmm_parameters *params, double **dist_matrix, double max_dist_cutoff) {
+
+
+	int i,j=0,k,l,m,n;
+	float **realmat, **realmat1;
+	int lenx, leny, lenx1, leny1;
+	int nonZeroCounts = 0;
+	
+	smat = gmatrix<sparseMatrix *>(preAligned.size()-1, preAligned.size()-1);
+	smat1 = gmatrix<sparseMatrix *>(preAligned.size()-1, preAligned.size()-1);
+
+	// pairwise profile alignments; generate probability matrices (sparse)
+	for(i=0;i<(int)preAligned.size();i++) {
+		for(j=i+1;j<(int)preAligned.size();j++) {
+			//cout << "i: " << i << "\t" << "j: " << "\t" << j << endl;
+			nonZeroCounts = 0;
+			hmm_multim *hmmProfPair = new hmm_multim(preAligned[i]->aln, preAligned[j]->aln);
+			hmmProfPair->set_parameters(params);
+			//hmm_profpair1 *hmmProfPair = new hmm_profpair1(preAligned[i]->aln, preAligned[j]->aln);
+		        //hmmProfPair->viterbi();
+			//cout << "Pairwise viterbi alignment: " << i << "\t" << j << endl;
+		        //subalign *newalign = hmmProfPair->productViterbiAlign();
+		        //newalign->printali(60);
+			//delete newalign;
+		        //cout << "------------" << endl;
+
+			hmmProfPair->forward();
+			hmmProfPair->backward();
+			realmat = hmmProfPair->probMat;
+			lenx = hmmProfPair->lenx; leny = hmmProfPair->leny;
+			if(reverse_align_order) {
+				hmm_multim *hmmProfPair1 = new hmm_multim(preAligned[j]->aln, preAligned[i]->aln);
+				hmmProfPair1->set_parameters(params);
+				hmmProfPair1->forward();
+				hmmProfPair1->backward();
+				realmat1 = hmmProfPair1->probMat;
+				lenx1 = hmmProfPair1->lenx; leny1 = hmmProfPair1->leny;
+				//cout << lenx1 << "  " << leny1 << endl;
+				//cout << lenx << "  " << leny << endl;
+			        for(k=1;k<=lenx1;k++) {
+       	        		        for(l=1;l<=leny1;l++) {
+					    realmat[l][k] = (realmat1[k][l]+realmat[l][k])/2;
+					}
+                		}
+				delete hmmProfPair1;
+        		}
+				
+		        for(k=1;k<=lenx;k++) {
+               		        for(l=1;l<=leny;l++) {
+                       		    if(realmat[k][l]<minProb) realmat[k][l] = 0;
+				    else nonZeroCounts++;
+                       		    //cout << realmat[k][l] << " ";
+                		} //cout << endl;
+        		}
+			if(debug>1) cout << "None-zero counts: " << i << "\t" << j << "\t" << nonZeroCounts << endl;
+			//cout << "Here " << endl;
+			smat[i][j] = new sparseMatrix(realmat, lenx, leny);
+			//cout << "Here " << endl;
+			if(Debug>1) smat[i][j]->printCrs();
+			//smat[i][j] = new sparseMatrix;
+			//smat[i][j]->nrows=0; smat[i][j]->ncols=0;
+			//cout << smat[i][j]->nrows << "\t" << smat[i][j]->ncols<< endl;
+			//smat[i][j]->regular2Sparse(realmat, lenx, leny);
+			//testSMAT.regular2Sparse(realmat, lenx, leny);
+			//cout << "Here " << endl;
+			smat[j][i] = smat[i][j]->transpose();
+			//cout << "Here " << endl;
+			delete hmmProfPair;
+			
+
+		}
+	}
+	if(debug>1) {
+	cout << "Time after the initial generation of consistency matrices: " << endl;
+	times(&tmsend); timeDiff();
+	times(&tmsstart);
+	}
+	
+	//relaxConsistMatrix();
+	//relaxConsistMatrix();
+	for(i=0;i<relax_number;i++) {
+	    //cout << " Before relax" << endl;
+	    relaxConsistMatrix(dist_matrix, max_dist_cutoff);
+	    //cout << " After relax" << endl;
 	}
 	/*
 	for(i=0;i<(int)preAligned.size();i++) {
@@ -646,6 +746,91 @@ void btree<TNODE>::relaxConsistMatrix() {
 } 
 
 template <typename TNODE> 
+void btree<TNODE>::relaxConsistMatrix(double **dist_matrix, double max_dist_cutoff) {
+
+	int i, j, k,l;
+	float **tmpMat;
+
+	if(debug>1) {
+	cout << "Number of elements in the matrices before consistency: " << endl;
+	for(i=0;i<preAligned.size();i++) { // Update the matrices
+		for(j=0;j<preAligned.size();j++) {
+			if(i==j) { cout << "0\t"; if(i==preAligned.size()-1) cout << endl; continue; }
+			cout << smat[i][j]->nelements<<"\t";
+		}
+		cout << endl;
+	}
+	}
+	// consistency measurement among the probability matrices
+	for(i=0;i<preAligned.size();i++) {
+		for(j=i+1;j<preAligned.size();j++) {
+			//cout << "I: " << i << "\tJ: " << j <<endl;
+			//smat1[i][j] = new sparseMatrix(&smat[i][j]);
+			tmpMat = smat[i][j]->sparseCrs2Regular(); 
+			// x-x-y and x-y-y
+			for(k=1;k<=preAligned[i]->aln->alilen;k++) {
+				for(l=1;l<=preAligned[j]->aln->alilen;l++) {
+					tmpMat[k][l] *= 2;
+				}
+			}
+			// relaxation 
+			int number_for_relax=2;
+			for(k=0;k<preAligned.size();k++) {
+				if(k==i) continue; if(k==j) continue;
+				if( (dist_matrix[i][k]==0)&&(dist_matrix[j][k]==0) ) continue;
+				if(dist_matrix[i][k]>max_dist_cutoff) continue;
+				if(dist_matrix[j][k]>max_dist_cutoff) continue;
+				relaxTwoSparse(smat[i][k], smat[k][j], tmpMat);
+				number_for_relax+=1;
+			}
+			if(Debug>1) cout << i << " " << j << " Number for relax: " << number_for_relax << endl;
+			//cout << "HERE: " << endl;
+			// normalize
+		        for(k=1;k<=preAligned[i]->aln->alilen;k++) {
+               		        for(l=1;l<=preAligned[j]->aln->alilen;l++) {
+				    //tmpMat[k][l] /= preAligned.size();
+				    tmpMat[k][l] /= number_for_relax;
+				    //if(relax_number>1) if(tmpMat[k][l]<minProb) tmpMat[k][l] = 0;
+				    if(tmpMat[k][l]<minProb) tmpMat[k][l] = 0;
+                		}
+        		}
+			//cout << "HERE: " << endl;
+			smat1[i][j] = new sparseMatrix(tmpMat,preAligned[i]->aln->alilen, preAligned[j]->aln->alilen); 
+			//cout << "HERE: " << endl;
+			// normalize
+			//smat1[i][j]->multiplyConstant(1.0/preAligned.size() );
+			smat1[j][i] = smat1[i][j]->transpose();
+			//smat1[i][j]->printCrs();
+			free_gmatrix<float>(tmpMat, preAligned[i]->aln->alilen, preAligned[j]->aln->alilen);
+			tmpMat = NULL;
+		}
+	}
+	for(i=0;i<preAligned.size();i++) { // Update the matrices
+		for(j=i+1;j<preAligned.size();j++) {
+			//cout << "II: "<< i << "\tJJ: " << j << endl;
+			smat[i][j]->clear();
+			smat[i][j] = smat1[i][j];
+			if(Debug>1) smat[i][j]->printCrs();
+			smat[j][i]->clear();
+			smat[j][i] = smat1[j][i];
+		}
+	}
+	if(debug>1) {
+	cout << "Number of elements in the matrices after consistency: " << endl;
+	for(i=0;i<preAligned.size();i++) { // Update the matrices
+		for(j=0;j<preAligned.size();j++) {
+			if(i==j) { cout << "0\t"; if(i==preAligned.size()-1) cout << endl; continue; }
+			cout << smat[i][j]->nelements<<"\t";
+		}
+		cout << endl;
+	}
+	cout << "Time after the relaxation: " << endl;
+	times(&tmsend); timeDiff();
+	}
+
+} 
+
+template <typename TNODE> 
 void btree<TNODE>::computeConsistencyAlignment(TNODE *a) {
 
 	int i,j,k;
@@ -836,25 +1021,22 @@ void btree<TNODE>::printAlignmentFromAbs(TNODE *n, char *outfilename) {
 	tmpSeq->nal = 0;
 	tmpSeq->alilen = n->absSeqlength;
 	tmpSeq->mnamelen = 0;
+	subalign *tmpSeq1;
+	//cout << "printSeq here" << endl;
 
 	if(n->abstractSeq.empty() ) {
-		cout << "No abstract sequences, print the subalign" << endl;
+		//cout << "No abstract sequences, print the subalign" << endl;
 		//refinegap(n->aln, 0.5, 1, 1, 1);
 		//delete_complete_gap_positions(n->aln);
 		
-		n->aln->printali(60);
+		//n->aln->printali(60);
 		n->aln->printali(outfilename, 60);
-		cout << "------------------" << endl;
 	 	return;
 	}
-	if(debug>1)cout << n->absSeqnum << endl;
 
 	assert(n->absSeqnum >0);
 
-	for(i=1;i<=n->absSeqnum;i++) { 
-		//cout << i << " " << preAligned[n->abstractSeq[i][0]]->aln->nal << endl;
-		seqNUM += preAligned[n->abstractSeq[i][0]]->aln->nal; 
-	}
+	for(i=1;i<=n->absSeqnum;i++) { seqNUM += preAligned[n->abstractSeq[i][0]]->aln->nal; }
 	//cout << "seqNUM: " << seqNUM << endl;
 	tmpSeq->aseq = new char *[seqNUM+1];//cmatrix(0, seqNUM-1, 0, n->absSeqlength);
 	for(i=0;i<=seqNUM;i++) tmpSeq->aseq[i] = new char [n->absSeqlength+1];
@@ -897,6 +1079,33 @@ void btree<TNODE>::printAlignmentFromAbs(TNODE *n, char *outfilename) {
 		//(tmpSeq->nal)++;
 		S++;
 	   }
+	}
+
+	// add similar sequences
+	int found = 0;
+	//cout << found << endl;
+	for(i=0;i<preAligned.size();i++) {
+		if(preAligned[i]->similarSet) {
+			//cout << "similarSet " << i << endl;
+			found = 0;
+			for(j=0;j<preAligned[i]->similarSet->nal;j++) {
+				for(k=0;k<tmpSeq->nal;k++) {
+					if(strcmp(preAligned[i]->similarSet->aname[j], tmpSeq->aname[k])==0) {
+						found = 1;
+						break;
+					}
+				}
+				if(found==1) break;
+			}
+			//cout << tmpSeq->aname[k] << endl;
+			if(found==0) {
+				cout << "same name does not found" << endl;
+				exit(0);
+			}
+			tmpSeq1 = merge_align_by_one_sequence(tmpSeq, preAligned[i]->similarSet, tmpSeq->aname[k]);	
+			//delete tmpSeq;
+			tmpSeq = tmpSeq1;
+		}
 	}
 
 	tmpSeq->alignment = imatrix(tmpSeq->nal, tmpSeq->alilen);

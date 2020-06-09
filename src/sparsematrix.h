@@ -14,12 +14,21 @@ class sparseMatrix {
 	int nrows, ncols;
 	int nelements;
 	// int isCrs; // compressed row storage
+	float *rvalue;
+	int *rindex;
+	int *rstart;
+	float *cvalue;
+	int *cindex;
+	int *cstart;
+	
+	/*
 	vector<float> rvalue; // compressed row storage
 	vector<int> rindex;
 	vector<int> rstart;
 	vector<float> cvalue; // compressed column storage
 	vector<int> cindex;
 	vector<int> cstart;
+	*/
 	
 	float **aux;
 

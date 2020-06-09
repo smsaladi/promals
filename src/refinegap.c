@@ -269,6 +269,8 @@ void delete_complete_gap_positions(subalign *aln) {
     }
     aln->alilen = tmp_len;
 
+    free_cmatrix(tmp_seq, nal-1, alilen);
+
 }
 	
 

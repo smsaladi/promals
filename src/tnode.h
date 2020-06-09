@@ -20,6 +20,7 @@ class tnode {
 	double branchlen;
 	int n;  // position in the array of pointers to tnodes
 	int p;  // position in the vector of pointers to the pre-aligned groups
+	int p_seq; // position in the vector of allseqs
 	
 	double dist;
 	int seqIndex;
@@ -45,6 +46,9 @@ class tnode {
 	vector<int *> abstractSeq;
 	int absSeqnum;
 	int absSeqlength;
+
+	subalign *similarSet;
+	subalign *consiston;
 	
 };
 

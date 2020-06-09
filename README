@@ -8,48 +8,10 @@ Install the programs
 % make clean
 % make
 
-MUMMALS document:
+
+The document for mummals is below:
+
 ================ document for mummals ===========================================
-
-MUMMALS (MUltiple alignment with Multiple MAtch state models of Local Structure) 
-is a program for constructing multiple  alignment for protein sequences 
-(Pei and Grishin, submitted). It implements complex hidden Markov models (HMMs) 
-of pairwise alignment with multiple match states that capture local structural 
-information. MUMMALS adopts a progressive alignment method that applies a 
-probabilistic consistency-based scoring function similar to the one used in 
-ProbCons (Do et al., 2005). First, a tree is built in a fast way based on a 
-K-mer count method (Edgar, 2004). An initial alignment is built progressively 
-guided by the tree with a simple sum-of-pairs scoring function. A second tree 
-is then built with a UPGMA method based on sequence identities calculated from 
-the initial alignment. The probabilistic consistency strategy is applied in the 
-same way as in the ProbCons program (Do et al., 2005). For each sequence pair, 
-the match probabilities of residue pairs are calculated using one of the HMMs 
-listed below. These probability matrices are subject to consistency measure, 
-which involves multiplications of the matrices. Finally MUMMALS progressively 
-aligns the sequences guided by the second tree using the consistency-based 
-scoring function.
-
-MUMMALS implementing HMMS with secondary structural information gives on average 
-slightly better results (several percent) than ProbCons (version 1.1), MAFFT 
-(version 5.667) and MUSCLE (version 3.52) on several multiple alignment testing 
-datasets (Pei and Grishin, submitted).
-
-References
-
-Do, C. B., Mahabhashyam, M. S., Brudno, M. and Batzoglou, S. (2005).  ProbCons: 
-Probabilistic consistency-based multiple sequence alignment. Genome Res 15, 330-340.
-Edgar, R. C. (2004). MUSCLE: multiple sequence alignment with high accuracy and 
-high throughput. Nucleic Acids Res 32, 1792-1797.
-Katoh, K., Kuma, K., Toh, H., and Miyata, T. (2005). MAFFT version 5: improvement 
-in accuracy of multiple sequence alignment. Nucleic Acids Res 33, 511-518.
-Pei, J. and Grishin, N. V. (submitted). MUMMALS: multiple sequence alignment 
-improved by using hidden Markov models with local structural information.
-
-================ end, document for mummals ======================================
-
-
-Usage and options for mummals:
-================ mummals usage and options ======================================
 
  MUMMALS - MUltiple alignment with Multiple MAtch state models of Local Structure
 
@@ -62,32 +24,24 @@ Usage and options for mummals:
  -solv       Number of solvent accessibility categories, 1, 2 or 3
  -unaligned  Number of additional match states for unaligned regions, 0 or 1
  -param      Input parameter file for hidden Markov model
+ -id_thr     identity threshold above which neighboring groups are aligned in a fast way, between 0 and 1, default: 0.6
  -outfile    Output file name
 
- Example: using model HMM_1_3_1 (with secondary structural information)
+ Example: using model HMM_1_3_1
 
  mummals tmp1.fa -ss 3 -solv 1 -unaligned 1 -param hmm_parameters/dataset_0.20_0.40_0.60_abcd.dali.solv1_ss3.mat -outfile tmp1.mummals.aln
 
-The files containing HMM parameters and explanations of their name format are in directory hmm_parameters/. 
+The parameter files and explanations of their name format are in directory hmm_parameters/. 
 
-================ end, mummals usage and options =================================
-
-
-
-META_ALIGN document:
-================ document for mummals ===========================================
-meta_align is a program that combines the results of other mulitiple alignment
-programs. Pairwise alignments from several input alignments (with the same set of
-sequences) is extracted and ProbCons-type consistency measure is applied to the 
-pairwise alignment library. A new multiple alignment is then generated based on the 
-consistency scoring function.
-
-================ end, document for meta_align ===================================
+================ end, document for mummals ======================================
 
 
 
-Usage and option for meta_align:
-================ meta_align usage and option ====================================
+
+
+The document for meta_align is below:
+
+================ document for meta_align =======================================
 
 meta_align - merge several multiple alignments into one alignment based on consistency
 
@@ -100,10 +54,10 @@ meta_align - merge several multiple alignments into one alignment based on consi
  Options: 
 
  -outfile    Output file name 
-             if not specified, it will be input_file_list.meta_aln.aln
+     if not specified, it will be input_file_list.meta_aln.aln
 
  Example: in directory examples_meta_align/
 
-================ end, meta_align usage and option ===============================
+================ end, document for meta_align ==================================
 
 

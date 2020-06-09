@@ -14,6 +14,7 @@ char parameter_file1[200];
 char parameter_file2[200];
 int relax_number = 2;
 int reverse_align_order = 0;
+double id_thr = 0.6;
 
 
 void getParameter(int argc, char **argv, int prog) {
@@ -108,6 +109,9 @@ void getParameter(int argc, char **argv, int prog) {
 		if(argStr == "-reverse") {
 			reverse_align_order = atoi(argv[i+1]);
 		}
+		if(argStr == "-id_thr") {
+			id_thr = atof(argv[i+1]);
+		}
 	}
 	//cout << "Here" << endl;
 }
@@ -131,6 +135,7 @@ void printParameters() {
 	cout << "  Number of secondary structure types (ss): " << ss << endl;
 	cout << "  Number of solvent accessibility categories (solv): " << solv << endl; 
 	cout << "  Number of separate match state for unaligned regions (unaligned): " << unaligned << endl;
+	cout << "  Identity threshold (id_thr): " << id_thr << endl;
 	cout << "  Parameter file (param): " << parameter_file << endl;
 	//cout << "  relax_number: " << relax_number << endl;
 	//cout << "  reverse align order: " << reverse_align_order << endl;
@@ -154,6 +159,7 @@ void printHelp(int prog) {
 	cout << " -solv       Number of solvent accessibility categories, 1, 2 or 3" << endl;
 	cout << " -unaligned  Number of additional match states for unaligned regions, 0 or 1" << endl;
 	cout << " -param      Input parameter file for hidden Markov model" << endl;
+	cout << " -id_thr     Indentity threshold above which neighboring groups are aligned in a fast way, between 0 and 1, default: 0.6" << endl;
 	cout << " -outfile    Output file name" << endl;
 	cout << endl;
 
