@@ -1,8 +1,11 @@
 #ifndef __refine__
 #define __refine__
 
-#include "all.h"
+#include "header_cpp.h"
 #include <algorithm>
+#include "subalign.h"
+#include <map>
+#include "consv1.h"
 
 struct gapinfo {
 

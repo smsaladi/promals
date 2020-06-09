@@ -1,6 +1,11 @@
 #include "ss_prof.h"
 #include "regularizer.h"
 
+ss_prof::ss_prof() {
+
+        sslen = 0;
+        valid_file = 0;
+}
 
 ss_prof::ss_prof(char *base_name) {
 	
@@ -30,7 +35,7 @@ void ss_prof::read_ss_files(char *base_name) {
 	sslen = 0;
 	ifstream ssfp(ss_file, ios::in);
 	if(!ssfp) {
-		cout << "Warning: secondary structure prediction file does not exist" << endl;
+		cout << "Secondary structure prediction file does not exist" << endl;
 		cout << " --- " << ss_file << endl;
 		return;
 	}
@@ -194,10 +199,70 @@ int ss_prof::check_aa_seq(char *target_seq) {
 
 	int i, j;
 
+        //cout << "checking sequence" << endl;
 	//cout << target_seq << endl;
 	//cout << seq << endl;
+        //
+        char *uppercase_seq = cvector(strlen(target_seq)+1);
+        strcpy(uppercase_seq, target_seq);
+        for(i=0;i<strlen(uppercase_seq);i++) uppercase_seq[i] = toupper(uppercase_seq[i]);
 
-	if(strcmp(target_seq, seq)==0) return 1;
-	else return 0;
+	if(strcmp(uppercase_seq, seq)==0) {
+                delete [] uppercase_seq;
+                return 1;
+        }
+	else {
+                delete [] uppercase_seq;
+                return 0;
+        }
+}
 
+ss_prof *ss_prof::sub_ss_prof(int start, int end) {
+
+        int i, j;
+
+        ss_prof *tmpss = new ss_prof();
+
+        //cout << "start: " << start << " end: " << end << endl;
+        tmpss->sslen = end-start+1;
+	tmpss->sstype = ivector(tmpss->sslen);
+	tmpss->seq = cvector(tmpss->sslen+1);
+	tmpss->ssfreq = gmatrix<float>(tmpss->sslen, 3);
+	tmpss->ssrel = ivector(tmpss->sslen);
+	tmpss->alphabet1 = ivector(tmpss->sslen);
+
+        for(i=1;i<=tmpss->sslen;i++) {
+                tmpss->sstype[i] = sstype[i+start-1];
+                tmpss->seq[i-1] = seq[i+start-1-1];
+                tmpss->ssrel[i] = ssrel[i+start-1];
+                tmpss->alphabet1[i] = alphabet1[i+start-1];
+                for(j=1;j<=3;j++) {
+                        tmpss->ssfreq[i][j] = ssfreq[i+start-1][j];
+                }
+                //cout << tmpss->sstype[i]<<tmpss->seq[i-1]<<tmpss->ssrel[i]<<tmpss->alphabet1[i]<<" " << tmpss->ssfreq[i][1] << " " << tmpss->ssfreq[i][2] << tmpss->ssfreq[i][3] << endl;
+        }
+        tmpss->seq[i-1] = '\0';
+	// important, set ssfreq[0] to be the background frequency vector
+	tmpss->ssfreq[0][1] = rssfreq[1];
+	tmpss->ssfreq[0][2] = rssfreq[2];
+	tmpss->ssfreq[0][3] = rssfreq[3];
+	tmpss->valid_file = 1;
+	tmpss->done_prof = 1;
+
+        return tmpss;
+
+}
+
+void ss_prof::print_result() {
+
+        int i, j;
+
+        cout << "result of ssprof" << endl;
+        cout << "sslen: " << sslen << endl;
+        cout << "# seq sstype ssrel alphabet1 freq1 freq2 freq3 " << endl;
+        for(i=1;i<=sslen;i++) {
+                cout << i << ": " << seq[i-1] << " " << sstype[i] << " " << ssrel[i] << " ";
+                cout << alphabet1[i] << " " << ssfreq[i][1] << " " << ssfreq[i][2] << " " << ssfreq[i][3] << endl;
+        }
+        cout << endl;
 }

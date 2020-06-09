@@ -17,3 +17,32 @@ double timeDiff()
 	fprintf(stdout, "CPU time elapsed: %f\n", CPU_time); fflush(stdout);
 	return CPU_time;
 }
+
+time_t timestart, timeend;
+double timediff(time_t &s, time_t &e) {
+        double diff = difftime(e, s);
+        return diff;
+}
+
+char prev_info[500];
+int timecount;
+void print_time_diff(const char *info) {
+        time(&timeend);
+        struct tm * timeinfo = localtime ( &timeend );
+        double diff = timediff(timestart, timeend);
+        if(timecount==0) strcpy(prev_info, "beginning");
+        cout << "------------" << endl;
+        printf ( "Current time and date: %s", asctime (timeinfo) );
+        cout << "Time between '" << info << "' and '" << prev_info << "': "; 
+        cout << diff << endl; 
+        cout << "----"<< endl;
+        timestart = timeend;
+        timecount++;
+        strcpy(prev_info, info);
+}
+void print_section_info(const char *info) {
+
+        cout << "=====================" << endl;
+        cout << info << endl;
+        cout << endl;
+}

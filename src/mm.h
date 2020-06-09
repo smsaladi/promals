@@ -57,7 +57,7 @@ class MM {
 
 	int debug;
 
-	void warning(char *s);
+	void warning(const char *s);
 
 	
 };

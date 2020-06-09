@@ -5,7 +5,46 @@
 #include "mathnr.h"
 #include "util.h"
 
-void nrerror(char error_text[])
+//static float sqrarg;
+//#define SQR(a) ((sqrarg=(a)) == 0.0 ? 0.0 : sqrarg*sqrarg)
+
+static double dsqrarg;
+#define DSQR(a) ((dsqrarg=(a)) == 0.0 ? 0.0 : dsqrarg*dsqrarg)
+
+static double dmaxarg1,dmaxarg2;
+#define DMAX(a,b) (dmaxarg1=(a),dmaxarg2=(b),(dmaxarg1) > (dmaxarg2) ?\
+        (dmaxarg1) : (dmaxarg2))
+
+static double dminarg1,dminarg2;
+#define DMIN(a,b) (dminarg1=(a),dminarg2=(b),(dminarg1) < (dminarg2) ?\
+        (dminarg1) : (dminarg2))
+
+//static float maxarg1,maxarg2;
+//#define FMAX(a,b) (maxarg1=(a),maxarg2=(b),(maxarg1) > (maxarg2) ? (maxarg1) : (maxarg2))
+
+//static float minarg1,minarg2;
+//#define FMIN(a,b) (minarg1=(a),minarg2=(b),(minarg1) < (minarg2) ? (minarg1) : (minarg2))
+
+static long lmaxarg1,lmaxarg2;
+#define LMAX(a,b) (lmaxarg1=(a),lmaxarg2=(b),(lmaxarg1) > (lmaxarg2) ?\
+        (lmaxarg1) : (lmaxarg2))
+
+static long lminarg1,lminarg2;
+#define LMIN(a,b) (lminarg1=(a),lminarg2=(b),(lminarg1) < (lminarg2) ?\
+        (lminarg1) : (lminarg2))
+
+static int imaxarg1,imaxarg2;
+#define IMAX(a,b) (imaxarg1=(a),imaxarg2=(b),(imaxarg1) > (imaxarg2) ?\
+        (imaxarg1) : (imaxarg2))
+
+static int iminarg1,iminarg2;
+#define IMIN(a,b) (iminarg1=(a),iminarg2=(b),(iminarg1) < (iminarg2) ?\
+        (iminarg1) : (iminarg2))
+
+#define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
+
+
+void nrerror(const char error_text[])
 {
 	fprintf(stderr, "%s\n", error_text);
 	exit(0);
@@ -49,7 +88,6 @@ double gammln(double xx)
 
 double betacf(double a, double b, double x)
 {
-        void nrerror(char error_text[]);
         int m,m2;
         double aa,c,d,del,h,qab,qam,qap;
 
@@ -94,7 +132,6 @@ double betai(double a, double b, double x)
 {
         double betacf(double a, double b, double x);
         double gammln(double xx);
-        void nrerror(char error_text[]);
         double bt;
 
         if (x < 0.0 || x > 1.0) nrerror("Bad x in routine betai");
@@ -193,7 +230,6 @@ double ran3(long *idum)
 void moment(double data[], int n, double *ave, double *adev, double *sdev,
         double *var, double *skew, double *curt)
 {
-        void nrerror(char error_text[]);
         int j;
         double ep=0.0,s,p;
 
@@ -220,7 +256,6 @@ void moment(double data[], int n, double *ave, double *adev, double *sdev,
 
 void moment2(double data[], int n, double *ave, double *sdev)
 {
-        void nrerror(char error_text[]);
         int j;
         double ep=0.0,s,p;
 	double *var = new double [1];
@@ -347,7 +382,7 @@ void elmhes(double **a, int n)
 void hqr(double **a, int n, double wr[], double wi[])
 {
 	int nn,m,l,k,j,its,i,mmin;
-	double z,y,x,w,v,u,t,s,r,q,p,anorm;
+	double z,y,x,w,v,u,t,s,r=0,q=0,p=0,anorm;
 
 	anorm=fabs(a[1][1]);
 	for (i=2;i<=n;i++)
@@ -663,7 +698,7 @@ void svdcmp(double **a, int m, int n, double w[], double **v)
 
 void ludcmp(double **a, int n, int *indx, double *d)
 {
-	int i,imax,j,k;
+	int i,imax=0,j,k;
 	double big,dum,sum,temp;
 	double *vv;
 

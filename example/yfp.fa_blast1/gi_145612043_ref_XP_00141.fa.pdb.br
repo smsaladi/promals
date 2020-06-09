@@ -1,0 +1,167 @@
+BLASTP 2.2.14 [May-07-2006]
+
+
+Reference: Altschul, Stephen F., Thomas L. Madden, Alejandro A. Schaffer, 
+Jinghui Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997), 
+"Gapped BLAST and PSI-BLAST: a new generation of protein database search
+programs",  Nucleic Acids Res. 25:3389-3402.
+
+
+Reference for composition-based statistics:
+Schaffer, Alejandro A., L. Aravind, Thomas L. Madden,
+Sergei Shavirin, John L. Spouge, Yuri I. Wolf,  
+Eugene V. Koonin, and Stephen F. Altschul (2001), 
+"Improving the accuracy of PSI-BLAST protein database searches with 
+composition-based statistics and other refinements",  Nucleic Acids Res. 29:2994-3005.
+
+Query= gi_145612043_ref_XP_00141
+         (336 letters)
+
+Database: /home/jpei/tmp_test0817/struct.fasta 
+           22,991 sequences; 4,307,595 total letters
+
+Searching..................................................done
+
+
+
+                                                                 Score    E
+Sequences producing significant alignments:                      (bits) Value
+
+anqw 2oq2A                                                            113   3e-23
+amuj 2goyA                                                             91   9e-17
+aoip 2o8vA                                                             81   2e-13
+aqyq d1sura_                                                           76   4e-12
+ajtt d1zuna1                                                           63   4e-08
+
+>anqw 2oq2A
+          Length = 251
+
+ Score =  113 bits (282), Expect = 3e-23,   Method: Composition-based stats.
+ Identities = 33/175 (18%), Positives = 62/175 (35%), Gaps = 40/175 (22%)
+
+Query: 175 VYVVSRHPFAEVDAFVDRTSAEY---HLAVERIAQP------------------------ 207
+           +++ + H F +     +    +Y         + +P                        
+Sbjct: 74  LFIDTLHHFPQTLTLKNEIEKKYYQPKNQTIHVYKPDGCESEADFASKYGDFLWEKDDDK 133
+
+Query: 208 ------MKPALHAYLAARPAVRAVFVGTRRTDPHGESLTHFDATDPGWPPFMRVHPVIDW 261
+                 ++PA  AY      + AVF G R++     S       D      ++++P+I+W
+Sbjct: 134 YDYLAKVEPAHRAYKELH--ISAVFTGRRKSQGSARSQLSIIEIDE-LNGILKINPLINW 190
+
+Query: 262 HYAEIWAFIRRLGIPYCELYDRGYTSLGGTTDTNPNPALKRVVEDTASGKADSQE 316
+            + ++  +I    +PY EL D GY S+G    T P     +  ED  +G+     
+Sbjct: 191 TFEQVKQYIDANNVPYNELLDLGYRSIGDYHSTQP----VKEGEDERAGRWTECG 241
+
+
+>amuj 2goyA
+          Length = 222
+
+ Score = 91.5 bits (226), Expect = 9e-17,   Method: Composition-based stats.
+ Identities = 35/178 (19%), Positives = 54/178 (30%), Gaps = 48/178 (26%)
+
+Query: 172 LQAVYVVSRHPFAEVDAFVDRTSAEYH--------------------------------L 199
+           ++   + +     E   F+D+    Y                                  
+Sbjct: 53  VKVFSLDTGRLHPETYRFIDQVREHYGIAIDVLSPDPRLLEPLVKEKGLFSFYRDGHGEC 112
+
+Query: 200 AVERIAQPMKPALHAYLAARPAVRAVFVGTRRTD-PHGESLTHFDATDPG----WPPFMR 254
+              R  +P+K  L         VRA   G RR   P   S       D        P  +
+Sbjct: 113 CGIRKIEPLKRKLA-------GVRAWATGQRRDQSPGTRSQVAVLEIDGAFSTPEKPLYK 165
+
+Query: 255 VHPVIDWHYAEIWAFIRRLGIPYCELYDRGYTSLGGTTDTNPNPALKRVVEDTASGKA 312
+            +P+      E+W +IR L +PY  L++RGY S+G    T P        +    G+ 
+Sbjct: 166 FNPLSSMTSEEVWGYIRMLELPYNSLHERGYISIGCEPCTRP----VLPNQHEREGRW 219
+
+
+>aoip 2o8vA
+          Length = 229
+
+ Score = 80.7 bits (198), Expect = 2e-13,   Method: Composition-based stats.
+ Identities = 36/169 (21%), Positives = 56/169 (33%), Gaps = 43/169 (25%)
+
+Query: 167 QFPDSLQAVYVVSRHPFAEVDAFVDRTSAEYHLAV------------------------- 201
+           Q    +  +   + + F E   F+D  + +  L +                         
+Sbjct: 66  QIRPDIPVILTDTGYLFPETYRFIDELTDKLKLNLKVYRATESAAWQEARYGKLWEQGVE 125
+
+Query: 202 -------ERIAQPMKPALHAYLAARPAVRAVFVGTRRTDPHGESLTHFDATDPGWPPFMR 254
+                      +PM  AL    A        F G RR      +     A   G     +
+Sbjct: 126 GIEKYNDINKVEPMNRALKELNAQT-----WFAGLRREQSGSRANLPVLAIQRG---VFK 177
+
+Query: 255 VHPVIDWHYAEIWAFIRRLGIPYCELYDRGYTSLGGTTDTNPNPALKRV 303
+           V P+IDW    I+ ++++ G+ Y  L+D GY S+G T  T     LKR 
+Sbjct: 178 VLPIIDWDNRTIYQYLQKHGLKYHPLWDEGYLSVGDTHTTR---KLKRE 223
+
+
+>aqyq d1sura_
+          Length = 215
+
+ Score = 76.1 bits (186), Expect = 4e-12,   Method: Composition-based stats.
+ Identities = 32/158 (20%), Positives = 52/158 (32%), Gaps = 40/158 (25%)
+
+Query: 167 QFPDSLQAVYVVSRHPFAEVDAFVDRTSAEYHLAV------------------------- 201
+           Q    +  +   + + F E   F+D  + +  L +                         
+Sbjct: 66  QIRPDIPVILTDTGYLFPETYRFIDELTDKLKLNLKVYRATESAAWQEARYGKLWEQGVE 125
+
+Query: 202 -------ERIAQPMKPALHAYLAARPAVRAVFVGTRRTDPHGESLTHFDATDPGWPPFMR 254
+                      +PM  AL    A        F G RR      +     A   G     +
+Sbjct: 126 GIEKYNDINKVEPMNRALKELNAQT-----WFAGLRREQSGSRANLPVLAIQRG---VFK 177
+
+Query: 255 VHPVIDWHYAEIWAFIRRLGIPYCELYDRGYTSLGGTT 292
+           V P+IDW    I+ ++++ G+ Y  L+D GY S+G T 
+Sbjct: 178 VLPIIDWDNRTIYQYLQKHGLKYHPLWDEGYLSVGDTH 215
+
+
+>ajtt d1zuna1
+          Length = 197
+
+ Score = 63.0 bits (152), Expect = 4e-08,   Method: Composition-based stats.
+ Identities = 34/149 (22%), Positives = 51/149 (34%), Gaps = 40/149 (26%)
+
+Query: 168 FPDSLQ--AVYVVSRHPFAEVDAFVDRTSAEYHLAVER-----------IAQPMKPALHA 214
+           FP  L    ++V +R  F E+  F D+   E  L +               + +K AL  
+Sbjct: 51  FPGKLPFPVMHVDTRWKFQEMYRFRDQMVEEMGLDLITHINSAKHTDIMKTEGLKQAL-- 108
+
+Query: 215 YLAARPAVRAVFVGTRRTDPHGESLTHF-------DATDPG------WPPF--------- 252
+               +    A F G RR +    +              DP       W  +         
+Sbjct: 109 ---DKHGFDAAFGGARRDEEKSRAKERVYSFRDSKHRWDPKNQRPELWNVYNGNVNKGES 165
+
+Query: 253 MRVHPVIDWHYAEIWAFIRRLGIPYCELY 281
+           +RV P+ +W   +IW +I   GIP   LY
+Sbjct: 166 IRVFPLSNWTELDIWQYIYLEGIPIVPLY 194
+
+
+  Database: /home/jpei/tmp_test0817/struct.fasta
+    Posted date:  Aug 20, 2008  3:19 PM
+  Number of letters in database: 4,307,595
+  Number of sequences in database:  22,991
+  
+Lambda     K      H
+   0.310    0.153    0.464 
+
+Lambda     K      H
+   0.267   0.0469    0.140 
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Number of Hits to DB: 3,463,702
+Number of Sequences: 22991
+Number of extensions: 162453
+Number of successful extensions: 461
+Number of sequences better than 1.0e-03: 5
+Number of HSP's better than  0.0 without gapping: 4
+Number of HSP's successfully gapped in prelim test: 1
+Number of HSP's that attempted gapping in prelim test: 446
+Number of HSP's gapped (non-prelim): 8
+length of query: 336
+length of database: 1,665,828,471
+effective HSP length: 136
+effective length of query: 200
+effective length of database: 1,665,828,471
+effective search space: 333165694200
+effective search space used: 333165694200
+T: 11
+A: 40
+X1: 16 ( 7.2 bits)
+X2: 38 (14.6 bits)
+X3: 64 (24.7 bits)
+S1: 41 (21.1 bits)
+S2: 114 (48.3 bits)

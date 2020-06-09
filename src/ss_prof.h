@@ -17,6 +17,7 @@ class ss_prof {
 
 	int valid_file;
 
+        ss_prof();
 	ss_prof(char *base_name);
 	~ss_prof();
 
@@ -29,6 +30,9 @@ class ss_prof {
 	int done_prof;
 
 	int check_aa_seq(char *target_seq);
+
+        ss_prof *sub_ss_prof(int start, int end);
+        void print_result();
 };
 	
 #endif

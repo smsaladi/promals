@@ -7,6 +7,7 @@
 #include "mm.h"
 #include "sequences.h"
 #include "hmm_multim.h"
+#include "hmm_psipred.h"
 #include <vector>
 
 static int debug = 1;
@@ -43,13 +44,14 @@ template <typename TNODE> class btree {
         void leastSquareRoot(TNODE **rootNode, double *dist, double *var, int &Num);
 
 	//UPGMA, given a distance matrix
-	void UPGMA(double **distMat, vector<string> seq, vector<string> name, int nseqs);
+	void UPGMA(float **distMat, vector<string> seq, vector<string> name, int nseqs);
 
 	// progressive alignment by prof-prof hidden markov model
 	void progressiveAlignHMM(TNODE *n);
 
 	// progressive alignment by prof-prof hidden markov model: fast stage
 	void progressiveAlignHMM_FastStage(TNODE *n, float distCutoff);
+        vector<int> progressiveAlignHMM_FastStage_mafft(TNODE *n, float distCutoff);
 	// generate a vector of pointers to TNODES that correpond to pre-aligned groups
 	vector<TNODE *> preAligned;
 	void obtainPreAligned(TNODE *); //definition of a pre-aligned: the node itself is 
@@ -63,7 +65,7 @@ template <typename TNODE> class btree {
 	void profileConsistency_multim(hmm_parameters *params, double **dist_matrix, double max_dist_cutoff);
 	void profileConsistency_multim2(hmm_parameters *params1, hmm_parameters *params2, sequences *tmpSeq2, double id_cutoff);
 	//void profileConsistency_multim(char *params);
-	void printAlignmentFromAbs(TNODE *n, char *outfilename);
+	void printAlignmentFromAbs(TNODE *n, char *outfilename, vector<subalign *>similaraln, vector<char *>repnames);
 	void printAlignmentFromAbs(TNODE *n);
 	void profileConsistency_profilehmm(hmm_parameters *params, char *ss_dir_name, int use_ss, float ss_weight, double **dist_matrix, double max_dist_cutoff);
 
@@ -87,6 +89,8 @@ template <typename TNODE> class btree {
 	void assign_weights(TNODE *r);
 	void refine_align_new(subalign *x);
 	
+        void iterativeRefinement(int maxround); 
+        void recomputeAlignment(TNODE *a); 
 
      private: 
 	void readTreefile(ifstream &tf, TNODE *rt);
@@ -693,9 +697,9 @@ void btree<TNODE>::checkRoot() {
 //    1 \ 			      / 3
 //	 \  _root		     /
 //	  \/________._______________/
-//	  /			    \ 
+//	  /			    \                                     .
 //	 /			     \____ 4
-//    2 /  |--- x --|		      \  
+//    2 /  |--- x --|		      \                                   .
 // 				       5
 //      |a |----------b------------------|
 
@@ -862,7 +866,7 @@ void btree<TNODE>::leastSquareRoot(TNODE **rootNode, double *dist, double *var, 
 }
 			
 template <typename TNODE> 
-void btree<TNODE>::UPGMA(double **distMat, vector<string> seq,  vector<string> name, int nseqs){ 
+void btree<TNODE>::UPGMA(float **distMat, vector<string> seq,  vector<string> name, int nseqs){ 
 
 	int i,j,k;
 	double minElement;
@@ -880,15 +884,18 @@ void btree<TNODE>::UPGMA(double **distMat, vector<string> seq,  vector<string> n
 	}
 
 	// allocate an array of tnode and assign the names and seqs
-	TNODE **tnodeArray = new TNODE * [nseqs+1];
-	for(i=1;i<=nseqs;i++) {
+	TNODE **tnodeArray = new TNODE * [nseqs * 2]; // new
+        v = tnodeArray; // new
+        for(i=1;i<=2*nseqs-1;i++) {
 		tnodeArray[i] = new TNODE;
 	}
+        size = 2*nseqs-1;
 	for(i=1;i<=nseqs;i++) {
 		// copy the names
 		//if(name[i].length()>=49) name[i].copy(tnodeArray[i]->name,49); 
 		//else name[i].copy(tnodeArray[i]->name, name[i].length());
 		tnodeArray[i]->name = name[i];
+                tnodeArray[i]->n = i; // new
 		//cout << tnodeArray[i]->name << endl;
 
 		// copy the arrays: skipping the gaps
@@ -906,11 +913,21 @@ void btree<TNODE>::UPGMA(double **distMat, vector<string> seq,  vector<string> n
 
 		// get the subalign from the seq and name
 		tnodeArray[i]->getSubalign();
+                //cout << i << " " << tnodeArray[i]->aligned << endl;
 	}
+
+        tnodeArray = new TNODE * [nseqs+1];
+        for(i=1;i<=nseqs;i++) tnodeArray[i] = v[i];
 
 	double **newMat = dmatrix(nseqs, nseqs);
 	for(i=1;i<=nseqs;i++) for(j=1;j<=nseqs;j++) newMat[i][j] = distMat[i][j];
 
+        if(nseqs==1) {
+                root = tnodeArray[1];
+                tnodeArray[1]->rootFlag = true;
+        }
+
+    int current_tnode_index = nseqs+1; // new
     for(k=1;k<nseqs;k++) {
 	// find the minimum distance
 	minElement = 100000;
@@ -926,7 +943,11 @@ void btree<TNODE>::UPGMA(double **distMat, vector<string> seq,  vector<string> n
 		}
 	}
 	//cout << "minElement: " << minElement << endl;
-	TNODE *a = new TNODE;
+	//TNODE *a = new TNODE;
+        TNODE *a = v[current_tnode_index]; // new
+        a->n = current_tnode_index; // new
+        //cout << "current_tnode_index " << current_tnode_index << endl;
+        current_tnode_index += 1;   // new
 	a->childL = tnodeArray[ci];
 	a->childR = tnodeArray[cj];
 	tnodeArray[ci]->parent = a;
@@ -952,10 +973,15 @@ void btree<TNODE>::UPGMA(double **distMat, vector<string> seq,  vector<string> n
 
 	// cout << "finished here" << endl;
 	// writeTree("tmptree.tre");
+        //
+        //for(i=1;i<nseqs*2;i++) { cout << i << " " << v[i]->aligned << endl; }
 
 	delete [] mark;
 	delete [] d;
-		
+        delete [] tnodeArray;
+        free_dmatrix(newMat, nseqs, nseqs);
+
+        //writeTree("tmp.tree");
 
 }
 

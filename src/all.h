@@ -30,6 +30,8 @@
 #include "hmm_psipred.h"
 #include <algorithm>
 #include "refine.h"
+#include "seq_str_aln.h"
+//#include "constraint.h"
 
 using namespace std;
 

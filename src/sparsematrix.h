@@ -57,6 +57,7 @@ class sparseMatrix {
 
 // for probablistic consistency measure
 extern void relaxTwoSparse(sparseMatrix *a, sparseMatrix *b, float **sum);
+extern void relaxTwoSparse(sparseMatrix &a, sparseMatrix &b, float **sum);
 
 
 #endif

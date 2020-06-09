@@ -1,0 +1,16 @@
+blosum62.c:
+/home/jpei/astral/dp_1.69/psipred/psipred
+/home/jpei/bin/mafft
+/home/jpei/cd-hit/cd-hit
+/home/jpei/db/fast_1.69/
+/home/jpei/db/tmalign_1.69/
+/home/jpei/evolvable_database/bin/get_struct_constraint.py
+/home/jpei/profile_hmm/profile_hmm/
+/home/jpei/promals/src_structure/structure_db/dali.fa
+/home/jpei/promals/src_structure/structure_db/promals/blastresult
+/home/jpei/promals/src_structure/structure_db/promals_new/blastresults
+/home/jpei/promals/src_structure/structure_db/promals_new/blastresults/
+/home/jpei/promals/src_structure/structure_db/struct.fasta
+/home/jpei/uniref90_02282008/uniref90_filt
+/home/jpei/uniref90/uniref90.fasta
+/home/jpei/uniref90/uniref90_filt

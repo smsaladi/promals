@@ -1,6 +1,8 @@
 #ifndef __gap_refining__
 #define __gap_refining__
-#include "all.h"
+#include "header_cpp.h"
+#include "subalign.h"
+#include "util.h"
 
 extern double gap_matrix[21][21];
 

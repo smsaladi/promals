@@ -12,7 +12,7 @@ extern void set_uniref90(char *file1);
 
 extern int get_blastpgp_cmd();
 
-extern char blastpgp_options[500];
+extern char blastpgp_options[2000];
 
 extern void set_blastpgp_options(char *options);
 
@@ -27,5 +27,6 @@ extern subalign *get_blastpgp_result(const char *blastpgp_result, char *query_na
 extern subalign *read_blastpgp_alignment(const char *blastpgp_alignment, char *query_name, char *query_seq);
 
 extern void clean_blast_psipred(char *seqname);
+
 
 #endif

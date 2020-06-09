@@ -6,7 +6,7 @@
 #include "ss_prof.h"
 #include "regularizer.h"
 //#include "hmm_psipred.h"
-//#include "param.h"
+#include "param.h"
 #include <unistd.h>
 
 class subalign {
@@ -17,6 +17,7 @@ class subalign {
 	subalign(string filename);
 	// copy constructor
 	subalign(const subalign &);
+        subalign(char *filename, const char *format_name, int max_name_len);
         ~subalign();
 
 	// assign
@@ -152,6 +153,8 @@ class subalign {
 	char *repres_name;
 	subalign *oneSeqAln;
 	void select_representative();
+	int select_representative_henikoff(float core_position_nongap_freq_cutoff);
+        void get_oneSeqAln(int tmp_index);
 
 	//2. get secondary structure profile for the representative
 	void get_ss_prof(char *dir_name, char *runpsipred_command);

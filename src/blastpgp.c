@@ -1,9 +1,11 @@
 #include "blastpgp.h"
 #include "param.h"
 
-//char uniref90_file[500];
+//char uniref90_file[2000];
+//
+static int replace_blastpgp_alignment = 0;
 
-char blastpgp_options[500];
+char blastpgp_options[2000];
 
 // given a file name, get the blastpgp alignment
 // 1. read the alignment file blast_dir/base_name.aln
@@ -41,8 +43,8 @@ subalign *get_blastpgp_alignment(char *basename, char *query_name, char *query_s
 	strcpy(blastpgp_cmd, blastpgp_command);
 	cout <<  "blastpgp_cmd: " << blastpgp_cmd << endl;
 	//set_blastpgp_options("");
-	char optionStr[500];
-	sprintf(optionStr, " -j %d -e %e -h %e -v 1000 -b 1000 -a 2 -m 6 ", iteration_number, evalue, evalue); 
+	char optionStr[2000];
+	sprintf(optionStr, " -j %d -e %e -h %e -v 1000 -b 1000 -a 2 -m 6 -F %s ", iteration_number, evalue, evalue, filter_query); 
 	set_blastpgp_options(optionStr);
 	//set_blastpgp_options("");
 	//set_uniref90(uniref90_file);
@@ -55,12 +57,12 @@ subalign *get_blastpgp_alignment(char *basename, char *query_name, char *query_s
 // clean blastpgp directory for files/directories beginning with a certain sequene name
 void clean_blast_psipred(char *seqname) {
 
-	char cmdname[500];
+	char cmdname[2000];
 	
-	// sprintf(cmdname, "rm -fr %s%s*", blast_dir, seqname);
+	sprintf(cmdname, "rm -fr %s%s*", blast_dir, seqname);
 	
 	//cout << cmdname << endl;
-	// system(cmdname);
+	system(cmdname);
 
 }
 
@@ -76,7 +78,7 @@ int get_blastpgp_cmd() {
 
 	int random_int = rand();
 
-	char command[500], blastpgp_file[500];
+	char command[2000], blastpgp_file[2000];
 	sprintf(command, "which blastpgp > blastpgp%d.tmpfile", random_int);
 	sprintf(blastpgp_file, "blastpgp%d.tmpfile", random_int);
 
@@ -109,9 +111,9 @@ void set_blastpgp_options(char *options) {
 
 	int i, j;
 
-	char default_options[500];
+	char default_options[2000];
 	if(strlen(options) == 0 ) {
-		strcpy(default_options, " -j 3 -e 0.001 -h 0.001 -v 1000 -b 1000 -a 2 -m 6 ");
+		strcpy(default_options, " -j 3 -e 0.001 -h 0.001 -v 1000 -b 1000 -a 2 -m 6 -F T ");
 		strcpy(blastpgp_options, default_options);
 	}
 	else {
@@ -128,7 +130,8 @@ subalign * run_blastpgp(char *query_name, char *query_seq) {
 
 	// get the fasta file
 	int rand_number = rand();	
-	char fasta_file_name[500];
+	char fasta_file_name[2000];
+	char fasta_file_name1[2000];
 	int check_file_status = 0;
 	// check if the fasta file name exists as a file
 	while(!check_file_status) {
@@ -142,6 +145,7 @@ subalign * run_blastpgp(char *query_name, char *query_seq) {
 		//fclose(fp);
 		check_file_status = 1;
 	}
+	sprintf(fasta_file_name1, "%s%s.fa", blast_dir, query_name);
 
 	FILE *fp1 = fopen(fasta_file_name, "w");
 	if(!fp1) {
@@ -164,15 +168,17 @@ subalign * run_blastpgp(char *query_name, char *query_seq) {
 	fclose(fp1);
 
 	// run blastpgp
-	char command[500];
+	char command[2000];
 	//sprintf(command, "%s -i %s -o %s.br %s -d %s -C %s%s.chk -M %s", blastpgp_cmd, fasta_file_name, fasta_file_name, blastpgp_options, uniref90_file, blast_dir, query_name, blosum62_file);
 	sprintf(command, "%s -i %s -o %s.br %s -d %s -C %s%s.chk", blastpgp_cmd, fasta_file_name, fasta_file_name, blastpgp_options, uniref90_file, blast_dir, query_name);
 	//cout << "blastpgp command: " << endl;
 	//cout << "   " << command << endl;
 	system(command);
+        //cout << "print working directory" << endl;
+        //system("pwd");
 
 	// get blastpgp results
-	char br_file_name[500];
+	char br_file_name[2000];
 	strcpy(br_file_name, (string(fasta_file_name)+string(".br")).c_str());
 	subalign *x1 = read_blastpgp_result(br_file_name, query_name, query_seq);
 	// purge alignment, removing divergent sequences, higly similar sequences, gappy sequences
@@ -184,8 +190,16 @@ subalign * run_blastpgp(char *query_name, char *query_seq) {
 
 	// output x in the blast_dir directory
 	ifstream fp2( (string(blast_dir)+string(query_name)+string(".aln") ).c_str(), ios::in);
-	if(!fp2.good()) { x->printali((string(blast_dir)+string(query_name)+string(".aln") ).c_str(), 60); }
-	fp2.close();	
+	if(!fp2.good()) { 
+                x->printali((string(blast_dir)+string(query_name)+string(".aln") ).c_str(), 60); 
+        }
+        else {
+                fp2.close();
+                if(replace_blastpgp_alignment==1){ 
+                        x->printali((string(blast_dir)+string(query_name)+string(".aln") ).c_str(), 60);
+                        replace_blastpgp_alignment = 0;
+                }
+        }        
 	
 	// move the checkpoint file to blast_dir
 	//sprintf(command, "mv %s.chk %s", query_name, blast_dir);
@@ -194,11 +208,12 @@ subalign * run_blastpgp(char *query_name, char *query_seq) {
 	// remove the blast output file
 	strcpy(command, "rm -f ");
 	strcat(command, br_file_name); 
-    // system(command);
+	system(command);
 
-	// system( (string("rm -f ") + string(br_file_name) + string(".aln")).c_str());
-	// system( (string("rm -f ") + string(fasta_file_name) + string(".aln")).c_str());
-	// system( (string("rm -f ") + string(fasta_file_name)).c_str());
+	system( (string("rm -f ") + string(br_file_name) + string(".aln")).c_str());
+	//system( (string("rm -f ") + string(fasta_file_name) + string(".aln")).c_str());
+	system( (string("mv ") + string(fasta_file_name) + string(" ") + string(fasta_file_name1) ).c_str() );
+	//system( (string("rm -f ") + string(fasta_file_name)).c_str());
 
 	delete x1;
 
@@ -223,13 +238,14 @@ subalign *get_blastpgp_result(const char *blastpgp_result, char *query_name, cha
 }
 */
 
+// new: add option of reading low complexity region in the query if the query is filtered
 subalign *read_blastpgp_result(const char *blastpgp_result, char *query_name, char *query_seq) {
 
 
    int i,j,k;
    int round = 0;
-   char output_aln_file[500];
-   char str[300];
+   char output_aln_file[2000];
+   char str[2000];
 
    FILE *fp;
    if((fp=fopen(blastpgp_result, "r"))==NULL) {
@@ -277,7 +293,7 @@ subalign *read_blastpgp_result(const char *blastpgp_result, char *query_name, ch
      }
      if(flag==1) {
         //fprintf(stdout, "%s", str);
-	if(strncmp(str, "Searching...", 12 )==0) continue;
+        if(strncmp(str, "Searching...", 12 )==0) continue;
 	fprintf(fp1, "%s", str);
      }
    }
@@ -295,6 +311,10 @@ subalign *read_blastpgp_result(const char *blastpgp_result, char *query_name, ch
    }
 
    x = new subalign(output_aln_file);
+   //cout << "output_aln_file: " << output_aln_file << endl;
+   //x->printali(80);
+   //cout << "astart: " << x->astart[0];
+   
 
    char *tmpstring = new char [x->alilen+1];
    j = 0;
@@ -308,14 +328,28 @@ subalign *read_blastpgp_result(const char *blastpgp_result, char *query_name, ch
 
    int right_numbers, left_numbers;
 
-   right_numbers = string(query_seq).find(tmpstring, 0);
+   //right_numbers = string(query_seq).find(tmpstring, 0);
+   right_numbers = x->astart[0] - 1;
 
-   if(right_numbers == string::npos) {
-        cout << "Warning: cannot find the sequence in " << query_name << endl;
-	cout << query_seq << endl;
-	cout << tmpstring << endl;
-        return NULL;
+   // check if two sequences match
+   for(i=0;i<strlen(tmpstring);i++) {
+           if(tmpstring[i] == 'X') continue;
+           if((tmpstring[i] != query_seq[i+right_numbers])&&(tmpstring[i] != query_seq[i+right_numbers]-32) ) {
+                   cout << "sequences do not match blast query" << endl;
+                   tmpstring[i+1] = '\0';
+                   query_seq[i+1+right_numbers] = '\0';
+                   cout << tmpstring << endl;
+                   cout << query_seq << endl;
+                   exit(0);
+           }
    }
+                           
+   //if(right_numbers == string::npos) {
+   //     cout << "Warning: cannot find the sequence in " << query_name << endl;
+   //	cout << query_seq << endl;
+   //	cout << tmpstring << endl;
+   //     return NULL;
+   //}
 
    left_numbers =strlen(query_seq) - right_numbers - strlen(tmpstring);
 
@@ -323,12 +357,9 @@ subalign *read_blastpgp_result(const char *blastpgp_result, char *query_name, ch
    assert(left_numbers >=0);
 
    // the first sequence of blast matches the query sequence exactly
-   if( (right_numbers+left_numbers) ==  0) {
-	purge_alignment_by_first_sequence(x);
-	return x;  
-   }
+   //if( (right_numbers+left_numbers) ==  0) { purge_alignment_by_first_sequence(x); return x;  }
 
-   cout << "|" << query_seq << "|" << endl;
+   //cout << "|" << query_seq << "|" << endl;
 
    string Nterm, Cterm, Nterm_gap, Cterm_gap;
    Nterm = string(query_seq).substr(0, right_numbers);
@@ -337,23 +368,57 @@ subalign *read_blastpgp_result(const char *blastpgp_result, char *query_name, ch
    for(i=0;i<Nterm.size();i++) Nterm_gap += "-";
    Cterm_gap = string("");
    for(i=0;i<Cterm.size();i++) Cterm_gap += "-";
+   //cout << "Nterm: " << Nterm << endl;
+   //cout << "Cterm: " << Cterm << endl;
 
-   cout << "|" << Nterm << "|" << endl;
-   cout << "|" << Cterm << "|" << endl;
+   //cout << "|" << Nterm << "|" << endl;
+   //cout << "|" << Cterm << "|" << endl;
    //cout << "N-cap: |" << Nterm_gap << "|" << endl;
    //cout << "C-cap: |" << Cterm_gap << "|" << endl;
+
+   //x->printali(60);
+
+   // record the filtered query sequence
+   char *query_filter = new char [x->alilen+right_numbers+left_numbers+1];;
 
    char **tmpseq = cmatrix(x->nal, x->alilen+right_numbers+left_numbers+1);
    for(i=0;i<x->nal;i++) {
 	if(i==0) {
 		strcpy(tmpseq[i], Nterm.c_str());
 		strcat(tmpseq[i], x->aseq[i]);
+                // replace the 'X' characters (filtered segments) according to original query sequence
+                k = 0;
+                //cout << "tmpseq: " << tmpseq[i] << endl;
+                //cout << "query_seq: " << query_seq << endl;
+                for(j=0;j<strlen(tmpseq[i]);j++) {
+                        if(tmpseq[i][j]!='-') {
+                                k++;
+                                query_filter[k-1] = tmpseq[i][j]; // record the filtered query sequence
+                        }
+                        if(tmpseq[i][j] == 'X') tmpseq[i][j] = tolower(query_seq[k-1]);
+                }
+                query_filter[k] = '\0'; // record the filtered query sequence
+                        
 	}
 	else {
 		strcpy(tmpseq[i], Nterm_gap.c_str());
 		strcat(tmpseq[i], x->aseq[i]);
+                for(j=0;j<strlen(x->aseq[0]);j++) {
+                        if(x->aseq[0][j] == 'X') {
+                                tmpseq[i][j+strlen(Nterm_gap.c_str())] = '-';
+                        }
+                        if(tmpseq[i][j+strlen(Nterm_gap.c_str())]=='X') tmpseq[i][j+strlen(Nterm_gap.c_str())] = '-';
+                }
 	}
    }
+   strcat(query_filter, Cterm.c_str()); // record the filtered query sequence
+   char query_filter_file[2000];
+   strcpy(query_filter_file, (string(blastpgp_result) + string(".filter.fa")).c_str());
+   ofstream tmpfp(query_filter_file, ios::out);
+   tmpfp << ">QUERY\n" << query_filter << endl;
+   tmpfp.close();
+   delete [] query_filter;
+
    //cout << "nstr: " << Nterm_gap.c_str() << endl;
    //cout << "nstr: " << Nterm.c_str() << endl;
    if( left_numbers!=0 ) {
@@ -387,15 +452,18 @@ subalign *read_blastpgp_result(const char *blastpgp_result, char *query_name, ch
            }
    }
 
-   //x->printali(60);
+   //x->printali(90);
 
    purge_alignment_by_first_sequence(x);
 
    // delete the blastpgp output alignment file
-   char command[500];
+   char command[2000];
    strcpy(command, "rm -f ");
    strcat(command, output_aln_file);
-   system(command);
+   //sprintf(command, "mv %s %.111", output_aln_file, output_aln_file);
+   //system(command);
+
+   delete [] tmpstring;
 
    return x;
 }
@@ -420,7 +488,11 @@ int check_blastpgp_alignment(const char *blastpgp_alignment) {
 	while(f1.good()) {
 		f1 >> tmpstring;
 		for(ss=tmpstring;isspace(*ss);ss++);
-		if(tmpstring) return 1;
+		if(tmpstring) {
+                        f1.close();
+                        return 1;
+                }
+
 	}
 	f1.close();
 
@@ -436,9 +508,7 @@ subalign *read_blastpgp_alignment(const char *blastpgp_alignment, char *query_na
    subalign *x;
 
    // file does not exist; file contain only empty lines
-   if(check_blastpgp_alignment(blastpgp_alignment) == 0) {
-	return NULL;
-   }
+   if(check_blastpgp_alignment(blastpgp_alignment) == 0) { return NULL; }
 
    x = new subalign(blastpgp_alignment);
 
@@ -446,24 +516,36 @@ subalign *read_blastpgp_alignment(const char *blastpgp_alignment, char *query_na
    j = 0;
    for(i=0;i<x->alilen;i++) {
 	if(x->aseq[0][i]!='-') {
-		tmpstring[j] = x->aseq[0][i];
+		tmpstring[j] = toupper(x->aseq[0][i]);
 		j++;
 	}
    }
    tmpstring[j] = '\0';
+
+   char *query_seq_uppercase = new char [strlen(query_seq)+1];
+   for(i=0;i<strlen(query_seq);i++) {
+           query_seq_uppercase[i] = toupper(query_seq[i]);
+   }
+   query_seq_uppercase[i] = '\0';
+                   
 
    int right_numbers, left_numbers;
 
 	//cout << query_seq << endl;
 	//cout << tmpstring << endl;
 
-   right_numbers = string(query_seq).find(tmpstring, 0);
+   right_numbers = string(query_seq_uppercase).find(tmpstring, 0);
 
    if(right_numbers == string::npos) {
         cout << "Warning: cannot find the sequence in " << query_name << endl;
-	cout << query_seq << endl;
+	cout << query_seq_uppercase << endl;
 	cout << tmpstring << endl;
+        delete x;
+        replace_blastpgp_alignment = 1;
         return NULL;
+   }
+   else {
+           replace_blastpgp_alignment = 0;
    }
 
 
@@ -542,9 +624,12 @@ void purge_alignment_by_first_sequence(subalign *x) {
 	int i, j, k;
 
 	int count = 0;
+        //for(i=0;i<x->nal;i++) { delete [] x->aseq[i]; } exit(0);
 	for(i=0;i<x->alilen;i++) {
 		if(x->aseq[0][i]!='-') {count++;}
 	}
+
+        //cout << "count: " << count << " " << x->alilen<< endl;
 
 	if(count == x->alilen) return;
 
@@ -561,13 +646,21 @@ void purge_alignment_by_first_sequence(subalign *x) {
 		}
 	}
 	//cout << "count: " << count << endl;
+        //cout << "count: " << count << " " << x->alilen<< endl;
+        //cout << "nal: " << x->nal << endl;
+	//for(i=0;i<x->nal;i++) { //cout << x->aseq[i]; //cout << endl; }
 	for(i=0;i<x->nal;i++) {
+                //cout << x->aseq[i] << endl;
+                tmpseq[i][count] = '\0';
+                //cout << tmpseq[i] << endl;
 		delete [] x->aseq[i];
 		x->aseq[i] = tmpseq[i];
 		x->aseq[i][count] = '\0';
+                //cout << x->aseq[i] << endl;
 	}
 
 	x->alilen = count;
+        //cout << "count: " << count << " " << x->alilen<< endl;
 
 	for(i=1;i<=x->nal;i++) {
         	delete [] x->alignment[i];
@@ -576,4 +669,5 @@ void purge_alignment_by_first_sequence(subalign *x) {
                 	x->alignment[i][j] = am2num(x->aseq[i-1][j-1]);
            	}
    	}
+        //cout << "count: " << count << " " << x->alilen<< endl;
 }

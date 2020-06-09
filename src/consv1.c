@@ -128,7 +128,7 @@ consv::~consv() {
 
 	if(alignment) {
 	   for(i=0;i<=nal;i++) delete [] alignment[i];
-	   delete alignment;
+	   delete [] alignment;
 	}
         if(fq) {
 	   for(i=0;i<=alilen;i++) delete [] fq[i];

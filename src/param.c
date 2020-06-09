@@ -31,7 +31,7 @@ char blast_dir[500];
 char uniref90_file[500];
 char blastpgp_cmd[500];
 char blastpgp_command[500];
-char blosum62_file[500];
+char ncbirc[500];
 
 int use_ss_freq=2;
 
@@ -50,6 +50,7 @@ int relax_count = 0;
 // blastpgp options
 int iteration_number=3;
 double evalue = 0.001;
+char filter_query[3];
 
 // purge blast output option
 int max_num_sequences=300;
@@ -62,8 +63,52 @@ int blocksize = 70;
 int max_group_number = 60;
 
 //clean blastpgp and psipred intermediate results
-int clean_blast_after = 1;
-int clean_blast_before = 1;
+int clean_blast_after = 0;
+int clean_blast_before = 0;
+
+// PSIBLAST alignment of structures: identity cutoff
+int struct_id_cutoff = 30;
+int below_id_cutoff = 101;
+
+// before or after relax: combine structure information
+int before_relax_combine = 1; // default: combine after two relaxation rounds
+
+// PSIBLAST alignment of structures: identity cutoff
+float struct_weight = 1.5; // derived from structural homologs
+float sequence_weight = 1; // derived from profile-profile alignment with secondary structure
+float user_constraint_weight = 1.5; // derived from user-defined constraints
+float pdb_weight = 1.5; // derived from structure alignment of input structures
+double minDaliZ = 1.0;
+
+// use different structural alignments
+int use_dali = 0;
+int use_fast = 1;
+int use_tmalign = 1;
+
+// realign psiblast alignment
+int realign_psiblast = 0;
+
+// constraint file
+char constraint_file[500]; // for structural alignments
+char user_constraint[500]; // for user-defined constraints
+
+//
+double weight_end_penalty=0.75;
+
+//
+char mafft[500];
+
+// filter similar
+int filter_similar=1;
+char cdhit[500];
+float cdhit_c_option = 0.95;
+int exclude_similar = 0;
+
+// updated database
+int use_updated_database = 1;
+
+// 
+int max_struct_number = 1;
 
 void getParameter(int argc, char **argv, int prog) {
 
@@ -89,20 +134,28 @@ void getParameter(int argc, char **argv, int prog) {
 	psipred_parameter_file[0] = '\0';
 	psipred_env_number = 3;
 
-	strcpy(blastpgp_command, "blastpgp");
-	strcpy(runpsipred_command, "runpsipredplus");
-	strcpy(runpsipred1_command, "runpsipredplus");
-    if(getenv("PROMALS_DIR")) {
-	    strcpy(program_dir, getenv("PROMALS_DIR"));
-        strcat(program_dir, "/");
-    } else {
-        cout << "Please set PROMALS_DIR. Otherwise, set to `.`" << endl;
-        strcpy(program_dir, "./");
-    }
-    strcpy(uniref90_file, program_dir);
-	strcat(uniref90_file, "uniref90/uniref90_filt");
+        strcpy(filter_query, "T\0");
+
+        constraint_file[0] = '\0';
+        user_constraint[0] = '\0';
+
+	strcpy(program_dir, "/home/jpei/tmp_promals_package/promals_package");
+
+	strcpy(blastpgp_command, program_dir);
+	strcat(blastpgp_command, "/bin/blastpgp");
+	strcpy(runpsipred_command, program_dir);
+	strcat(runpsipred_command, "/bin/runpsipred1");
+	strcpy(runpsipred1_command, program_dir);
+	strcat(runpsipred1_command, "/bin/runpsipred1");
+	strcpy(ncbirc, program_dir);
+	strcat(ncbirc, "/bin/.ncbirc");
+	strcpy(uniref90_file, program_dir);
+	strcat(uniref90_file, "/db/uniref90/uniref90_filt");
 	strcpy(psipred_parameter_file, program_dir);
-	strcat(psipred_parameter_file, "src/dataset_0.20_0.50_0.60_abcd.mat");
+	strcat(psipred_parameter_file, "/db/param/dataset_0.20_0.50_0.60_abcd.mat");
+
+        sprintf(mafft, "%s/bin/mafft", program_dir);
+        sprintf(cdhit, "%s/bin/cd-hit", program_dir);
 
 	strcpy(blast_dir, argv[1]);
 	strcat(blast_dir, "_blast");
@@ -147,7 +200,6 @@ void getParameter(int argc, char **argv, int prog) {
 			unaligned = atoi(argv[i+1]);
 			assert (unaligned <=1);
 		}
-
 		if(argStr == "-param") {
 			strcpy(parameter_file, argv[i+1]);
 		}
@@ -186,12 +238,6 @@ void getParameter(int argc, char **argv, int prog) {
 		if(argStr == "-score_weight") {
 			score_w = atof(argv[i+1]);
 		}
-		if(argStr == "-ssw") {
-			ss_w = atof(argv[i+1]);
-		}
-		if(argStr == "-aaw") {
-			score_w = atof(argv[i+1]);
-		}
 		if(argStr == "-score_shift") {
 			score_shift = atof(argv[i+1]);
 		}
@@ -207,8 +253,7 @@ void getParameter(int argc, char **argv, int prog) {
 		if(argStr == "-relax_count") {
 			relax_count = atoi(argv[i+1]);
 		}
-                //if(argStr == "-iter_number") {
-		if( (argStr == "-iter_number") || (argStr == "-iter_num") ) {
+		if(argStr == "-iter_number") {
 			iteration_number = atoi(argv[i+1]);
 			if(iteration_number<=0) {
 				cout << "Error: iteration number must be a positive integer" << endl;
@@ -225,14 +270,12 @@ void getParameter(int argc, char **argv, int prog) {
 				exit(0);
 			}
 		}
-		if(argStr == "-max_num_sequences") {
-			max_num_sequences = atoi(argv[i+1]);
-			if(max_num_sequences <= 0) {
-				cout << "Error: number of selected homologs must be positive" << endl;
-				exit(0);
-			}
+		if(argStr == "-filter_query") {
+                        strncpy(filter_query, argv[i+1], 1);
+                        if(filter_query[0] == 'f') filter_query[0] = 'F';
+                        if(filter_query[0] != 'F') filter_query[0] = 'T';
 		}
-		if(argStr == "-max_homologs") {
+		if(argStr == "-max_num_sequences") {
 			max_num_sequences = atoi(argv[i+1]);
 			if(max_num_sequences <= 0) {
 				cout << "Error: number of selected homologs must be positive" << endl;
@@ -249,7 +292,7 @@ void getParameter(int argc, char **argv, int prog) {
 		if(argStr == "-blocksize") {
 			blocksize = atoi(argv[i+1]);
 			if(blocksize < 10) {
-				blocksize = 60;
+				blocksize = 70;
 			}
 		}
 		if(argStr == "-max_group_number") {
@@ -263,6 +306,126 @@ void getParameter(int argc, char **argv, int prog) {
 		}
 		if(argStr == "-clean_blast_before") {
 			clean_blast_before = atoi(argv[i+1]);
+		}
+		if(argStr == "-struct_id_cutoff") {
+			struct_id_cutoff = atoi(argv[i+1]);
+			if(struct_id_cutoff < 1) {
+				struct_id_cutoff = 1;
+			}
+		}
+		if(argStr == "-below_id_cutoff") {
+			below_id_cutoff = atoi(argv[i+1]);
+			if(below_id_cutoff < 1) {
+				below_id_cutoff = 1;
+			}
+		}
+		if(argStr == "-before_relax_combine") {
+			before_relax_combine = atoi(argv[i+1]);
+			if(before_relax_combine < 0) {
+				before_relax_combine = 0;
+			}
+			if(before_relax_combine > 2) {
+				before_relax_combine = 2;
+			}
+		}
+		if(argStr == "-struct_weight") {
+			struct_weight = atof(argv[i+1]);
+			if(struct_weight < 0) {
+				struct_weight = 0;
+			}
+		}
+		if(argStr == "-sequence_weight") {
+			sequence_weight = atof(argv[i+1]);
+			if(sequence_weight < 0) {
+				sequence_weight = 0;
+			}
+		}
+		if(argStr == "-user_constraint_weight") {
+			user_constraint_weight = atof(argv[i+1]);
+			if(user_constraint_weight < 0) {
+				user_constraint_weight = 0;
+			}
+		}
+		if(argStr == "-pdb_weight") {
+			pdb_weight = atof(argv[i+1]);
+			if(pdb_weight < 0) {
+				pdb_weight = 0;
+			}
+		}
+		if(argStr == "-minDaliZ") {
+			minDaliZ = atof(argv[i+1]);
+			if(minDaliZ < 0) {
+				minDaliZ = 0;
+			}
+		}
+		if(argStr == "-dali") {
+			use_dali = atoi(argv[i+1]);
+			//if(dali < 0) { dali = 0; }
+                        if(use_dali) {
+                                char command1[500];
+                                sprintf(command1, "ls %s/bin/DaliLite", program_dir);
+                                int a1 = system(command1);
+                                if(a1!=0) {
+                                        cout << "Error: DaliLite program is not available at " << program_dir << endl;
+                                        exit(1);
+                                }
+                        }
+		}
+		if(argStr == "-fast") {
+			use_fast = atoi(argv[i+1]);
+			//if(minDaliZ < 0) { minDaliZ = 0; }
+                        if(use_fast) {
+                                char command1[500];
+                                sprintf(command1, "ls %s/bin/fast", program_dir);
+                                int a1 = system(command1);
+                                if(a1!=0) {
+                                        cout << "Error: fast program is not available at " << program_dir << endl;
+                                        exit(1);
+                                }
+                        }
+		}
+		if(argStr == "-tmalign") {
+			use_tmalign = atoi(argv[i+1]);
+			//if(minDaliZ < 0) { minDaliZ = 0; }
+                        if(use_tmalign) {
+                                char command1[500];
+                                sprintf(command1, "ls %s/bin/tmalign", program_dir);
+                                int a1 = system(command1);
+                                if(a1!=0) {
+                                        cout << "Error: TMalign executable file is not available at " << program_dir << endl;
+                                        exit(1);
+                                }
+                        }
+		}
+		if(argStr == "-realign_psiblast") {
+			realign_psiblast = atoi(argv[i+1]);
+			//if(minDaliZ < 0) { minDaliZ = 0; }
+		}
+		if(argStr == "-constraint") {
+                        strcpy(constraint_file, argv[i+1]);
+			//if(minDaliZ < 0) { minDaliZ = 0; }
+		}
+		if(argStr == "-user_constraint") {
+                        strcpy(user_constraint, argv[i+1]);
+			//if(minDaliZ < 0) { minDaliZ = 0; }
+		}
+		if(argStr == "-weight_end_penalty") {
+			weight_end_penalty = atof(argv[i+1]);
+			if(weight_end_penalty < 0) {
+				weight_end_penalty = 1.0;
+			}
+		}
+		if(argStr == "-filter_similar") {
+			filter_similar = atoi(argv[i+1]);
+		}
+		if(argStr == "-exclude_similar") {
+			exclude_similar = atoi(argv[i+1]);
+		}
+		if(argStr == "-use_updated_database") {
+			use_updated_database = atoi(argv[i+1]);
+		}
+		if(argStr == "-max_struct_number") {
+			max_struct_number = atoi(argv[i+1]);
 		}
 
 	}
@@ -308,7 +471,7 @@ void getParameter(int argc, char **argv, int prog) {
 		exit(0);
 	} 
 	
-	cout << "Setting up a blast directory: " << blast_dir << endl << endl;
+	//cout << "Setting up a blast directory: " << blast_dir << endl << endl;
 		
 }
 
@@ -365,11 +528,12 @@ void printHelp(int prog) {
 	if(prog == 1)  // mummals
 	{
 
-	cout << endl << " PROMALS - PROfile Multiple sequence Alignment with Local Structure" << endl << endl;
+	cout << endl << " promals with 3D information " << endl;
 
 	cout << " Usage:" << endl;
-	cout << " \t promals input_fasta [options]" << endl;
+	cout << " \t promals input_file [options]" << endl;
 	cout << endl;
+        return;
 
 	cout << " options: " << endl << endl;
 

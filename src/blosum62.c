@@ -70,7 +70,7 @@
  * SRE, Sat Jun 26 09:47:59 2004
  * This code is explicitly assigned to the public domain. You may
  * reuse it as you wish.
- * CVS $Id: lambda.c,v 1.7 2004/07/01 13:44:33 eddy Exp $ 
+ * CVS $Id: blosum62.c,v 1.1.1.1 2008/02/02 03:29:38 jpei Exp $ 
  */
 
 #include <stdlib.h>

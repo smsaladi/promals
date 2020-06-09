@@ -10,6 +10,7 @@ char **cmatrix(int d1, int d2);
 void free_dmatrix(double **mat, int m, int n);
 void free_imatrix(int **mat, int m, int n);
 void free_cmatrix(char **mat, int m, int n);
+void printinfo(char *info, int doprint);
 
 
 // generic vector
@@ -55,6 +56,7 @@ void free_gvector(kind *gvec) {
 	gvec = 0;
 }
 
+/*
 //static float sqrarg;
 //#define SQR(a) ((sqrarg=(a)) == 0.0 ? 0.0 : sqrarg*sqrarg)
 
@@ -70,12 +72,10 @@ static double dminarg1,dminarg2;
         (dminarg1) : (dminarg2))
 
 //static float maxarg1,maxarg2;
-//#define FMAX(a,b) (maxarg1=(a),maxarg2=(b),(maxarg1) > (maxarg2) ?\
-//        (maxarg1) : (maxarg2))
+//#define FMAX(a,b) (maxarg1=(a),maxarg2=(b),(maxarg1) > (maxarg2) ? (maxarg1) : (maxarg2))
 
 //static float minarg1,minarg2;
-//#define FMIN(a,b) (minarg1=(a),minarg2=(b),(minarg1) < (minarg2) ?\
-//        (minarg1) : (minarg2))
+//#define FMIN(a,b) (minarg1=(a),minarg2=(b),(minarg1) < (minarg2) ? (minarg1) : (minarg2))
 
 static long lmaxarg1,lmaxarg2;
 #define LMAX(a,b) (lmaxarg1=(a),lmaxarg2=(b),(lmaxarg1) > (lmaxarg2) ?\
@@ -94,6 +94,8 @@ static int iminarg1,iminarg2;
         (iminarg1) : (iminarg2))
 
 #define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
+
+*/
 
 #endif
 

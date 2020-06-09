@@ -107,4 +107,8 @@ void free_cmatrix(char **mat, int m, int n) {
 	mat = 0;
 }
 
-
+void printinfo(char *info, int doprint) {
+        if(doprint) {
+                cout << info << endl;
+        }
+}
