@@ -1,27 +1,8 @@
-#install: testPurge
-#install: merge_align
-#install: mummals
 install: promals_c al2co_consensus
 
 CC = g++
-OTHERFLAGS = -DNumInsertStates=1 -DVERSION="1.09"
-#CXXFLAGS = -O3 -W -Wall -pedantic -DNDEBUG $(OTHERFLAGS) -funroll-loops
-#CXXFLAGS = -O3 -W -pedantic -DNDEBUG $(OTHERFLAGS) -funroll-loops
 CXXFLAGS = -O3
-#CXXFLAGS = -g -O1
 CFLAGS = -c
-
-test_hmm_profpair: test_hmm_profpair.c util.o amino.o mathfunc.o smallnumber.o subalign.o hmm_profpair.o all.h progressiveAlignHMM.h sparsematrix.o sequences.o kmer_dist.o hmm_profpair1.o
-	g++ test_hmm_profpair.c util.o amino.o mathfunc.o smallnumber.o subalign.o hmm_profpair.o sparsematrix.o sequences.o kmer_dist.o hmm_profpair1.o -o test_hmm_profpair -lm $(CXXFLAGS)
-
-testPurge: testPurge.c kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h hmm_profpair.o smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o consv1.o refinegap.o
-	g++ testPurge.c sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o hmm_profpair.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o consv1.o refinegap.o -o testPurge -lm 
-
-merge_align: merge_align.c kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h hmm_profpair.o smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o
-	g++ merge_align.c sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o hmm_profpair.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o -o merge_align -lm $(CXXFLAGS)
-
-mummals: mummals.c kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h hmm_profpair.o smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o
-	g++ mummals.c sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o hmm_profpair.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o -o mummals -lm $(CXXFLAGS)
 
 promals_c: progress.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o ss_prof.o regularizer.o hmm_psipred.o blastpgp.o gap_refining.o refine.o seq_str_aln.o constraint.o structutil.o filter_similar.o
 	g++ progress.o  sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o ss_prof.o regularizer.o hmm_psipred.o blastpgp.o gap_refining.o refine.o seq_str_aln.o constraint.o structutil.o filter_similar.o -o promals_c -lm $(CXXFLAGS)
@@ -29,11 +10,12 @@ promals_c: progress.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences
 readprintali: readprintali.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o ss_prof.o regularizer.o hmm_psipred.o blastpgp.o gap_refining.o refine.o seq_str_aln.o constraint.o structutil.o filter_similar.o
 	g++ readprintali.o  sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o ss_prof.o regularizer.o hmm_psipred.o blastpgp.o gap_refining.o refine.o seq_str_aln.o constraint.o structutil.o filter_similar.o -o readprintali -lm $(CXXFLAGS)
 
-al2co: al2co.c
-	gcc al2co.c -o al2co -lm -O3
-
 al2co_consensus: al2co_consensus.c
 	gcc al2co_consensus.c -o al2co_consensus -lm -O3
+
+refinegap: refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o
+	g++ refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o -o refinegap -lm
+
 
 filter_similar.o: filter_similar.c param.h multiple.h sequences.h
 	$(CC) $(CFLAGS)  filter_similar.c $(CXXFLAGS)
@@ -45,8 +27,6 @@ seq_str_aln.o: seq_str_aln.c seq_str_aln.h
 	$(CC) $(CFLAGS)  seq_str_aln.c $(CXXFLAGS)
 refine.o: refine.c refine.h
 	$(CC) $(CFLAGS)  refine.c $(CXXFLAGS)
-refinegap: refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o
-	g++ refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o -o refinegap -lm
 
 consv1.o: consv1.c consv1.h
 	$(CC) $(CFLAGS)  consv1.c $(CXXFLAGS)
@@ -95,9 +75,6 @@ sequences.o: sequences.c sequences.h
 
 tnode.o: tnode.c tnode.h
 	$(CC) $(CFLAGS) tnode.c $(CXXFLAGS)
-
-#hmm_profpair.o: hmm_profpair.h hmm_profpair.c
-#	$(CC) $(CFLAGS) hmm_profpair.c $(CXXFLAGS)
 
 hmm_profpair1.o: hmm_profpair1.h hmm_profpair1.c
 	$(CC) $(CFLAGS) hmm_profpair1.c $(CXXFLAGS)
