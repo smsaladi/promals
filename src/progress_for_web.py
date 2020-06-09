@@ -1,5 +1,7 @@
 #!/usr1/local/bin/python
 
+from __future__ import print_function
+
 import os, sys, re, glob
 
 # this script run promals given a fasta file
@@ -24,23 +26,23 @@ def read_pummals_log(log_file, csv_string, cutoff_csv):
 	ss_counts = 0
 	fp = open(log_file)
 	for line in fp.readlines():
-	
+
 		if re.match("ss:", line): record_begin = 1
 		if not record_begin: continue
-		
-		#if "program finished" in line: 
-		if re.search("program finished", line): 
+
+		#if "program finished" in line:
+		if re.search("program finished", line):
 			normal_finish = 1
 			normal_finish1 = 1
 			break
-		
-		if re.match("ss:", line): 
+
+		if re.match("ss:", line):
 			group_num += 1
 			if(group_num%2==1): name_bg_color = 1
 			else: name_bg_color = 0
-				
+
 			group_seq_num = 0
-	
+
 			ss_array = line.split()[1]
 			ss_array_length = len(ss_array)
 			ss_array = '-'+ss_array+'-';
@@ -89,10 +91,10 @@ def read_pummals_log(log_file, csv_string, cutoff_csv):
 				this_color_csv += color_csv_string(this_csv, cutoff_csv)
 				output_lines += this_color_csv
 				output_lines += "\n"
-	
+
 		elif line!='\n':
 			group_seq_num += 1
-	
+
 			name, seq = line.split()
 			name = name[0:name_width]
 			name = "%-25s" %name
@@ -118,13 +120,13 @@ def read_pummals_log(log_file, csv_string, cutoff_csv):
 				#seq = re.sub("e", '<FONT style="color:BLUE">e</font>', seq)
 				#seq = re.sub("h", '<FONT style="color:RED">h</font>', seq)
 				seq = re.sub("\.", " ", seq)
-	
+
 			#web_line = name+seq+"<br>"
 			web_line = name+seq
-	
+
 			output_lines +=  web_line
 			output_lines += "\n"
-	
+
 		else:
 			#output_lines += "<br>"
 			output_lines += "\n"
@@ -139,17 +141,17 @@ def read_pummals_log(log_file, csv_string, cutoff_csv):
 	fp = open(log_file)
 	seqnum = 0
 	for line in fp.readlines():
-	
-		if re.match("nblocks:", line): 
+
+		if re.match("nblocks:", line):
 			record_begin = 1
 			continue
 		if not record_begin: continue
-		
-		if re.match("------------------", line): 
+
+		if re.match("------------------", line):
 			normal_finish = 1
 			normal_finish1 = 1
 			break
-		if re.search("program finished", line): 
+		if re.search("program finished", line):
 			normal_finish = 1
 			normal_finish1 = 1
 			break
@@ -178,13 +180,13 @@ def read_pummals_log(log_file, csv_string, cutoff_csv):
 			name = "%-25s" %(name[0:25])
 			#line = '<span style="background-color: RGB(175,175, 175)">%s</span>   %s\n' %(name, seq)
 			line = '%s   %s\n' %(name, seq)
-			
+
 		output_lines += line
 		#output_lines += "<br>"
 
 	fp.close()
 	return output_lines
-		
+
 
 
 def color_csv_string(conservation_array, cutoff):
@@ -197,13 +199,13 @@ def color_csv_string(conservation_array, cutoff):
 	for i in range(0, 10):
 
 		if i<cutoff: color_string = ' '
-		elif i <=7: 
+		elif i <=7:
 			color_string = '<font color="#%s">%d</font>' %("000000", i)
 		elif i >= 8:
-			color_string = '<font color="#%s">%d</font>' %("800000", i)	
+			color_string = '<font color="#%s">%d</font>' %("800000", i)
 		span_bg_color.append(color_string)
 		continue
-			
+
 		if i<=5: color_string = " "
 		#if i>=5: color_string = '<font color="#%s">%d</font>' %(blue_spectrum[i], i)
 		if i>5 and i<=7: color_string = '<font color="#%s">%d</font>' %("000000", i)
@@ -238,7 +240,7 @@ def get_csv_string(alnfile):
 	command = "/home/jpei/promals_package/al2co -i %s -t %s.csv.aln -g 0.25 -b 1000000 > /dev/null" %(alnfile, alnfile)
 	#command = "/home/jpei/promals_package/al2co -i %s -t /tmp/csv.aln -g 0.25 -b 1000000 > /dev/null" %(alnfile)
 	os.system(command)
-        if not os.path.isfile(alnfile+".csv.aln"):
+	if not os.path.isfile(alnfile+".csv.aln"):
         #if not os.path.isfile("/tmp/csv.aln"):
 		return ""
 	for line in open(alnfile+".csv.aln").readlines():
@@ -248,23 +250,23 @@ def get_csv_string(alnfile):
 	return csv_string
 
 def run_promals(inputfile):
-	
+
 	command = "/home/jpei/profile_hmm/profile_hmm/progress %s -outfile %s.promals.aln > %s.log" %(inputfile, inputfile, inputfile)
 	os.system(command)
 
 	if(not os.path.isfile(inputfile+".promals.aln") ):
-		print "No alignment generated"
+		print("No alignment generated")
 		sys.exit(0)
 
 if __name__ == "__main__":
 
 	inputfile = sys.argv[1]
-	#run_promals(inputfile)	
+	#run_promals(inputfile)
 	mycsv = get_csv_string(inputfile)
 	os.system("rm -f " + inputfile + ".csv.aln")
 	out_log_file = inputfile.replace(".result", "")
 	out_log_file = re.sub("\/php", "/QUERY_", out_log_file) + ".lock"
-	if(len(sys.argv) > 2): 
+	if(len(sys.argv) > 2):
 		if sys.argv[2][0]!='-': out_log_file = sys.argv[2]
 	cutoff_value = 5
 	for i in range(len(sys.argv)):
@@ -277,7 +279,7 @@ if __name__ == "__main__":
 	for myline in check_lock_finish.readlines():
 		if re.search("program finished", myline):
 			check_finish = 1
-        check_lock_finish.close()
+	check_lock_finish.close()
 	if check_finish==0: sys.exit()
 	web_alignment = read_pummals_log(out_log_file, mycsv, cutoff_value)
 	#out_web_file = "/tmp/" + inputfile+".html"
@@ -291,7 +293,7 @@ if __name__ == "__main__":
 	'''
 	ref_file = "/home/jpei/prefab4/ref/" + inputfile
 	reflines = open(ref_file).readlines()
-	for line in reflines.readlines(): 
+	for line in reflines.readlines():
 		tmpline = ""
 		for re.search(aletter,line):
 			if aletter.isupper():
@@ -302,7 +304,7 @@ if __name__ == "__main__":
 	out_web_fp.write("<br>")
 	'''
 	#############################
-	
+
 	out_web_fp.write(web_alignment)
 	out_web_fp.write('<br><br>\n')
 	#out_web_fp.write('<a href="http://prodata.swmed.edu//promals/info/promals_output.html">Here is information about this alignment format</a>')
@@ -319,4 +321,4 @@ if __name__ == "__main__":
 		print "Here:"
 	'''
 
-				
+

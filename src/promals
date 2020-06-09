@@ -1,12 +1,11 @@
 #!/usr1/local/bin/python
 
+from __future__ import print_function
+
 import os, sys, re
 
-# program location
-prog_dir = '/home/jpei/promals_package/'
-
-# program names
-promals_web = prog_dir + "progress_for_web.py"
+prog_dir = os.path.dirname(os.path.abspath(__file__))
+promals_web = os.path.join(prog_dir, "progress_for_web.py")
 
 csv_cutoff_g = 5
 
@@ -18,7 +17,7 @@ def run_promals():
 		promals_help()
 		sys.exit(0)
 	elif not os.path.isfile(cmd_line[1]):
-		print "Error: the first argument must be a readable file containing your sequences"
+		print("Error: the first argument must be a readable file containing your sequences")
 		promals_help()
 		sys.exit(0)
 	
@@ -26,7 +25,7 @@ def run_promals():
 	outputfile = ""
 	for i in range(len(cmd_line)):
 		arg = cmd_line[i]
-		if i == 0: arg = prog_dir + 'promals_c'
+		if i == 0: arg = os.path.join(prog_dir, 'promals_c')
 		if i == 1: inputfile = arg
 		if arg == '-outfile':
 			if i+1 < len(cmd_line): outputfile = cmd_line[i+1]
@@ -44,12 +43,12 @@ def run_promals():
 	promals_c = ' '.join(cmd_line1)
 	outputlogfile = inputfile+".prmls.OuTpUT"
 	promals_c = promals_c + " > " + outputlogfile
-	print promals_c
+	print(promals_c)
 	
 	if not outputfile:
 		if re.search("\.fa$", inputfile):
 			outputfile = re.sub("\.fa$", "", inputfile) + ".promals.aln"
-                else: outputfile = inputfile + ".promals.aln"
+		else: outputfile = inputfile + ".promals.aln"
 	
 	# run programs
 	os.system(promals_c)
@@ -57,65 +56,65 @@ def run_promals():
 
 def promals_help():
 
-	print
-	print "PROMALS - PROfile Multiple sequence Alignment with Local Structure"
-	print 
-	print "\tcommand: "
-	print "\t\tpromals input_file [options]"
-	print "\texample:"
-	print "\t\tpromals yfp.fa -id_thr 0.6 -ss_w 0.2 -aa_w 0.8"
-	print "\toutput:"
-	print "\t\tTWO files will be generated. One is the CLUSTAL format alignment (file name"
-	print "\t\tspecified by option -outfile; default is *.promals.aln). The other file is"
-	print "\t\tan html file of colored alignment with information of conservation and "
-	print "\t\tpredicted secondary structures. For the above example, the two files will be:"
-	print "\t\tyfp.promals.aln and yfp.promals.aln.html"
-	print ""
-	print "PROMALS options"
-	print "     Options for alignment parameters:"
-	print "\t-id_thr  Identity threshold for partition of fast and slow alignment stages."
-	print "\t         default: 0.6 [real number between 0 and 1]"
-	print "\t-ssw    Weight for secondary structure scores."
-	print "\t\t default: 0.2 [real number]"
-	print "\t-aaw    Weight for amino acid scores."
-	print "\t\t default: 0.8 [real number]"
-	print ""
-	print "    Options for running PSI-BLAST:"
-	print "       \t-blast_dir  directory to run blastpgp"
-	print "\t\t default: input file name with '_blast' attached. [String]"
-	print "        -evalue  E-value cutoff for including homologs for the next iteraion"
-	print "\t\t default: 0.001 [real number]"
-	print "\t-iter_num Number of iterations for blastpgp "
-	print "\t\t default: 3 [Integer]"
-	print "        -max_homologs  Number of maximum homologs used for generation of profile"
-	print "\t\t default: 300 [Integer]"
-	print "        -low_id_cutoff: identity cutoff below which divergent hits found by PSIBLAST are removed"
-	print "\t\t default: 0.2 [real number between 0 and 1]"
-	print ""
-	print "    Options for output:"
-	print "\t-outfile  Output CLUSTAL format alignment file name"
-	print "\t\t default: input file name with '.promals.aln' attached. [String]"
-	print "        -blocksize  Number of letters in alignment blocks for the output alignment files"
-	print "\t\t default: 70 [Integer]"
-        print "        -csv_index Show conservation indices above or equal to this number"
-	print "\t\t default: 5 [Integer number between 0 and 9]"
-	print ""
-	print "    Options for cleaning intermediate blastpgp and psipred result files"
-	print "        -clean_blast_before: clean any file in the directory that stores intermediate files (specified"
-	print "		by -blast_dir option) before running blastpgp and psipred"
-	print "		default: 1 [Integer. By setting this value to 0, intermediate files will not be deleted]"
-	print "        -clean_blast_before: clean intermediate files (*.ss2, *.horiz, *.aln, etc) in the directory "
-	print "                 after running blastpgp and psipred"
-	print "		default: 1 [Integer. By setting this value to 0, intermediate files will not be deleted]"
-	print ""
-	print "	caution: If intermediate files are found in the blast directory, they will be used. This will"
-	print "                 bypass the time-consuming blastpgp and psipred steps. However, if these files are wrong "
-	print "		 and do not contain the necessary contents, they will cause problems and give errors."
-	print "		 The default is to clean the directory both before and after running blastpgp and psipred."
-	print "		 If you want to use these intermediate files (under the condition that they are generated"
-	print "    		 correctly), you can set both -clean_blast_before and -clean_blast_before to 0, and use "
-	print "        	 the same blast directory for future runs of PROMALS."
-        print
+	print()
+	print("PROMALS - PROfile Multiple sequence Alignment with Local Structure")
+	print() 
+	print("\tcommand: ")
+	print("\t\tpromals input_file [options]")
+	print("\texample:")
+	print("\t\tpromals yfp.fa -id_thr 0.6 -ss_w 0.2 -aa_w 0.8")
+	print("\toutput:")
+	print("\t\tTWO files will be generated. One is the CLUSTAL format alignment (file name")
+	print("\t\tspecified by option -outfile; default is *.promals.aln). The other file is")
+	print("\t\tan html file of colored alignment with information of conservation and ")
+	print("\t\tpredicted secondary structures. For the above example, the two files will be:")
+	print("\t\tyfp.promals.aln and yfp.promals.aln.html")
+	print("")
+	print("PROMALS options")
+	print("     Options for alignment parameters:")
+	print("\t-id_thr  Identity threshold for partition of fast and slow alignment stages.")
+	print("\t         default: 0.6 [real number between 0 and 1]")
+	print("\t-ssw    Weight for secondary structure scores.")
+	print("\t\t default: 0.2 [real number]")
+	print("\t-aaw    Weight for amino acid scores.")
+	print("\t\t default: 0.8 [real number]")
+	print("")
+	print("    Options for running PSI-BLAST:")
+	print("       \t-blast_dir  directory to run blastpgp")
+	print("\t\t default: input file name with '_blast' attached. [String]")
+	print("        -evalue  E-value cutoff for including homologs for the next iteraion")
+	print("\t\t default: 0.001 [real number]")
+	print("\t-iter_num Number of iterations for blastpgp ")
+	print("\t\t default: 3 [Integer]")
+	print("        -max_homologs  Number of maximum homologs used for generation of profile")
+	print("\t\t default: 300 [Integer]")
+	print("        -low_id_cutoff: identity cutoff below which divergent hits found by PSIBLAST are removed")
+	print("\t\t default: 0.2 [real number between 0 and 1]")
+	print("")
+	print("    Options for output:")
+	print("\t-outfile  Output CLUSTAL format alignment file name")
+	print("\t\t default: input file name with '.promals.aln' attached. [String]")
+	print("        -blocksize  Number of letters in alignment blocks for the output alignment files")
+	print("\t\t default: 70 [Integer]")
+	print("        -csv_index Show conservation indices above or equal to this number")
+	print("\t\t default: 5 [Integer number between 0 and 9]")
+	print("")
+	print("    Options for cleaning intermediate blastpgp and psipred result files")
+	print("        -clean_blast_before: clean any file in the directory that stores intermediate files (specified")
+	print("		by -blast_dir option) before running blastpgp and psipred")
+	print("		default: 1 [Integer. By setting this value to 0, intermediate files will not be deleted]")
+	print("        -clean_blast_before: clean intermediate files (*.ss2, *.horiz, *.aln, etc) in the directory ")
+	print("                 after running blastpgp and psipred")
+	print("		default: 1 [Integer. By setting this value to 0, intermediate files will not be deleted]")
+	print("")
+	print("	caution: If intermediate files are found in the blast directory, they will be used. This will")
+	print("                 bypass the time-consuming blastpgp and psipred steps. However, if these files are wrong ")
+	print("		 and do not contain the necessary contents, they will cause problems and give errors.")
+	print("		 The default is to clean the directory both before and after running blastpgp and psipred.")
+	print("		 If you want to use these intermediate files (under the condition that they are generated")
+	print("    		 correctly), you can set both -clean_blast_before and -clean_blast_before to 0, and use ")
+	print("        	 the same blast directory for future runs of PROMALS.")
+	print()
 
 if __name__ == '__main__':
 
