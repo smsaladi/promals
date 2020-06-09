@@ -57,10 +57,10 @@ void clean_blast_psipred(char *seqname) {
 
 	char cmdname[500];
 	
-	sprintf(cmdname, "rm -fr %s%s*", blast_dir, seqname);
+	// sprintf(cmdname, "rm -fr %s%s*", blast_dir, seqname);
 	
 	//cout << cmdname << endl;
-	system(cmdname);
+	// system(cmdname);
 
 }
 
@@ -194,11 +194,11 @@ subalign * run_blastpgp(char *query_name, char *query_seq) {
 	// remove the blast output file
 	strcpy(command, "rm -f ");
 	strcat(command, br_file_name); 
-	system(command);
+    // system(command);
 
-	system( (string("rm -f ") + string(br_file_name) + string(".aln")).c_str());
-	system( (string("rm -f ") + string(fasta_file_name) + string(".aln")).c_str());
-	system( (string("rm -f ") + string(fasta_file_name)).c_str());
+	// system( (string("rm -f ") + string(br_file_name) + string(".aln")).c_str());
+	// system( (string("rm -f ") + string(fasta_file_name) + string(".aln")).c_str());
+	// system( (string("rm -f ") + string(fasta_file_name)).c_str());
 
 	delete x1;
 

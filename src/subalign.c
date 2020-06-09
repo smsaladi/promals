@@ -1938,9 +1938,9 @@ void subalign::get_ss_prof(char *dir_name, char *runpsipred_command) {
 	system(command);
 
 	// clear the temporary directory
-	chdir("../");
-	sprintf(command, "rm -r -f %s", tmp_dir);
-	system(command);
+	// chdir("../");
+    // sprintf(command, "rm -r -f %s", tmp_dir);
+	// system(command);
 
 	// change directory back
 	chdir(cwd);
@@ -2032,11 +2032,11 @@ void subalign::get_ss_prof1(char *dir_name, char *query_name, char *runpsipred1_
 	system(command);
 
 	// clear the temporary directory
-	chdir("..");
-	sprintf(command, "rm -r -f %s", tmp_dir);
-	cout << "command: " << command << endl;
-	int sys_status = system(command);
-	cout << "sys_status: " << sys_status << endl;
+	// chdir("..");
+    // sprintf(command, "rm -r -f %s", tmp_dir);
+    // cout << "command: " << command << endl;
+    // int sys_status = system(command);
+	// cout << "sys_status: " << sys_status << endl;
 
 	// change directory back
 	chdir(cwd);
