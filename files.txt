@@ -1,180 +1,166 @@
--rw-r--r-- 1 saladi clem 6.4K Mar 14  2007 ./install.py
--rw-r--r-- 1 saladi clem 5.1K May  8  2007 ./README.promals
+./install.log
+./install.py
+./README
+./README.md
 
 ./bin:
-total 7.7M
-drwxr-xr-x  2 saladi clem  118 Oct  2  2008 .
-drwxr-xr-x 10 saladi clem 4.0K Jun  4 10:35 ..
--rwxr-xr-x  1 saladi clem  43K Feb  5  2007 al2co
--rwxr-xr-x  1 saladi clem 3.6M Feb  5  2007 blastpgp
--rwxr-xr-x  1 saladi clem 2.1K Feb  5  2007 BLOSUM62
--rwxr-xr-x  1 saladi clem 3.4M Feb  5  2007 makemat
--rw-r--r--  1 saladi clem  10K Feb  5  2007 progress_for_web.py
--rwxr-xr-x  1 saladi clem 3.8K Oct  2  2008 promals
--rwxr-xr-x  1 saladi clem 639K Feb  5  2007 promals_c
+al2co_consensus
+blastpgp
+cd-hit
+fast
+mafft
+makemat
+progress_for_web.py
+promals
+promals_c
+runpsipred1
+TMalign
 
-./blastpgp:
-total 127M
-drwxr-xr-x  2 saladi clem 4.0K Feb  5  2007 .
-drwxr-xr-x 10 saladi clem 4.0K Jun  4 10:35 ..
--rwxr-xr-x  1 saladi clem 5.6M Feb  5  2007 blastpgp_axp64-tru64
--rwxr-xr-x  1 saladi clem 3.1M Feb  5  2007 blastpgp_ia32-freebsd
--rwxr-xr-x  1 saladi clem 3.8M Feb  5  2007 blastpgp_ia32-linux
--rwxr-xr-x  1 saladi clem 3.6M Feb  5  2007 blastpgp_ia32-solaris9
--rwxr-xr-x  1 saladi clem 9.4M Feb  5  2007 blastpgp_ia64-linux
--rwxr-xr-x  1 saladi clem 7.5M Feb  5  2007 blastpgp_mips64-irix
--rwxr-xr-x  1 saladi clem 3.2M Feb  5  2007 blastpgp_ppc32-macosx
--rwxr-xr-x  1 saladi clem 7.0M Feb  5  2007 blastpgp_sparc64-solaris10
--rwxr-xr-x  1 saladi clem 5.8M Feb  5  2007 blastpgp_sparc64-solaris8
--rwxr-xr-x  1 saladi clem 6.7M Feb  5  2007 blastpgp_universal-macosx
--rwxr-xr-x  1 saladi clem 4.2M Feb  5  2007 blastpgp_x64-linux
--rwxr-xr-x  1 saladi clem 6.0M Feb  5  2007 blastpgp_x64-solaris10
--rwxr-xr-x  1 saladi clem 2.1K Feb  5  2007 BLOSUM62
--rwxr-xr-x  1 saladi clem 5.3M Feb  5  2007 makemat_axp64-tru64
--rwxr-xr-x  1 saladi clem 2.9M Feb  5  2007 makemat_ia32-freebsd
--rwxr-xr-x  1 saladi clem 3.5M Feb  5  2007 makemat_ia32-linux
--rwxr-xr-x  1 saladi clem 3.4M Feb  5  2007 makemat_ia32-solaris9
--rwxr-xr-x  1 saladi clem 8.8M Feb  5  2007 makemat_ia64-linux
--rwxr-xr-x  1 saladi clem 7.0M Feb  5  2007 makemat_mips64-irix
--rwxr-xr-x  1 saladi clem 3.0M Feb  5  2007 makemat_ppc32-macosx
--rwxr-xr-x  1 saladi clem 6.6M Feb  5  2007 makemat_sparc64-solaris10
--rwxr-xr-x  1 saladi clem 5.5M Feb  5  2007 makemat_sparc64-solaris8
--rwxr-xr-x  1 saladi clem 6.3M Feb  5  2007 makemat_universal-macosx
--rwxr-xr-x  1 saladi clem 3.9M Feb  5  2007 makemat_x64-linux
--rwxr-xr-x  1 saladi clem 5.6M Feb  5  2007 makemat_x64-solaris10
--rw-r--r--  1 saladi clem  114 Feb  5  2007 README
-
-./data:
-total 8.0K
-drwxr-xr-x  2 saladi clem   21 Feb  5  2007 .
-drwxr-xr-x 10 saladi clem 4.0K Jun  4 10:35 ..
--rwxr-xr-x  1 saladi clem 2.1K Feb  5  2007 BLOSUM62
+./db:
+param
+structure_db
+uniref90
 
 ./example:
-total 32K
-drwxr-xr-x  2 saladi clem  123 Feb  5  2007 .
-drwxr-xr-x 10 saladi clem 4.0K Jun  4 10:35 ..
--rw-r--r--  1 saladi clem    0 Feb  5  2007 error.log
--rw-r--r--  1 saladi clem 1.6K Feb  5  2007 yfp.fa
--rw-r--r--  1 saladi clem 4.6K Feb  5  2007 yfp.fa.promals.out
--rw-r--r--  1 saladi clem   99 Feb  5  2007 yfp.out
--rw-r--r--  1 saladi clem 2.2K Feb  5  2007 yfp.promals.aln
--rw-r--r--  1 saladi clem 6.9K Feb  5  2007 yfp.promals.aln.html
+yfp.fa
 
-./psipred:
-total 2.1M
-drwxr-xr-x  5 saladi clem 4.0K Feb  5  2007 .
-drwxr-xr-x 10 saladi clem 4.0K Jun  4 10:35 ..
-drwxr-xr-x  2 saladi clem   61 Feb  5  2007 bin
-drwxr-xr-x  2 saladi clem 4.0K Feb  5  2007 data
--rw-r--r--  1 saladi clem    0 Feb  5  2007 .horiz
--rw-r--r--  1 saladi clem 3.9K Feb  5  2007 LICENSE
--rw-r--r--  1 saladi clem 2.1M Feb  5  2007 psipred25.tar
--rw-r--r--  1 saladi clem 5.0K Feb  5  2007 README
--rwxr-xr-x  1 saladi clem 1.6K Feb  5  2007 runpsipred
--rwxr-xr-x  1 saladi clem 1.6K Feb  5  2007 runpsipred1
--rwxr-xr-x  1 saladi clem 1.5K Feb  5  2007 runpsipred_old
--rwxr-xr-x  1 saladi clem 1.1K Feb  5  2007 runpsipred_single
-drwxr-xr-x  2 saladi clem 4.0K Feb  5  2007 src
--rw-r--r--  1 saladi clem    0 Feb  5  2007 .ss
+./prog:
+blastpgp
+cd-hit
+mafft
+psipred
+psipred_
+psipred1
+psipred_old
+psipred.tar.gz
+psipred_test
+saln
+TMalign
 
 ./src:
-total 1.8M
-drwxr-xr-x  2 saladi clem 4.0K Oct  2  2008 .
-drwxr-xr-x 10 saladi clem 4.0K Jun  4 10:35 ..
--rwxr-xr-x  1 saladi clem  44K Mar 14  2007 al2co
--rw-r--r--  1 saladi clem  56K May  8  2007 al2co.c
--rw-r--r--  1 saladi clem  784 May  8  2007 all.h
--rw-r--r--  1 saladi clem  25K May  8  2007 amino.c
--rw-r--r--  1 saladi clem  935 May  8  2007 amino.h
--rw-r--r--  1 saladi clem  16K May  8  2007 blastpgp.c
--rw-r--r--  1 saladi clem  873 May  8  2007 blastpgp.h
--rw-r--r--  1 saladi clem  30K May  8  2007 blosum62.c
--rw-r--r--  1 saladi clem  18K May  8  2007 Btree.c
--rw-r--r--  1 saladi clem 1.4K May  8  2007 Btree.h
--rw-r--r--  1 saladi clem  24K May  8  2007 btree_template.h
--rw-r--r--  1 saladi clem  75K May  8  2007 consv1.c
--rw-r--r--  1 saladi clem 1.4K May  8  2007 consv1.h
--rw-r--r--  1 saladi clem  37K Mar 14  2007 dataset_0.20_0.50_0.60_abcd.mat
--rw-r--r--  1 saladi clem  21K May  8  2007 gap_refining.c
--rw-r--r--  1 saladi clem 1.3K May  8  2007 gap_refining.h
--rw-r--r--  1 saladi clem 1.2K May  8  2007 get_align_ss.c
--rw-r--r--  1 saladi clem  263 May  8  2007 header_cpp.h
--rw-r--r--  1 saladi clem  33K May  8  2007 hmm_local.c
--rw-r--r--  1 saladi clem 2.2K May  8  2007 hmm_local.h
--rw-r--r--  1 saladi clem  19K May  8  2007 hmm_multim.c
--rw-r--r--  1 saladi clem 3.1K May  8  2007 hmm_multim.h
--rw-r--r--  1 saladi clem  19K May  8  2007 hmm_profilehmm.c
--rw-r--r--  1 saladi clem  28K May  8  2007 hmm_profpair1.c
--rw-r--r--  1 saladi clem 1.9K May  8  2007 hmm_profpair1.h
--rw-r--r--  1 saladi clem  21K May  8  2007 hmm_profpair.c
--rw-r--r--  1 saladi clem 1.6K May  8  2007 hmm_profpair.h
--rw-r--r--  1 saladi clem  50K May  8  2007 hmm_psipred.c
--rw-r--r--  1 saladi clem 3.4K May  8  2007 hmm_psipred.h
--rw-r--r--  1 saladi clem  343 May  8  2007 id_dist.c
--rw-r--r--  1 saladi clem  687 May  8  2007 kmer_dist.c
--rw-r--r--  1 saladi clem  264 May  8  2007 kmer_dist.h
--rw-r--r--  1 saladi clem 3.3K Mar 14  2007 makefile
--rw-r--r--  1 saladi clem  19K May  8  2007 mathfunc.c
--rw-r--r--  1 saladi clem 4.1K May  8  2007 mathfunc.h
--rw-r--r--  1 saladi clem  32K May  8  2007 mathnr.h
--rw-r--r--  1 saladi clem 2.5K May  8  2007 merge_align.c
--rw-r--r--  1 saladi clem  16K May  8  2007 mm.c
--rw-r--r--  1 saladi clem 1.3K May  8  2007 mm.h
--rw-r--r--  1 saladi clem  25K May  8  2007 multiple.c
--rw-r--r--  1 saladi clem 1.2K May  8  2007 multiple.h
--rw-r--r--  1 saladi clem 5.3K May  8  2007 mummals.c
--rw-r--r--  1 saladi clem 5.3K May  8  2007 mummals_old.c
--rw-r--r--  1 saladi clem 8.5K May  8  2007 NW_variable.c
--rw-r--r--  1 saladi clem 1.8K May  8  2007 NW_variable.h
--rw-r--r--  1 saladi clem  130 May  8  2007 pa_globals.h
--rw-r--r--  1 saladi clem  12K May  8  2007 param.c
--rw-r--r--  1 saladi clem 1.7K May  8  2007 param.h
--rw-r--r--  1 saladi clem 9.2K May  8  2007 parsePSIALN.c
--rw-r--r--  1 saladi clem  39K May  8  2007 profilehmm.c
--rw-r--r--  1 saladi clem 2.1K May  8  2007 profilehmm.h
--rw-r--r--  1 saladi clem 1.3K May  8  2007 progress.c
--rw-r--r--  1 saladi clem  10K Mar 14  2007 progress_for_web.py
--rw-r--r--  1 saladi clem  66K May 11  2007 progressiveAlignHMM.h
--rw-r--r--  1 saladi clem  60K May  8  2007 progressiveAlignHMM_o.h
--rw-r--r--  1 saladi clem 1.2K May  8  2007 progress_sum_of_pairs.c
--rwxr-xr-x  1 saladi clem 5.2K Oct  2  2008 promals
--rwxr-xr-x  1 saladi clem 487K Mar 14  2007 promals_c
--rw-r--r--  1 saladi clem 1.6K May  8  2007 purge_psialign.c
--rw-r--r--  1 saladi clem  31K May  8  2007 refine1.c
--rw-r--r--  1 saladi clem  31K May  8  2007 refine.c
--rw-r--r--  1 saladi clem 6.9K May  8  2007 refinegap0.c
--rw-r--r--  1 saladi clem 9.1K May  8  2007 refinegap.c
--rw-r--r--  1 saladi clem  325 May  8  2007 refinegap.h
--rw-r--r--  1 saladi clem 2.3K May  8  2007 refine.h
--rw-r--r--  1 saladi clem 4.8K May  8  2007 regularizer.c
--rw-r--r--  1 saladi clem 1.1K May  8  2007 regularizer.h
--rw-r--r--  1 saladi clem 7.2K May  8  2007 ScoreType.h
--rw-r--r--  1 saladi clem  11K May  8  2007 sequences.c
--rw-r--r--  1 saladi clem 1.4K May  8  2007 sequences.h
--rw-r--r--  1 saladi clem 2.7K May  8  2007 smallnumber.c
--rw-r--r--  1 saladi clem 1.8K May  8  2007 smallnumber.h
--rw-r--r--  1 saladi clem 9.7K May  8  2007 sparsematrix.c
--rw-r--r--  1 saladi clem 1.4K May  8  2007 sparsematrix.h
--rw-r--r--  1 saladi clem 6.5K May  8  2007 sparsematrix_vector.c
--rw-r--r--  1 saladi clem 1.3K May  8  2007 sparsematrix_vector.h
--rw-r--r--  1 saladi clem 4.1K May  8  2007 ss_prof.c
--rw-r--r--  1 saladi clem  461 May  8  2007 ss_prof.h
--rw-r--r--  1 saladi clem  60K May  8  2007 subalign.c
--rw-r--r--  1 saladi clem 5.6K May  8  2007 subalign.h
--rw-r--r--  1 saladi clem  163 May  8  2007 testdelete.c
--rw-r--r--  1 saladi clem  802 May  8  2007 time.c
--rw-r--r--  1 saladi clem  194 May  8  2007 time.h
--rw-r--r--  1 saladi clem 1.9K May  8  2007 tnode.c
--rw-r--r--  1 saladi clem 1.2K May  8  2007 tnode.h
--rw-r--r--  1 saladi clem 1.8K May  8  2007 util.c
--rw-r--r--  1 saladi clem 2.3K May  8  2007 util.h
+al2co.c
+al2co_consensus.c
+all.h
+amino.c
+amino.h
+atmm.horiz
+atmm.ss
+blastpgp.c
+blastpgp.h
+blosum62.c
+Btree.c
+Btree.h
+btree_template.h
+complement.c
+constraint.c
+constraint.h
+consv1.c
+consv1.h
+eliminategap.c
+error.log
+example
+filter_similar.c
+gap_fraction.c
+gap_refining.c
+gap_refining.h
+get_align_ss.c
+get_range.c
+header_cpp.h
+hmm_local.c
+hmm_local.h
+hmm_multim.c
+hmm_multim.h
+hmm_profilehmm.c
+hmm_profpair1.c
+hmm_profpair1.h
+hmm_profpair.c
+hmm_profpair.h
+hmm_psipred.c
+hmm_psipred.h
+id_dist.c
+kcenter.c
+kmer_dist.c
+kmer_dist.h
+logfile
+lsim1.c
+lsim1_cpp.c
+makefile
+makefile1
+mathfunc.c
+mathfunc.h
+mathnr.h
+merge_align.c
+mm.c
+mm.h
+multiple.c
+multiple.h
+mummals.c
+mummals_old.c
+NW_variable.c
+NW_variable.h
+pa_globals.h
+param.c
+param.h
+parsePSIALN.c
+prep_profile.c
+profilehmm.c
+profilehmm.h
+progress.c
+progress_for_web.py
+progress_for_web.py1
+progressiveAlignHMM.h
+progressiveAlignHMM_o.h
+progress_sum_of_pairs.c
+progs
+purge_psialign.c
+readprintali.c
+refine1.c
+refine.c
+refinegap0.c
+refinegap.c
+refinegap.h
+refine.h
+reformataln.c
+regularizer.c
+regularizer.h
+ScoreType.h
+seq_str_aln.c
+seq_str_aln.h
+sequences.c
+sequences.h
+smallnumber.c
+smallnumber.h
+sparsematrix.c
+sparsematrix.h
+sparsematrix_vector.c
+sparsematrix_vector.h
+ss_prof.c
+ss_prof.h
+structutil.c
+subalign.c
+subalign.h
+testdelete.c
+time.c
+time.h
+tmp1.c
+tmp2.c
+tmp3.c
+tmp.c
+tmpone.c
+tmptime.c
+tnode.c
+tnode.h
+util.c
+util.h
+Yfp.fa
 
-./uniref90:
-total 2.0G
-drwxr-xr-x  2 saladi clem   98 Jun  4 10:35 .
-drwxr-xr-x 10 saladi clem 4.0K Jun  4 10:35 ..
--rw-r--r--  1 saladi clem 940M Feb  5  2007 uniref90_filt
--rw-r--r--  1 saladi clem 289M Feb  5  2007 uniref90_filt.phr
--rw-r--r--  1 saladi clem  18M Feb  5  2007 uniref90_filt.pin
--rw-r--r--  1 saladi clem 778M Feb  5  2007 uniref90_filt.psq
+./test:
+junk
+runpsipred1
+seq7.chk
+seq7.fa
+seq7.horiz
+seq7.mtx
+seq7.ss
+seq7.ss2
+test.pdb
