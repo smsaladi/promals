@@ -1,0 +1,43 @@
+File name format:
+dataset_[a]_[b]_0.60_abcd.dali[c].solv[d]_ss[e].mat
+
+[a] and [b] are identity range for training dataset alignments
+[c]: if c is 0, do not differentiate match state in unaligned region (HMM_[d]_[e]_0)
+     if c is nothing, differentiate match state in unaligned region (HMM_[d]_[e]_1)
+[d]: number of solvent accessibility categories
+[e]: number of secondary structure types
+
+Parameters derived from highest identity range alignments (last 7 lines) can give 
+good alignments for similar sequences and does not lose much accuracy on divergent 
+sequences. These parameters are recommended to be used in most cases.
+
+Parameter files are:
+
+dataset_0.00_0.10_0.60_abcd.dali0.solv1_ss1.mat
+dataset_0.00_0.10_0.60_abcd.dali.solv1_ss1.mat
+dataset_0.00_0.10_0.60_abcd.dali.solv1_ss3.mat
+dataset_0.00_0.10_0.60_abcd.dali.solv2_ss1.mat
+dataset_0.00_0.10_0.60_abcd.dali.solv2_ss3.mat
+dataset_0.00_0.10_0.60_abcd.dali.solv3_ss1.mat
+dataset_0.00_0.10_0.60_abcd.dali.solv3_ss3.mat
+dataset_0.10_0.15_0.60_abcd.dali0.solv1_ss1.mat
+dataset_0.10_0.15_0.60_abcd.dali.solv1_ss1.mat
+dataset_0.10_0.15_0.60_abcd.dali.solv1_ss3.mat
+dataset_0.10_0.15_0.60_abcd.dali.solv2_ss1.mat
+dataset_0.10_0.15_0.60_abcd.dali.solv2_ss3.mat
+dataset_0.10_0.15_0.60_abcd.dali.solv3_ss1.mat
+dataset_0.10_0.15_0.60_abcd.dali.solv3_ss3.mat
+dataset_0.15_0.20_0.60_abcd.dali0.solv1_ss1.mat
+dataset_0.15_0.20_0.60_abcd.dali.solv1_ss1.mat
+dataset_0.15_0.20_0.60_abcd.dali.solv1_ss3.mat
+dataset_0.15_0.20_0.60_abcd.dali.solv2_ss1.mat
+dataset_0.15_0.20_0.60_abcd.dali.solv2_ss3.mat
+dataset_0.15_0.20_0.60_abcd.dali.solv3_ss1.mat
+dataset_0.15_0.20_0.60_abcd.dali.solv3_ss3.mat
+dataset_0.20_0.40_0.60_abcd.dali0.solv1_ss1.mat    HMM_1_1_0
+dataset_0.20_0.40_0.60_abcd.dali.solv1_ss1.mat     HMM_1_1_1
+dataset_0.20_0.40_0.60_abcd.dali.solv1_ss3.mat     HMM_1_3_1
+dataset_0.20_0.40_0.60_abcd.dali.solv2_ss1.mat
+dataset_0.20_0.40_0.60_abcd.dali.solv2_ss3.mat
+dataset_0.20_0.40_0.60_abcd.dali.solv3_ss1.mat     HMM_3_1_1
+dataset_0.20_0.40_0.60_abcd.dali.solv3_ss3.mat     HMM_3_3_1
