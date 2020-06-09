@@ -1,9 +1,9 @@
 #!/usr1/local/bin/python
 
-# this script calculate the alignments using several structure 
+# this script calculate the alignments using several structure
 # comparison programs
 
-# and output the alignments into a constraint file 
+# and output the alignments into a constraint file
 # fasta format pairwise alignments are separated by "@"
 
 # arguments:
@@ -17,21 +17,21 @@ import database_util
 
 # pdb1: pdb file name; start1: starting number; end1: ending number (sequentially from 1..naa)
 def get_pdb_from_range(pdb1, start1, end1):
-	fp = open(pdb1)
-	ofp = open(pdb1+".tmp", "w")
-	current_resnum = ""
-	count=0
-	for line in fp:
-	        if line[0:4]!='ATOM': continue
-	        if current_resnum != line[22:27]:
+        fp = open(pdb1)
+        ofp = open(pdb1+".tmp", "w")
+        current_resnum = ""
+        count=0
+        for line in fp:
+                if line[0:4]!='ATOM': continue
+                if current_resnum != line[22:27]:
                         current_resnum = line[22:27]
-	                count+=1
-	        if count<start1: continue
-	        if count > end1: break
-	        ofp.write(line)
-	ofp.close()
-	fp.close()
-	os.system("mv %s.tmp %s" %(pdb1, pdb1))
+                        count+=1
+                if count<start1: continue
+                if count > end1: break
+                ofp.write(line)
+        ofp.close()
+        fp.close()
+        os.system("mv %s.tmp %s" %(pdb1, pdb1))
 
 # from two aligned sequences seq1 and seq2, specified ranges [start1, end1] and [start2, end2]
 # get the aligned residue pairs in pos1 and pos2
@@ -145,7 +145,7 @@ dat2 = id2 + ".dat"
 seqf1 = pdbid1 + ".fa"
 seqf2 = pdbid2 + ".fa"
 
-# pdb files 
+# pdb files
 pdb1 = pdbid1 + ".pdb"
 pdb2 = pdbid2 + ".pdb"
 
@@ -159,7 +159,7 @@ os.system(command)
 command = "cp %s/%s/%s.pdb ." %(pdb_fa_dir, pdbid2[0:3], pdbid2)
 os.system(command)
 
-# sequences 
+# sequences
 # first check if the id corresponds to a scop domain or not,
 # if is a scop domain, then use the whole pdb, setting start to -1
 fp1 =  open(seqf1)
@@ -243,7 +243,7 @@ if use_dali:
         id2 = glob.glob("DAT/%s*.dat" %id2)[0].replace("DAT/", "").replace(".dat", "")
         dali_results = database_util.run_dalilite(id1, id2, seq1, seq2)
         #print dali_results
-        if len(dali_results)==6: 
+        if len(dali_results)==6:
                 if ofp:
                         ofp.write("@\n")
                         ofp.write(">" + pdbid1 + "\n");
@@ -264,7 +264,7 @@ if use_dali:
 if use_fast:
         fast_prog = "%s/fast" %program_dir
         fast_results = database_util.run_fast(pdb1, pdb2, seq1, seq2, fast_prog)
-        if len(fast_results)==6: 
+        if len(fast_results)==6:
                 if ofp:
                         ofp.write("@\n")
                         ofp.write(">" + pdbid1 + "\n");
@@ -283,7 +283,7 @@ if use_fast:
 if use_tmalign:
         tmalign_prog = "%s/TMalign" %program_dir
         tmalign_results = database_util.run_tmalign(pdb1, pdb2, seq1, seq2, tmalign_prog)
-        if len(tmalign_results)==6: 
+        if len(tmalign_results)==6:
                 if ofp:
                         ofp.write("@\n")
                         ofp.write(">" + pdbid1 + "\n");
