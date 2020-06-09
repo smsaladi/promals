@@ -139,23 +139,31 @@ void getParameter(int argc, char **argv, int prog) {
         constraint_file[0] = '\0';
         user_constraint[0] = '\0';
 
-	strcpy(program_dir, "/home/jpei/tmp_promals_package/promals_package");
+    strcpy(blastpgp_command, "blastpgp");
+	strcpy(runpsipred_command, "runpsipredplus");
+	strcpy(runpsipred1_command, "runpsipredplus");
+    
+    if(getenv("PROMALS_DIR")) {
+	    strcpy(program_dir, getenv("PROMALS_DIR"));
+        strcat(program_dir, "/");
+    } else {
+        cout << "Please set PROMALS_DIR. Otherwise, set to `.`" << endl;
+        strcpy(program_dir, "./");
+    }
 
-	strcpy(blastpgp_command, program_dir);
-	strcat(blastpgp_command, "/bin/blastpgp");
-	strcpy(runpsipred_command, program_dir);
-	strcat(runpsipred_command, "/bin/runpsipred1");
-	strcpy(runpsipred1_command, program_dir);
-	strcat(runpsipred1_command, "/bin/runpsipred1");
 	strcpy(ncbirc, program_dir);
 	strcat(ncbirc, "/bin/.ncbirc");
 	strcpy(uniref90_file, program_dir);
 	strcat(uniref90_file, "/db/uniref90/uniref90_filt");
+	
+    strcpy(uniref90_file, program_dir);
+	strcat(uniref90_file, "uniref90/uniref90_filt");
+
 	strcpy(psipred_parameter_file, program_dir);
 	strcat(psipred_parameter_file, "/db/param/dataset_0.20_0.50_0.60_abcd.mat");
 
-        sprintf(mafft, "%s/bin/mafft", program_dir);
-        sprintf(cdhit, "%s/bin/cd-hit", program_dir);
+    strcpy(mafft, "mafft");
+    strcpy(cdhit, "cd-hit");
 
 	strcpy(blast_dir, argv[1]);
 	strcat(blast_dir, "_blast");
@@ -200,6 +208,7 @@ void getParameter(int argc, char **argv, int prog) {
 			unaligned = atoi(argv[i+1]);
 			assert (unaligned <=1);
 		}
+
 		if(argStr == "-param") {
 			strcpy(parameter_file, argv[i+1]);
 		}
