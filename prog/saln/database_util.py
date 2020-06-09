@@ -2,7 +2,7 @@
 
 #This is simple module for alignment database.
 
-import sys, os, time, math, tempfile, shutil, glob, cPickle, re, math
+import sys, os, time, math, tempfile, shutil, glob, pickle, re, math
 import struct
 
 ############################
@@ -177,7 +177,7 @@ def merge_multiple_chains( content ) :
                         if l[21].isalnum() :
                                 new_content.append( l[:6]+'%5d'%(atmnum)+l[11:21] + 'A' + '%4d'%(resnum)+l[26:] )
                         else :
-                                print >>sys.stderr, 'Error: no chain_id is detected!', l
+                                print('Error: no chain_id is detected!', l, file=sys.stderr)
 
                 else :
                         new_content.append( l )
@@ -202,7 +202,7 @@ def select_chain( content, chain_id ) :
                                 #new_content.append( l[:6]+'%5d'%(atmnum)+l[11:21] + 'A' + '%4d'%(resnum)+l[26:] )
                                 new_content.append( l[:6]+'%5d'%(atmnum)+l[11:21] + chain_id + '%4d'%(resnum)+l[26:] )
                         else :
-                                print >>sys.stderr, 'Error: no chain_id is detected!', l
+                                print('Error: no chain_id is detected!', l, file=sys.stderr)
 
                 else :
                         new_content.append( l )
@@ -230,13 +230,13 @@ def extract_ca_only_record( content ) :
 
 def save_sequence( seq, uaid ) :
         fp = open( seq_dir + '/' + uaid + '.fa', 'w' )
-        print >>fp, '>' + uaid + '\n' + seq
+        print('>' + uaid + '\n' + seq, file=fp)
         fp.close()
 
 # JP modification: add directory name to parameters
 def save_sequence_JP( seq, uaid, seq_dir_JP ) :
         fp = open( seq_dir_JP + '/' + uaid + '.fa', 'w' )
-        print >>fp, '>' + uaid + '\n' + seq
+        print('>' + uaid + '\n' + seq, file=fp)
         fp.close()
 
 def save_ca_str_pdb_file( ca_only_content, uaid ) :
@@ -288,7 +288,7 @@ def build_backbone( pdb_content, id='junk' ) :
         cur_dir = os.getcwd()
 
         os.chdir( temp_dir )
-        print temp_dir;
+        print(temp_dir);
 
         pdb_fn_base = id
         pdb_fn = id + '.pdb'
@@ -345,12 +345,12 @@ def build_dat_file( pdb_content, uaid, cmd_template=dali_dat_command ) :
         os.system( cmd_template% (pdb_fn, uaid) )
 
         if verbose_flag :
-                print "### building dat file for DaliLite", cmd_template%(pdb_fn, uaid)
+                print("### building dat file for DaliLite", cmd_template%(pdb_fn, uaid))
 
         if os.path.exists( './DAT/' ) :
                 dat_fn = './DAT/' + uaid + 'A.dat'
         else :
-                print >>sys.stderr, "Error! No DAT file were generated!", uaid
+                print("Error! No DAT file were generated!", uaid, file=sys.stderr)
 
         shutil.copyfile( dat_fn, dat_dir + '/' + uaid+'A.dat' )
         os.chdir( cwd )
@@ -376,11 +376,11 @@ def build_dat_file_JP( pdb_content, uaid, dat_dir_JP, chain_id, cmd_template=dal
         fp.writelines( pdb_content )
         fp.close()
         os.system( (cmd_template% (pdb_fn, uaid)) + ">& tmp.err" )
-        print cmd_template% (pdb_fn, uaid)
+        print(cmd_template% (pdb_fn, uaid))
         #sys.exit(0)
 
         if verbose_flag :
-                print "### building dat file for DaliLite", cmd_template%(pdb_fn, uaid)
+                print("### building dat file for DaliLite", cmd_template%(pdb_fn, uaid))
 
         dat_fn = ""
         if os.path.exists( './DAT/' ) :
@@ -390,12 +390,12 @@ def build_dat_file_JP( pdb_content, uaid, dat_dir_JP, chain_id, cmd_template=dal
                 else:
                         dat_fn = './DAT/' + uaid + chain_id + '.dat'
         else :
-                print >>sys.stderr, "Error! No DAT file were generated!", uaid
+                print("Error! No DAT file were generated!", uaid, file=sys.stderr)
 
         #print dat_fn, dat_dir_JP
         #print dat_dir_JP + '/' + uaid+chain_id+'.dat'
         #os.system("pwd")
-        print "|%s|" %dat_dir_JP
+        print("|%s|" %dat_dir_JP)
         if chain_id != ' ':
                 shutil.copyfile( dat_fn, dat_dir_JP + '/' + uaid+chain_id+'.dat' )
                 #print "cp %s %s/%s%s.dat" %(dat_fn, dat_dir_JP, uaid, chain_id)
@@ -521,7 +521,7 @@ def make_ca_only_content_from_dat_sequence_and_coordinates( ca_coord, sequence )
         if len( ca_coord) == len(sequence) :
                 pass
         else :
-                print "Error! ca_only coordinates and sequence have different lengths!!"
+                print("Error! ca_only coordinates and sequence have different lengths!!")
                 sys.exit()
 
         content = []
@@ -543,7 +543,7 @@ def make_ca_only_content_from_dat_sequence_and_coordinates_JP( ca_coord, sequenc
         if len( ca_coord) == len(sequence) :
                 pass
         else :
-                print "Error! ca_only coordinates and sequence have different lengths!!"
+                print("Error! ca_only coordinates and sequence have different lengths!!")
                 sys.exit()
 
         content = []
@@ -566,7 +566,7 @@ def build_a3m( seq, uaid ) :
         #write temp sequence file
         uaid_fn = uaid + '.fa'
         fp = open( uaid_fn, 'w' )
-        print >>fp, '>' + uaid + '\n' + seq
+        print('>' + uaid + '\n' + seq, file=fp)
         fp.close()
 
         hhsearch_buildali_cmd = '/home/jpei/local/hhsearch1.5_2/buildali.pl -cn %s'
@@ -642,9 +642,9 @@ def convert_aln_into_numerical_profile( aln_list ) :
                 neffs, Qs, pssm = profile_score_module.get_neffs_Qs_and_pssm( msa_seqs )
 
                 save_fp = open( aln[:-4] + '.pnp', 'w' )
-                cPickle.dump( neffs, save_fp, -1 )
-                cPickle.dump( Qs, save_fp, -1 )
-                cPickle.dump( pssm, save_fp, -1 )
+                pickle.dump( neffs, save_fp, -1 )
+                pickle.dump( Qs, save_fp, -1 )
+                pickle.dump( pssm, save_fp, -1 )
                 save_fp.close()
 
         save_dir = numerical_profile_dir + '/'+ aln_list[0][:4] + '/'
@@ -693,7 +693,7 @@ def remove_query_gaps_from_simple_msa( content ) :
 def save_fas( headers, sequences, save_fn ) :
         fp = open( save_fn, 'w' )
         for header, sequence in zip( headers, sequences ) :
-                print >> fp, '>' + header + '\n' + sequence
+                print('>' + header + '\n' + sequence, file=fp)
 
 
 def convert_aln_into_hhm( a3m_list ) :
@@ -771,12 +771,12 @@ rm -rf /local_scratch/%s/%%s/''' %(user, user)
                 job_fp = None
                 job_name = None
 
-                for rcount in xrange( len(self.pair_list) ) :
+                for rcount in range( len(self.pair_list) ) :
                         if not rcount%self.number_of_runs_per_job :
 
                                 #write footer
                                 if jcount :
-                                        print >>job_fp, self.footer % (job_name, self.save_dir, job_name)
+                                        print(self.footer % (job_name, self.save_dir, job_name), file=job_fp)
                                 jcount += 1
 
                                 job_name = self.name_base + self.order%jcount + '.job'
@@ -787,15 +787,15 @@ rm -rf /local_scratch/%s/%%s/''' %(user, user)
                                 job_fp = open( current_job[0], 'w' )
 
                                 #write header
-                                print >>job_fp, self.header % (job_name, job_name)
+                                print(self.header % (job_name, job_name), file=job_fp)
 
                                 #write data directory copying
                                 for data_dir in self.data_dirs :
-                                        print >>job_fp, "cp -r ", data_dir, "./"
+                                        print("cp -r ", data_dir, "./", file=job_fp)
 
-                        print >>job_fp, self.cmd_template % (self.pair_list[rcount], result_fn)
+                        print(self.cmd_template % (self.pair_list[rcount], result_fn), file=job_fp)
                 else :
-                        print >>job_fp, self.footer % (job_name, self.save_dir, job_name)
+                        print(self.footer % (job_name, self.save_dir, job_name), file=job_fp)
 
         def submit_job( self, job_fn ) :
                 pp = os.popen( self.queue_submit_cmd + ' ' + job_fn )
@@ -884,7 +884,7 @@ def remove_xmasks_from_aln( seq, aln ) :
                                 elif (a == 'x' ) :
                                         new_aln[acount] = 'x'
                                 else :
-                                        print >>sys.stderr, "Error! this message should not be seen!", seq, aln
+                                        print("Error! this message should not be seen!", seq, aln, file=sys.stderr)
 
         return ''.join(new_aln)
 
@@ -906,12 +906,12 @@ def parse_alignment_line( line ) :
 
         nrec = len( line ) / lengthrec #
         if len(line) != lengthrec*nrec :
-                print >>sys.stderr, "Error the alignment line has some strange bug!!"
-                print >>sys.stderr, line
+                print("Error the alignment line has some strange bug!!", file=sys.stderr)
+                print(line, file=sys.stderr)
                 sys.exit()
 
         parsed = []
-        for i in xrange( nrec ) :
+        for i in range( nrec ) :
                 temp = line[i*10:(i+1)*10]
                 l1, l2 = temp.split()
                 parsed.append( l1 )
@@ -1002,7 +1002,7 @@ def parse_dccp( fp, code2 ) :
                 if len( parent ) == len( child ) :
                         pass
                 else :
-                        print >>sys.stderr, "Error, while parsing dccp file!"
+                        print("Error, while parsing dccp file!", file=sys.stderr)
 
                 temp.append( parent )
                 temp.append( child )
@@ -1064,9 +1064,9 @@ def build_alignment( seq1, seq2, def1, def2 ) :
         prec = ce
 
         if len( alignment[0] ) != len( alignment[1] ) :
-                print >>sys.stderr, "Error! alignment lengths are not equal.", len( alignment[0]), len( alignment[1])
-                print >>sys.stderr, alignment[0]
-                print >>sys.stderr, alignment[1]
+                print("Error! alignment lengths are not equal.", len( alignment[0]), len( alignment[1]), file=sys.stderr)
+                print(alignment[0], file=sys.stderr)
+                print(alignment[1], file=sys.stderr)
 
         return alignment
 
@@ -1075,7 +1075,7 @@ def check_log_file( fn ) :
         err_msg = pp.readlines()
 
         if err_msg :
-                print >>sys.stderr, 'WARNING:!', fn, 'has error message in it!'
+                print('WARNING:!', fn, 'has error message in it!', file=sys.stderr)
                 return 1 #ERROR!!
         else :
                 return 0 #NO ERROR!!
@@ -1107,8 +1107,8 @@ def run_dalilite( code1, code2, seq1, seq2 ) :
         elif code2[4] == '_' and dccp[0][0:4] == code2[0:4]:
                 pass
         else :
-                print >>sys.stderr, "Error in running DaliLite", code1, code2, tempdir
-                print >>sys.stderr, "code2 supposed to be, ", code2," and from file,", dccp[0], "is different!"
+                print("Error in running DaliLite", code1, code2, tempdir, file=sys.stderr)
+                print("code2 supposed to be, ", code2," and from file,", dccp[0], "is different!", file=sys.stderr)
                 sys.exit()
 
         '''
@@ -1240,13 +1240,13 @@ def parse_fast_record( fp ) :
         match = head_pattern.match( l )
         #checking for starting point
         if not match :
-                print >>sys.stderr, 'WARNING: wrong starting point!!' ,l
+                print('WARNING: wrong starting point!!' ,l, file=sys.stderr)
                 while( not match ) :
                         l = fp.readline()
                         if not l :
-                                print >>sys.stderr, 'End of file reached!'
+                                print('End of file reached!', file=sys.stderr)
                                 return None
-                        print >>sys.stderr, 'following lines:', l
+                        print('following lines:', l, file=sys.stderr)
                         match = head_pattern.match( l )
 
         parent = match.group(1)
@@ -1265,11 +1265,11 @@ def parse_fast_record( fp ) :
                 if l1 == l2 == '\n' :
                         return parent, child, fast_score, rmsd, aligned_length, norm_score, None, None
                 else:
-                        print >> sys.stderr, "Error! while parsing fast record. Aborted!", parent, child
+                        print("Error! while parsing fast record. Aborted!", parent, child, file=sys.stderr)
 
         l = fp.readline()
         if l != '\n':
-                print >>sys.stderr, "Error, unexpected pattern at line3:", parent, child, l
+                print("Error, unexpected pattern at line3:", parent, child, l, file=sys.stderr)
 
         #alignment process
         paseq = ''
@@ -1291,7 +1291,7 @@ def parse_fast_record( fp ) :
                 if l == '\n' :
                         pass
                 else :
-                        print >>sys.stderr, "Error, unexpected pattern in alignment region!", parent, child, paseq, caseq
+                        print("Error, unexpected pattern in alignment region!", parent, child, paseq, caseq, file=sys.stderr)
 
 
         #need to consume the trailing equvalence parts
@@ -1302,7 +1302,7 @@ def parse_fast_record( fp ) :
                         if l == '\n' :
                                 break
                         else :
-                                print >>sys.stderr, 'Error, unexpected pattern at the end!', parent, child, l
+                                print('Error, unexpected pattern at the end!', parent, child, l, file=sys.stderr)
 
         '''
         eq = ''
@@ -1367,13 +1367,13 @@ def parse_tm_record( fp ) :
                         if len(l) == length :
                                 pass
                         else :
-                                print >>sys.stderr, 'WARNING: aligned length is not correct\n' + 'parsed_len:', length, 'real:', len(l[:-1]) ,'\n'+l[:-1]
+                                print('WARNING: aligned length is not correct\n' + 'parsed_len:', length, 'real:', len(l[:-1]) ,'\n'+l[:-1], file=sys.stderr)
                 elif i==16 :
                         p_alignment = l[:-1]
                         if len(l) == length :
                                 pass
                         else :
-                                print >>sys.stderr, 'WARNING: aligned length is not correct\n' + 'parsed_len:', length, 'real:', len(l[:-1]) ,'\n'+l[:-1]
+                                print('WARNING: aligned length is not correct\n' + 'parsed_len:', length, 'real:', len(l[:-1]) ,'\n'+l[:-1], file=sys.stderr)
 
         return (parent, child, tm_score, rmsd, aligned_length, identity, p_alignment, c_alignment )
 
@@ -1417,7 +1417,7 @@ def parse_hhsearch( content ) :
         if length%11 == 2 :
                 pass
         else :
-                print >>sys.stderr, "Error!! The format is not right!!"
+                print("Error!! The format is not right!!", file=sys.stderr)
                 sys.exit()
 
         nlines = length/11
@@ -1425,14 +1425,14 @@ def parse_hhsearch( content ) :
         aln2 = ''
         start1 = 0
         start2 = 0
-        for i in xrange( nlines ) :
+        for i in range( nlines ) :
                 #process query line
                 l = content[i*11+3]
                 l = l.split()
                 if l[0] == 'Q' :
                         pass
                 else :
-                        print >>sys.stderr, "Error!! The format is not right!!"
+                        print("Error!! The format is not right!!", file=sys.stderr)
                         sys.exit()
 
                 if not aln1 :
@@ -1444,7 +1444,7 @@ def parse_hhsearch( content ) :
                 if l[0] == 'T' :
                         pass
                 else :
-                        print >>sys.stderr, "Error!! The format is not right!!"
+                        print("Error!! The format is not right!!", file=sys.stderr)
                         sys.stderr.writelines( content )
                         sys.exit()
 
@@ -1481,7 +1481,7 @@ def parse_compass_result( content ) :
                                 smith_waterman_score = float(score_line[3])
                                 negloge = -math.log(float( score_line[6] ))
                         except :
-                                print >>sys.stderr, 'WARNING! possible problem in compass score line', score_line
+                                print('WARNING! possible problem in compass score line', score_line, file=sys.stderr)
                                 negloge = -350.0
 
                         continue
@@ -1499,7 +1499,7 @@ def parse_compass_result( content ) :
         aln2 = l[2]
         start2 = int( l[1] ) -1 #correction for 0 based numbering
 
-        for i in xrange( 1, len(new_content)/2 ) :
+        for i in range( 1, len(new_content)/2 ) :
                 l = new_content[i*2].split()
                 aln1 += l[1]
 

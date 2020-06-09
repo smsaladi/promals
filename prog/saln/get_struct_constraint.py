@@ -40,7 +40,7 @@ def get_aligned_pairs(seq1, seq2, originalseq1, originalseq2, checkseqs, start1,
 
         # do a few checks
         if len(seq1)!=len(seq2):
-                print "The two sequences in the alignment do not have the same length"
+                print("The two sequences in the alignment do not have the same length")
                 sys.exit(0)
         if start1 == -1:  # special case, the whole sequence
                 start1 = 1
@@ -51,15 +51,15 @@ def get_aligned_pairs(seq1, seq2, originalseq1, originalseq2, checkseqs, start1,
         if checkseqs:
                 tmpseq = seq1.replace("-", "").upper()
                 if tmpseq != originalseq1[start1-1:end1]:
-                        print "Error: sequences do not match for seq1"
-                        print "    sequence in alignment: ", tmpseq
-                        print "    sequence in original:  ", originalseq1[start1:end1]
+                        print("Error: sequences do not match for seq1")
+                        print("    sequence in alignment: ", tmpseq)
+                        print("    sequence in original:  ", originalseq1[start1:end1])
                         sys.exit()
                 tmpseq = seq2.replace("-", "").upper()
                 if tmpseq != originalseq2[start2-1:end2]:
-                        print "Error: sequences do not match for seq2"
-                        print "    sequence in alignment: ", tmpseq
-                        print "    sequence in original:  ", originalseq1[start2:end2]
+                        print("Error: sequences do not match for seq2")
+                        print("    sequence in alignment: ", tmpseq)
+                        print("    sequence in original:  ", originalseq1[start2:end2])
                         sys.exit()
         count1 = 0
         count2 = 0
@@ -78,11 +78,11 @@ def get_aligned_pairs(seq1, seq2, originalseq1, originalseq2, checkseqs, start1,
 pdb_fa_dir = "/home/jpei/promals/src_structure/structure_db/promals_new/blastresults"
 
 if len(sys.argv)<3:
-        print "get_struct_constraint.py - get the structural comparison constraint by dali, fast or tmalign"
-        print "Usage:"
-        print "get_struct_constraint.py id1 id2 -[dft] -dirname dirname -start1 start1 -start2 start2 -end1 end1 -end2 end2 -clear [01] -pdbdir pdb_fa_dir"
-        print
-        print "pdb and other records are available at: pdb_fa_dir"
+        print("get_struct_constraint.py - get the structural comparison constraint by dali, fast or tmalign")
+        print("Usage:")
+        print("get_struct_constraint.py id1 id2 -[dft] -dirname dirname -start1 start1 -start2 start2 -end1 end1 -end2 end2 -clear [01] -pdbdir pdb_fa_dir")
+        print()
+        print("pdb and other records are available at: pdb_fa_dir")
         sys.exit(0)
 
 
@@ -166,14 +166,14 @@ fp1 =  open(seqf1)
 tmpline = fp1.readline().strip()
 assert(len(tmpline.split()) == 2)
 structid = tmpline.split()[1]
-print structid,
+print(structid, end=' ')
 if structid[0] == 'D': start1 = -1; # do not consider scop domains separately, otherwise would be 'd'
 fp1.close()
 fp2 =  open(seqf2)
 tmpline = fp2.readline().strip()
 assert(len(tmpline.split()) == 2)
 structid = tmpline.split()[1]
-print structid
+print(structid)
 if structid[0] == 'D': start2 = -1; # do not consider scop domains separately, otherwise would be 'd'
 fp2.close()
 # now read the sequences
@@ -210,11 +210,11 @@ if use_dali:
                 datlist = glob.glob("%s/%s/%s*.dat"  %(pdb_fa_dir, pdbid1[0:3], pdbid1) )
                 if len(datlist):
                         command = "cp %s/%s/%s*.dat DAT" %(pdb_fa_dir, pdbid1[0:3], pdbid1)
-                        print command
+                        print(command)
                         os.system(command)
                 else:
                         command = "%s/DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(program_dir, pdb1, pdbid1)
-                        print command
+                        print(command)
                         os.system(command)
         if start2 > 0:
                 command = "%s/DaliLite -r %s %s 2>/dev/null 1>/dev/null" %(program_dir, pdb2, pdbid2)
@@ -233,11 +233,11 @@ if use_dali:
                         os.system(command)
         datlist = glob.glob("DAT/%s*.dat" %id1)
         if len(datlist)==0:
-                print "Error: cannot get the dat file for", id1
+                print("Error: cannot get the dat file for", id1)
                 sys.exit()
         datlist = glob.glob("DAT/%s*.dat" %id2)
         if len(datlist)==0:
-                print "Error: cannot get the dat file for", id2
+                print("Error: cannot get the dat file for", id2)
                 sys.exit()
         id1 = glob.glob("DAT/%s*.dat" %id1)[0].replace("DAT/", "").replace(".dat", "")
         id2 = glob.glob("DAT/%s*.dat" %id2)[0].replace("DAT/", "").replace(".dat", "")
@@ -251,14 +251,14 @@ if use_dali:
                         ofp.write(">" + pdbid2 + "\n");
                         ofp.write(dali_results[5] + "\n");
                 else:
-                        print ">seq1:"
-                        print dali_results[4]
-                        print ">seq2:"
-                        print dali_results[5]
+                        print(">seq1:")
+                        print(dali_results[4])
+                        print(">seq2:")
+                        print(dali_results[5])
                         pos1, pos2 = get_aligned_pairs(dali_results[4], dali_results[5], originalseq1, originalseq2, 1, start1, end1, start2, end2)
-                        print "aligned positions", len(pos1)
+                        print("aligned positions", len(pos1))
                         for i, j in enumerate(pos1):
-                                print j, pos2[i]
+                                print(j, pos2[i])
 
 
 if use_fast:
@@ -272,14 +272,14 @@ if use_fast:
                         ofp.write(">" + pdbid2 + "\n");
                         ofp.write(fast_results[5] + "\n");
                 else:
-                        print ">seq1:"
-                        print fast_results[4]
-                        print ">seq2:"
-                        print fast_results[5]
+                        print(">seq1:")
+                        print(fast_results[4])
+                        print(">seq2:")
+                        print(fast_results[5])
                         pos1, pos2 = get_aligned_pairs(fast_results[4], fast_results[5], originalseq1, originalseq2, 1, start1, end1, start2, end2)
-                        print "aligned positions", len(pos1)
+                        print("aligned positions", len(pos1))
                         for i, j in enumerate(pos1):
-                                print j, pos2[i]
+                                print(j, pos2[i])
 if use_tmalign:
         tmalign_prog = "%s/TMalign" %program_dir
         tmalign_results = database_util.run_tmalign(pdb1, pdb2, seq1, seq2, tmalign_prog)
@@ -291,14 +291,14 @@ if use_tmalign:
                         ofp.write(">" + pdbid2 + "\n");
                         ofp.write(tmalign_results[5] + "\n");
                 else:
-                        print ">seq1:"
-                        print tmalign_results[4]
-                        print ">seq2:"
-                        print tmalign_results[5]
+                        print(">seq1:")
+                        print(tmalign_results[4])
+                        print(">seq2:")
+                        print(tmalign_results[5])
                         pos1, pos2 = get_aligned_pairs(tmalign_results[4], tmalign_results[5], originalseq1, originalseq2, 1, start1, end1, start2, end2)
-                        print "aligned positions", len(pos1)
+                        print("aligned positions", len(pos1))
                         for i, j in enumerate(pos1):
-                                print j, pos2[i]
+                                print(j, pos2[i])
 if ofp:
         ofp.close()
 
