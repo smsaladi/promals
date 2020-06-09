@@ -6,6 +6,8 @@
 #include "sequences.h"
 #include "header_cpp.h"
 
+extern FILE *logfp;
+
 class multiple {
 
     public:
@@ -21,13 +23,10 @@ class multiple {
 
 	btree<tnode> alltree;
 
-	void set_distance_cutoff_similar(double dist_cutoff);
-
 	void alignSimilar();
 
-	void output_alignment();
-
 	void alignDivergent();
+	void alignDivergent(float divergent_cutoff);
 
 	void store_similar(tnode *r);
 
@@ -39,10 +38,22 @@ class multiple {
 
 	sequences aligned_seqs;
 
+        void set_distance_cutoff_similar(double dist_cutoff);
+	void set_distance_cutoff_similar(double dist_cutoff, int Ngroup);
+	void distance2leaf(tnode *r, double * array);
+        void output_alignment();
+
+	void align_profilehmm(int use_ss, char *ss_dir_name);
+
 	void addSimilar();
+
+	void alignDivergent_psipred(int x);
+	void alignDivergent_psipred_sum_of_pairs(int x);
 
 };
 
 subalign * merge_align_by_one_sequence(subalign *a, subalign *b, char *seq_name);
+
+extern char ssint2ss(int i);
 
 #endif

@@ -2,6 +2,8 @@
 #include "subalign.h"
 #include "util.h"
 #include "amino.h"
+#include "regularizer.h"
+//#include "hmm_psipred.h"
 
 static int mydebug = 1;
 
@@ -22,7 +24,39 @@ subalign::subalign() {
 	gapt_threshold = 1.0;
 	done_profile = 0;
 	done_prof = 0;
+	done_prof_freq = 0;
 	beta = 10;
+	prof_alphabet1 = 0;
+	ss = 0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
+	bg_type_here = -1;
+	done_score_bg = 0;   // sum-of-pair measure
+	done_score_bg2 = 0;  // mutual emission measure
+
+        apos_filtr = 0;
+        n_effAa = 0;
+        pseudoCnt = 0;
+        sum_eff_let = 0;
+        maskgapRegion = 0;
+        gap_content = 0;
+	
+	hwt_all = 0;
+	distMat = 0;
+	
+        prof_pos = 0;
+        prof_effn = 0;
+        prof_freq = 0;
+        prof_sum_eff = 0;
+        prof_hwt_all = 0;
+        prof_gap_content = 0;
+
+	ss = 0;
+	repres_name = 0;
+	prof_alphabet1 = 0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
+	
 
 	subaligncount++;
 }
@@ -43,11 +77,6 @@ subalign::subalign(const subalign &init) {
 	beta = init.beta;
 
 	//cout << "nal: " << nal << " alilen: " << alilen << " mnamelen " << mnamelen << endl; 
-	//cout << init.aname[0] << endl;
-	//cout << init.aseq[0] << endl;
-	//cout << init.nal << endl;
-	//cout << init.alilen << endl;
-	//cout << init.mnamelen << endl;
 	
 	alignment = imatrix(nal, alilen);
 	aname = cmatrix(nal, mnamelen+1);	
@@ -66,8 +95,44 @@ subalign::subalign(const subalign &init) {
 	for(i=0;i<nal;i++) {
 	   strcpy(aname[i], init.aname[i]);
 	}
-
 	
+	gap_threshold = 0.5;
+	gapt_threshold = 1.0;
+	done_profile = 0;
+	done_prof = 0;
+	done_prof_freq = 0;
+	beta = 10;
+	prof_alphabet1 = 0;
+	ss = 0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
+	bg_type_here = -1;
+	done_score_bg = 0;
+	done_score_bg2 = 0;
+
+        apos_filtr = 0;
+        n_effAa = 0;
+        pseudoCnt = 0;
+        sum_eff_let = 0;
+        maskgapRegion = 0;
+        gap_content = 0;
+	
+	hwt_all = 0;
+	distMat = 0;
+	
+        prof_pos = 0;
+        prof_effn = 0;
+        prof_freq = 0;
+        prof_sum_eff = 0;
+        prof_hwt_all = 0;
+        prof_gap_content = 0;
+
+	ss = 0;
+	repres_name = 0;
+	prof_alphabet1 = 0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
+
 	subaligncount++;
 	//cout << "alignment count: " << subaligncount << endl;
 
@@ -95,8 +160,39 @@ subalign::subalign(char *filename) {
 	gapt_threshold = 1.0;
 	done_profile = 0;
 	done_prof = 0;
+	done_prof_freq = 0;
 	beta = 10;
+	prof_alphabet1 = 0;
 
+	ss =0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
+	bg_type_here = -1;
+	done_score_bg = 0;
+	done_score_bg2 = 0;
+
+        apos_filtr = 0;
+        n_effAa = 0;
+        pseudoCnt = 0;
+        sum_eff_let = 0;
+        maskgapRegion = 0;
+        gap_content = 0;
+	
+	hwt_all = 0;
+	distMat = 0;
+	
+        prof_pos = 0;
+        prof_effn = 0;
+        prof_freq = 0;
+        prof_sum_eff = 0;
+        prof_hwt_all = 0;
+        prof_gap_content = 0;
+
+	ss = 0;
+	repres_name = 0;
+	prof_alphabet1 = 0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
 	subaligncount++;
 }
 
@@ -106,9 +202,10 @@ subalign::subalign(string filename) {
         int i,j,k;
 
 	char filename1[100];
-	for(i=0;i<=filename.length();i++) {
+	for(i=0;i<filename.length();i++) {
 	   filename1[i] = filename[i];
 	}
+	filename1[i] = '\0';
         readali(filename1);
 
         // new
@@ -126,8 +223,39 @@ subalign::subalign(string filename) {
         gapt_threshold = 1.0;
         done_profile = 0;
         done_prof = 0;
+        done_prof_freq = 0;
 	beta = 10;
 
+	prof_alphabet1 = 0;
+	ss =0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
+	bg_type_here = -1;
+	done_score_bg = 0;
+	done_score_bg2 = 0;
+
+        apos_filtr = 0;
+        n_effAa = 0;
+        pseudoCnt = 0;
+        sum_eff_let = 0;
+        maskgapRegion = 0;
+        gap_content = 0;
+	
+	hwt_all = 0;
+	distMat = 0;
+	
+        prof_pos = 0;
+        prof_effn = 0;
+        prof_freq = 0;
+        prof_sum_eff = 0;
+        prof_hwt_all = 0;
+        prof_gap_content = 0;
+
+	ss = 0;
+	repres_name = 0;
+	prof_alphabet1 = 0;
+	score_bg_aa = 0;
+	score_bg_ss = 0;
 	subaligncount++;
 }
 
@@ -136,7 +264,12 @@ subalign::~subalign() {
 	int i;
 
 	if(alignment) { for(i=0;i<=nal;i++) delete [] alignment[i]; delete [] alignment; }
-	if(aseq) { for(i=0;i<=nal;i++) delete [] aseq[i]; delete [] aseq; }
+	if(aseq) { 
+		for(i=0;i<=nal;i++) {
+			delete [] aseq[i]; 
+		}
+		delete [] aseq; 
+	}
 	if(aname) { for(i=0;i<=nal;i++) delete [] aname[i]; delete [] aname; }
 	subaligncount--;
 	//cout << "alignment count decrease: " << subaligncount << endl;
@@ -148,14 +281,21 @@ subalign::~subalign() {
 		delete [] sum_eff_let;
 		delete [] maskgapRegion;
 	}
+	if(hwt_all) delete [] hwt_all;
 	if(done_prof) {
 		delete [] prof_pos;
 		delete [] prof_sum_eff;
 		delete [] prof_hwt_all;
 		delete [] prof_gap_content;
 		free_dmatrix(prof_effn, prof_len, 20);
+	}
+	if(done_prof_freq) {
 		free_dmatrix(prof_freq, prof_len, 20);
 	}
+	if(score_bg_aa) delete [] score_bg_aa;
+	if(score_bg_ss) delete [] score_bg_ss;
+	if(repres_name) delete [] repres_name;
+	if(prof_alphabet1) delete [] prof_alphabet1;
 }
 
 // Overload assignment operator
@@ -438,7 +578,7 @@ void subalign::readali(char *filename)
                         }
                         if (nal == 0) {
                                 if (n == 0) {
-                                        fprintf(stderr, "No alignments read\n");
+                                        fprintf(stderr, "No alignments read: %s\n", filename);
                                         exit(1);
                                 }
                                 nal = n;
@@ -507,7 +647,7 @@ void subalign::readali(char *filename)
         }
         if (nal == 0) {
                 if (n == 0) {
-                        fprintf(stderr, "No alignments read\n");
+                        fprintf(stderr, "No alignments read: %s\n", filename);
                         exit(1);
                 }
                 nal = n;
@@ -544,7 +684,7 @@ void subalign::reassign() {
 	free(aseq); free(aname);
 	aseq = cmatrix(nal, alilen);
 	aname = cmatrix(nal, mlen+1);
-	for(i=0;i<=nal;i++) {
+	for(i=0;i<nal;i++) {
 	    strcpy(aseq[i], tmpaseq[i]);
 	    strcpy(aname[i], tmpaname[i]);
 	    aseq[i][alilen] = '\0';
@@ -611,14 +751,14 @@ void subalign::printali(int blocksize) {
 }
 
 // Print alignment to a file
-void subalign::printali(char *filename, int blocksize) {
+void subalign::printali(const char *filename, int blocksize) {
 	int i,j,k;
 	ofstream outfile(filename, ios::out);
 	if(!outfile) {
 	    cout << "cannot write the alignment to "<< filename<< endl;
 	    exit(1);
 	}
-	outfile << "CLUSTAL W format multiple sequence alignment"<<endl;
+	outfile << "CLUSTAL format multiple sequence alignment by PROMALS"<<endl;
 	outfile << endl << endl;
         int nblocks = (alilen-1)/blocksize + 1;
 
@@ -633,8 +773,6 @@ void subalign::printali(char *filename, int blocksize) {
              }
              outfile << endl << endl;
         }
-
-	//outfile << "<!---mummals_now_finished--->" << endl;
 	outfile.close();
 }
 	
@@ -777,8 +915,54 @@ neff=-log(1.0-0.05*letpersite)/0.05129329438755;
 return neff;
 }
 
+void subalign::log_pseudoCounts() {
 
-void subalign::pseudoCounts(double **matrix, double n_eff, int len, double **pseudoCnt)
+	int i, j;
+
+	for(i=1;i<=prof_len;i++) {
+		for(j=1;j<=20;j++) {
+			prof_freq[i][j] = log(prof_freq[i][j]);
+		}
+	}
+}
+
+
+void subalign::pseudoCounts(double **matrix, double n_eff, int len, double **pseudoCnt0)
+{
+        int i,j,k;
+        double f[21], g[21];
+        double sumN;
+        double alpha;
+
+        alpha = n_eff-1;
+	if(mydebug>1) cout << "n_eff: " << n_eff << endl;
+	if(mydebug>1) cout << "alpha: " << alpha << endl;
+	if(mydebug>1) cout << "beta: " << beta <<endl;
+
+	if(beta==0) alpha = 1;
+
+        for (i=1;i<=len;i++) {
+                sumN = 0;
+                for (j=1;j<=20;j++) sumN += matrix[i][j];
+                for (j=1;j<=20;j++) {
+                        f[j] = 1.0*matrix[i][j]/sumN;
+                }
+                for (j=1;j<=20;j++) {
+                        g[j] = 0;
+                        for (k=1;k<=20;k++) {
+				g[j]+= q_blosum62[j][k]*f[k]/robinson_freq[k];
+				if(mydebug>1)cout << "k: " << k << " " << q_blosum62[j][k] << " " << f[k] << endl;
+			}
+                        pseudoCnt0[i][j]= (alpha*f[j] + beta*g[j])/(alpha+beta);
+			if(mydebug>1)cout << j << " " << g[j] << " " << pseudoCnt0[i][j] << endl;
+                }
+        }
+
+	//if(mydebug>-1) cout << "+++++++++++" << endl;
+
+}
+
+void subalign::pseudoCounts(double **matrix, double n_eff, int len, double **pseudoCnt0, float **input_matrix, float *input_bfreq)
 {
         int i,j,k;
         double f[21], g[21];
@@ -800,8 +984,46 @@ void subalign::pseudoCounts(double **matrix, double n_eff, int len, double **pse
                 }
                 for (j=1;j<=20;j++) {
                         g[j] = 0;
-                        for (k=1;k<=20;k++) g[j]+= qmatrix[j][k]*f[k]/robinson_freq[k];
-                        pseudoCnt[i][j]= (alpha*f[j] + beta*g[j])/(alpha+beta);
+                        for (k=1;k<=20;k++) {
+				g[j]+= input_matrix[j][k]*f[k]/input_bfreq[k];
+				//cout << i << " " << j << " " << k << " " << input_matrix[j][k] << " " << input_bfreq[k] << " " << g[j] << endl;
+			}
+                        pseudoCnt0[i][j]= (alpha*f[j] + beta*g[j])/(alpha+beta);
+                }
+        }
+	//if(mydebug>-1)cout << "=======++++" << endl;
+
+}
+
+void subalign::pseudoCounts(double **matrix, double n_eff, int len, double **pseudoCnt0, float ***input_matrices, float **input_bfreqs, int *mat_selections)
+{
+        int i,j,k;
+        double f[21], g[21];
+        double sumN;
+        double alpha;
+
+        alpha = n_eff-1;
+	//cout << n_eff << endl;
+	//cout << alpha << endl;
+	//cout << beta <<endl;
+
+	if(beta==0) alpha = 1;
+
+        for (i=1;i<=len;i++) {
+                sumN = 0;
+                for (j=1;j<=20;j++) sumN += matrix[i][j];
+                for (j=1;j<=20;j++) {
+                        f[j] = 1.0*matrix[i][j]/sumN;
+			//cout << "j " << j << " " << f[j] << endl;
+                }
+                for (j=1;j<=20;j++) {
+                        g[j] = 0;
+                        for (k=1;k<=20;k++) {
+				//cout << i << " " << j << " " << k << " " << mat_selections[i] << endl; //" " << input_matrices[mat_selections[i]][j][k] << endl; //" " << input_bfreqs[mat_selections[i]][k] << " " << g[j] << endl;
+				g[j]+= input_matrices[mat_selections[i]][j][k]*f[k]/input_bfreqs[mat_selections[i]][k];
+			}
+                        pseudoCnt0[i][j]= (alpha*f[j] + beta*g[j])/(alpha+beta);
+			//cout << pseudoCnt0[i][j] << endl;
                 }
         }
 
@@ -823,7 +1045,7 @@ void subalign::profile() {
 	sum_eff_let = new double [alilen+1];
 	maskgapRegion = new int [alilen+2];
 
-	for(i=0;i<=20;i++) for(j=0;j<=20;j++) qmatrix[i][j] = q_blosum62[i][j];
+	//for(i=0;i<=20;i++) for(j=0;j<=20;j++) qmatrix[i][j] = q_blosum62[i][j];
 
 	neffsForEachCol_maskGapReg(alignment, nal, alilen, gap_threshold, gapt_threshold, n_effAa, sum_eff_let, maskgapRegion, apos_filtr, &alilen_mat, &n_eff);
 
@@ -1032,6 +1254,35 @@ subalign *subalign::sub2align(int *mark, int *mark1) {
 	return aln1;
 }
 
+subalign *subalign::purge_align_one_seq_name(char *seqname) {
+
+	int i, j;
+
+	int target_index = -1;
+	for(i=0;i<nal;i++) {
+		if(strcmp(seqname, aname[i])==0) {
+			target_index = i;
+			break;
+		}
+	}
+	if(target_index==-1) {
+		cout << "cannot find the target name in subalign " << seqname << endl;
+		return NULL;
+	}
+
+	int *mark_ = ivector(nal);
+	int *mark1_ = ivector(alilen);
+
+	for(i=1;i<=nal;i++) mark_[i] = 1;
+	for(i=1;i<=alilen;i++) {
+		if(aseq[target_index][i-1] == '-') mark1_[i] = 0;
+		else mark1_[i] = 1;
+	}
+
+	return sub2align(mark_, mark1_);
+
+}
+
 // convert the alignment in letters to alignment in numbers
 void subalign::convertAseq2Alignment() {
 
@@ -1144,12 +1395,18 @@ subalign * subalign::purge_align(double low_id_thr, double high_id_thr, int max_
 	int pairs, id_pairs;
 	double gap_fraction;
 
+	int max_selected = 10000;
+
 	int *mark = ivector(nal);
 	for(i=1;i<=nal;i++) mark[i] = 1;
 
 	assert(low_id_thr<=1);
 	assert(high_id_thr<=1);
 
+	for(i=1;i<nal;i++) {
+	    if(i>max_selected) {mark[i+1]=0; continue;}
+	    if(strcmp(aname[i], aname[i-1])==0) {mark[i+1]=0; continue;}
+	}
 	if(low_id_thr>0)
 	for(i=1;i<nal;i++) {
 	    pairs = 0; id_pairs = 0;
@@ -1174,6 +1431,7 @@ subalign * subalign::purge_align(double low_id_thr, double high_id_thr, int max_
 	}
 
 	for(i=0;i<nal;i++) {
+	    if(i>max_selected) {mark[i+1]=0; continue;}
 	    if(mark[i+1]==0) continue;
 	    for(j=i+1;j<nal;j++) {
 		if (mark[j+1]==0) { continue; }
@@ -1188,9 +1446,19 @@ subalign * subalign::purge_align(double low_id_thr, double high_id_thr, int max_
 	    }
 	}
 
+	//for(i=1;i<=nal;i++) { if(mark[i]==1) tmpcount+=1; if(tmpcount>50) mark[i] = 0; }
+
+	int tmpcount = 0;
+	for(i=1;i<=nal;i++) {
+		if(mark[i]==1) tmpcount++;
+		if(tmpcount>max_num_kept) mark[i] = 0;
+	}
+
 	if(mydebug>100)for(i=1;i<=nal;i++) cout << i << "\t" << mark[i] << endl;
 
 	subalign *xaln = sub2align(mark);
+	cout << "************" << endl;
+
 	delete [] mark;
 	return xaln;
 
@@ -1319,9 +1587,59 @@ void subalign::prof() {
 	
 	prof_get_effn(alignment, nal, alilen, prof_len, prof_effn, prof_sum_eff, prof_pos, &prof_nef);
 
-	pseudoCounts(prof_effn, prof_nef, prof_len, prof_freq);
+	//pseudoCounts(prof_effn, prof_nef, prof_len, prof_freq);
 
 	done_prof = 1;
+}
+
+
+void subalign::prof(double tmp_gap_threshold) {
+
+	int i, j, k;
+
+	set_prof_raw_gap_threshold(0.5);
+	set_prof_gap_threshold(tmp_gap_threshold);
+
+	// determine the henikoff weight; prof_position
+	prof_h_weight_all(prof_raw_gap_threshold);
+	prof_positions(prof_gap_threshold);
+
+	prof_effn = dmatrix(prof_len, 20);
+	//prof_freq = dmatrix(prof_len, 20);
+	prof_sum_eff = dvector(prof_len);
+	
+	prof_get_effn(alignment, nal, alilen, prof_len, prof_effn, prof_sum_eff, prof_pos, &prof_nef);
+
+	//pseudoCounts(prof_effn, prof_nef, prof_len, prof_freq);
+
+	done_prof = 1;
+}
+	
+void subalign::get_prof_freq(int get_freq, int take_log) {
+
+	int i, j, k;
+
+	prof_freq = dmatrix(prof_len, 20);
+	switch(get_freq) {
+	  case 0: pseudoCounts(prof_effn, prof_nef, prof_len, prof_freq); break;
+	  /*
+	  case 1: pseudoCounts(prof_effn, prof_nef, prof_len, prof_freq, rqmatrix0, rbfreq0); break;
+	  case 2: pseudoCounts(prof_effn, prof_nef, prof_len, prof_freq, rqmatrix, rbfreq, prof_alphabet1);
+	  */
+	  /*case 1: pseudoCounts(prof_effn, prof_nef, prof_len, prof_freq, aa_pair[0], aa_bg[0]); break;
+	  case 2: pseudoCounts(prof_effn, prof_nef, prof_len, prof_freq, aa_pair, aa_bg, ss->alphabet1);
+	  */
+	}
+
+	if(take_log) {
+		for(i=1;i<=prof_len;i++) {
+			for(j=1;j<=20;j++) {
+				prof_freq[i][j] = log(prof_freq[i][j]);
+			}
+		}
+	}
+
+	done_prof_freq = 1;
 }
 	
 /* from a given alignment with aa as numbers, computes effective aa counts (PSIC->our formula)
@@ -1341,7 +1659,7 @@ void subalign::prof_get_effn(int **ali, int n, int len, int prof_len, double **n
 
 	gap_content = new double [alilen+1];
 
-	cout << "prof_len: " << prof_len << endl;
+	if(mydebug>1) cout << "prof_len: " << prof_len << endl;
 
 	mark = new int [n+11];
         nsymbols = 0;
@@ -1389,9 +1707,12 @@ void subalign::prof_get_effn(int **ali, int n, int len, int prof_len, double **n
 		if(mydebug>100) cout << j << "  " << aseq[0][j-1] << " " << sum_let << "  " << effnu[0] << endl;
 		for(k=0; k<=20; k++) {
 			n_effAa[j][k] = effnu[k];
-			nsymbols += nsymbols_col;
 		}
+		if(mydebug>100) cout << j << " " << nsymbols_col << "  " << nsymbols << endl;
+		nsymbols += nsymbols_col;
 		if(mydebug>100) cout << "nsymbols: " << nsymbols << endl;
+
+		sum_eff_let[j] = sum_let;
 
 		/*
                 if ( sum_let > 0 && 1.0*effnu[0]/(sum_let + effnu[0]) < effgapmax ) {
@@ -1424,7 +1745,7 @@ void subalign::prof_get_effn(int **ali, int n, int len, int prof_len, double **n
 	for(i=1;i<=prof_len;i++) {
 		prof_average_sum_eff_let += sum_eff_let[i];
 	}
-	average_sum_eff_let /= prof_len;
+	prof_average_sum_eff_let /= prof_len;
 
         delete [] mark;
 
@@ -1437,4 +1758,551 @@ void subalign::prof_get_effn(int **ali, int n, int len, int prof_len, double **n
 
 }
 
+// 
+void subalign::get_prof_map_ss(char *rep_name) {
+
+	int i, j, k;
+
+	int index = -1;
+	for(i=0;i<nal;i++) {
+		if(strcmp(rep_name, aname[i])==0) {
+			index = i;
+			break;
+		}
+	}
+	if(index==-1) {
+		cout << "get_prof_map_ss error" << endl;
+		cout << "cannot find a sequence with the same name as " << rep_name << endl;
+		exit(0);
+	}
+	if(mydebug>1) cout << "index: " << index << endl;
+
+	int *tmp_iarr = ivector(alilen);
+
+	int count=0;
+	for(i=0;i<alilen;i++) {
+		if(aseq[index][i] != '-') {
+			count++;
+			tmp_iarr[i+1] = count;
+		}
+		else tmp_iarr[i+1] = 0;
+		if(mydebug>1) cout << i << " " << tmp_iarr[i+1] << endl;
+	}
+	
+	prof_map_ss = ivector(prof_len);
+
+	for(i=1;i<=prof_len;i++) {
+		prof_map_ss[i] = tmp_iarr[prof_pos[i]];
+		if(mydebug>1) cout << i << " " << prof_pos[i] << " " << prof_map_ss[i] << endl;
+	}
+	//cout << "=============" << endl;
+
+	delete [] tmp_iarr;
+
+}
+
+void subalign::get_prof_alphabet1() {
+
+	int i, j,k;
+
+	prof_alphabet1 = ivector(prof_len);
+
+	for(i=1;i<=prof_len;i++) {
+		if(prof_map_ss[i]==0) prof_alphabet1[i] = 0;
+		else prof_alphabet1[i] = ss->alphabet1[prof_map_ss[i]];
+	}
+	//cout << "done_get_prof_alphabet1" << endl;
+}
+
+void subalign::select_representative() {
+
+	int i, j, k;
+
+        // find a representative sequence for the group, make it the "aln"
+        // right now, the representative is the longest sequence (excluding gaps)
+        int tmp_index = 0;
+        int tmp_count_aa = 0;
+        int max_count_aa = 0;
+        for(i=0;i<nal;i++) {
+		//if(strlen(aname[i])<=6) { tmp_index = i; break; }
+                tmp_count_aa = 0;
+                for(j=0;j<alilen;j++) {
+                        if(aseq[i][j]!='-') tmp_count_aa++;
+                }
+                if(tmp_count_aa>max_count_aa) {
+                        max_count_aa = tmp_count_aa;
+                        tmp_index = i;
+                }
+        }
+	/*
+	cout << "nal: " << nal << endl;
+	for(i=0;i<nal;i++) {
+		cout << "|" << aname[i] << "|: " << strlen(aname[i]) << endl;
+	}
+	*/
+        char *tmp_name = new char [strlen(aname[tmp_index])+1];
+        char *tmp_seq = new char[max_count_aa+1];
+        strcpy(tmp_name, aname[tmp_index]);
+        int tmp_array_index = 0;
+        for(i=0;i<alilen;i++) {
+                if(aseq[tmp_index][i]!='-') {
+                        tmp_seq[tmp_array_index] = aseq[tmp_index][i];
+                        tmp_array_index++;
+                }
+        }
+        tmp_seq[tmp_array_index] = '\0';
+        oneSeqAln = oneSeq2subalign(tmp_seq, tmp_name);
+	cout << "representative: " << tmp_name << endl;
+
+	repres_name = new char[strlen(oneSeqAln->aname[0])+2];
+	strcpy(repres_name, oneSeqAln->aname[0]);
+
+	//return oneSeqAln;
+
+}
+
+// for representative sequence with repres_name
+// if base_name.ss2 or base_name.horiz not in directory dir_name:
+// make a directory in dir_name 
+// go to the new directory
+// run runpsipred
+// read psipred output files
+// copy psipred output files to dir_name
+void subalign::get_ss_prof(char *dir_name, char *runpsipred_command) {
+
+	int i;
+	char base_name[300];
+	char cwd[300];
+
+	if(strlen(dir_name)==0) {
+		strcpy(base_name, repres_name);
+	}
+	else {
+		strcpy(base_name, dir_name);
+		if(dir_name[strlen(dir_name)-1]!='/') {
+			strcat(base_name, "/");
+		}
+		strcat(base_name, repres_name);
+	}
+
+	//cout << base_name << " " << repres_name << endl;
+
+	// read the psipred files if they exist
+	ss = new ss_prof(base_name);
+	if(ss->done_prof) {
+		// check if the sequence in psipred output files is the same as the target sequence
+		if(ss->check_aa_seq(oneSeqAln->aseq[0])== 1) return;
+	}
+
+	// set a temporary directory to run psipred: dir_name/represname_randnum_psipred
+	int rand_number = rand();
+	char tmp_dir[500];
+	sprintf(tmp_dir, "%s/%s_%d_psipred", dir_name, repres_name, rand_number);
+	char command[500];
+	sprintf(command, "mkdir %s", tmp_dir);
+	system(command);
+
+	// generate a fasta file in the temporary directory
+	char fasta_name[500];
+	sprintf(fasta_name, "%s/%s.fa", tmp_dir, repres_name);
+	ofstream ofp(fasta_name, ios::out);
+	ofp << ">";
+	ofp << repres_name << endl;
+	// here, change '[OJoj]' to 'A'
+	for(i=0;i<oneSeqAln->alilen;i++) {
+		if( (oneSeqAln->aseq[0][i]=='O') || (oneSeqAln->aseq[0][i]=='o') ||(oneSeqAln->aseq[0][i]=='U') ||(oneSeqAln->aseq[0][i]=='u') ) { ofp << 'A'; }
+		else ofp << oneSeqAln->aseq[0][i];
+	}
+	ofp << endl;
+	//old version: ofp << oneSeqAln->aseq[0] << endl;
+	ofp.close();
+
+	// remember the current directory
+	getcwd(cwd, 300);
+	if(mydebug>1) cout << "cwd: " << cwd << endl;
+
+	// go to temporary directory; run psipred
+	chdir(tmp_dir);
+	//sprintf(command, "runpsipred %s.fa", repres_name);
+	sprintf(command, "%s %s.fa", runpsipred_command, repres_name);
+	cout << command << endl;
+	system(command);
+
+	// get the psipred profile object
+	ss->read_ss_files(repres_name);
+
+	// copy the psipred files to psipred_dir
+	sprintf(command, "cp %s.ss2 ../", repres_name);
+	system(command);
+	sprintf(command, "cp %s.horiz ../", repres_name);
+	system(command);
+
+	// clear the temporary directory
+	chdir("../");
+	sprintf(command, "rm -r -f %s", tmp_dir);
+	system(command);
+
+	// change directory back
+	chdir(cwd);
+
+	
+}
+
+// for representative sequence with repres_name
+// if base_name.ss2 or base_name.horiz not in directory dir_name:
+// make a directory in dir_name 
+// go to the new directory
+// run runpsipred1 (assume psipmd already exist)
+// read psipred output files
+// copy psipred output files to dir_name
+void subalign::get_ss_prof1(char *dir_name, char *query_name, char *runpsipred1_command) {
+
+	int i;
+	char base_name[300];
+	char cwd[300];
+
+	if(strlen(dir_name)==0) {
+		strcpy(base_name, repres_name);
+	}
+	else {
+		strcpy(base_name, dir_name);
+		if(dir_name[strlen(dir_name)-1]!='/') {
+			strcat(base_name, "/");
+		}
+		strcat(base_name, repres_name);
+	}
+
+	//cout << base_name << " " << repres_name << endl;
+
+	// read the psipred files if they exist
+	ss = new ss_prof(base_name);
+	if(ss->done_prof) {
+		// check if the sequence in psipred output files is the same as the target sequence
+		if(ss->check_aa_seq(oneSeqAln->aseq[0])== 1) return;
+	}
+
+	// set a temporary directory to run psipred: dir_name/represname_randnum_psipred
+	int rand_number = rand();
+	char tmp_dir[500];
+	if(dir_name[strlen(dir_name)-1]!='/') {
+		sprintf(tmp_dir, "%s/%s_%d_psipred", dir_name, repres_name, rand_number);
+	}
+	else {
+		sprintf(tmp_dir, "%s%s_%d_psipred", dir_name, repres_name, rand_number);
+        }
+	char command[500];
+	sprintf(command, "mkdir %s", tmp_dir);
+	system(command);
+
+	// generate a fasta file in the temporary directory
+	char fasta_name[500];
+	sprintf(fasta_name, "%s/%s.fa", tmp_dir, repres_name);
+	ofstream ofp(fasta_name, ios::out);
+	ofp << ">";
+	ofp << repres_name << endl;
+	// here, change '[OJoj]' to 'A'
+	for(i=0;i<oneSeqAln->alilen;i++) {
+		if( (oneSeqAln->aseq[0][i]=='O') || (oneSeqAln->aseq[0][i]=='o') ||(oneSeqAln->aseq[0][i]=='U') ||(oneSeqAln->aseq[0][i]=='u') ) { ofp << 'A'; }
+		else ofp << oneSeqAln->aseq[0][i];
+	}
+	ofp << endl;
+	//old version: ofp << oneSeqAln->aseq[0] << endl;
+	ofp.close();
+
+	// remember the current directory
+	getcwd(cwd, 300);
+	if(mydebug>1) cout << "cwd: " << cwd << endl;
+
+	// go to temporary directory; run psipred
+	chdir(tmp_dir);
+	sprintf(command, "cp ../%s.chk psitmp.chk", query_name);
+	system(command);
+	//sprintf(command, "runpsipred %s.fa", repres_name);
+	sprintf(command, "%s %s.fa", runpsipred1_command, repres_name);
+	cout << command << endl;
+	system(command);
+
+	// get the psipred profile object
+	ss->read_ss_files(repres_name);
+
+	// copy the psipred files to psipred_dir
+	sprintf(command, "cp %s.ss2 ../", repres_name);
+	system(command);
+	sprintf(command, "cp %s.horiz ../", repres_name);
+	system(command);
+
+	// clear the temporary directory
+	chdir("..");
+	sprintf(command, "rm -r -f %s", tmp_dir);
+	cout << "command: " << command << endl;
+	int sys_status = system(command);
+	cout << "sys_status: " << sys_status << endl;
+
+	// change directory back
+	chdir(cwd);
+
+	
+}
+
+void subalign::checkSubalign() {
+
+	int i, j, k;
+
+	cout << "alilen: " << alilen << endl;
+	cout << "nal: " << nal << endl;
+	
+	if(done_prof==0) return;
+
+	cout << "prof_len: " << prof_len << endl;
+	cout << "prof_nef: " << prof_nef << endl;
+	cout << "prof_average_sum_eff_let: " << prof_average_sum_eff_let << endl;
+	cout << "prof_gap_threshold: " << prof_gap_threshold << endl;
+	cout << "prof_raw_gap_threshold: " << prof_raw_gap_threshold << endl;
+	cout << "num     prof_pos     prof_sum_eff   prof_gap_content" << endl;
+	for(i=1;i<=prof_len;i++) {
+		cout << i << " " << prof_pos[i] << " " << aseq[0][prof_pos[i]-1] << " " << prof_sum_eff[i] << " " << prof_gap_content[prof_pos[i]] << endl;
+	}
+
+	cout << "nal " << nal  << endl;
+	cout << "prof_hwt_all " << endl;
+	for(i=1;i<=nal;i++) {
+		cout << i << " " << prof_hwt_all[i] << endl; 
+	}
+
+	cout << endl;
+	cout << "num prof_effn prof_freq" << endl;
+	for(i=1;i<=prof_len;i++) {
+		cout << i << endl;
+		for(j=1;j<=20;j++) {
+			cout << am[j] << " " << setw(20) << prof_effn[i][j] << setw(20) << prof_freq[i][j] << endl;
+		}
+		cout << endl;
+	}
+
+	cout << endl;
+}
+
+
+void subalign::checkSSprof() {
+
+	int i, j, k;
+
+	cout << "secondary structure profile" << endl;
+	cout << "repres_name:" << repres_name << endl;
+	cout << "oneSeqAln:" << endl;
+	oneSeqAln->printali(60);
+	cout << "profpos prof_alphabet1   prof_map_ss:" << endl;
+	for(i=1;i<=prof_len;i++) {
+		cout << i << " " << prof_alphabet1[i] << " " << prof_map_ss[i] << endl;
+	}
+
+
+}
+
+void subalign::get_score_bg(int bg_type) {
+
+	int i, j, k;
+
+	bg_type_here = bg_type;
+
+	score_bg_aa = gvector<float>(prof_len);
+	score_bg_ss = gvector<float>(prof_len);
+	for(i=1;i<=prof_len;i++) {
+		score_bg_aa[i] = 0;
+		for(j=1;j<=20;j++) {
+			if(bg_type==0) {
+				score_bg_aa[i] += prof_effn[i][j] * log_robinson_freq[j];
+			}
+			else if(bg_type==1) {
+				score_bg_aa[i] += prof_effn[i][j] * log_rbfreq0[j];
+			}
+			else if(bg_type==2) {
+				score_bg_aa[i] += prof_effn[i][j] * log_rbfreq[prof_alphabet1[i]][j];
+			}
+			if(mydebug>1) cout << j << " " << prof_effn[i][j] << " " << log_robinson_freq[j] << " " << log_rbfreq0[j] << " " << log_rbfreq[prof_alphabet1[i]][j] << endl;
+		}
+		if(!ss) continue;
+		score_bg_ss[i] = 0;
+		for(j=1;j<=3;j++) {
+			// ss->ssfreq[prof_alphabet1[i]][j] could be wrong!
+			score_bg_ss[i] += prof_sum_eff[i] * ss->ssfreq[prof_alphabet1[i]][j] * log_rssfreq[j];
+			if(mydebug>1) cout << j << " " << prof_sum_eff[i] << " " << ss->ssfreq[prof_alphabet1[i]][j] << " " << log_rssfreq[j] << endl;
+		}
+	}
+
+}
+
+// my own emission probability of a single residue
+// e(i, a) = sum(q(i, a) * f(i, a))
+// basically the inner product of profile frequency and background frequency
+// in other words, the expected emission probability of a residue
+// this is a bad scoring function; background amino acid emission frequencies should
+// not depend on environment
+void subalign::get_score_bg_mine(float **aa_loop, int bg_type) {
+
+	int i, j, k;
+
+	bg_type_here = bg_type;
+
+	int *ss_alphabet;
+
+	if(bg_type == 3) ss_alphabet = ss->sstype;
+	else if(bg_type == 9) ss_alphabet = ss->alphabet1;
+
+	score_bg_aa = gvector<float>(prof_len);
+	score_bg_ss = gvector<float>(prof_len);
+	if(mydebug>1) cout << "test here: " << endl;
+	for(i=1;i<=prof_len;i++) {
+		score_bg_aa[i] = 0;
+		for(j=1;j<=20;j++) {
+			score_bg_aa[i] += prof_freq[i][j] * aa_loop[ss_alphabet[i]][j];
+			if(mydebug>1) cout << i << " " << j << " " << prof_freq[i][j] << " " << aa_loop[ss_alphabet[i]][j] << endl;
+		}
+		score_bg_aa[i] = log(score_bg_aa[i]);
+		score_bg_ss[i] = 0;
+		//for(j=1;j<=3;j++) { score_bg_ss[i] += ss->ssfreq[i][j] * ss_loop[ss_alphabet[i]][j]; }
+		score_bg_ss[i] = ss->ssfreq[i][ss->sstype[i]];
+		score_bg_ss[i] = log(score_bg_ss[i]);
+	}
+	done_score_bg = 1;
+}
+
+// my own emission probability of a single residue
+// e(i, a) = sum(q(i, a) * f(i, a))
+// basically the inner product of profile frequency and background frequency
+// in other words, the expected emission probability of a residue
+void subalign::get_score_bg_mine(float *aa_loop0, float *ss_loop0, int bg_type) {
+
+	int i, j, k;
+
+	bg_type_here = bg_type;
+
+	int *ss_alphabet;
+
+	if(bg_type == 3) ss_alphabet = ss->sstype;
+	else if(bg_type == 9) ss_alphabet = ss->alphabet1;
+
+	score_bg_aa = gvector<float>(prof_len);
+	score_bg_ss = gvector<float>(prof_len);
+	if(mydebug>1) cout << "test here: " << endl;
+	for(i=1;i<=prof_len;i++) {
+		score_bg_aa[i] = 0;
+		// IMPORTANT: use raw frequencies derived from effn, without mixture with pseudocount freqs
+		// expected emission probability given a effn vector
+		for(j=1;j<=20;j++) {
+			score_bg_aa[i] += prof_effn[i][j] * aa_loop0[j]; // inner product of effn and loop frequencies
+		}
+		score_bg_aa[i] = log(score_bg_aa[i]/prof_sum_eff[i]); // divide by sum effn
+		score_bg_ss[i] = log(ss_loop0[ss_alphabet[i]]);
+	}
+	done_score_bg = 1;
+}
+
+void subalign::get_score_bg_mine2(float *aa_loop0, float *ss_loop0, int bg_type) {
+
+	int i, j, k;
+
+	bg_type_here = bg_type;
+
+	int *ss_alphabet;
+	if(bg_type == 3) ss_alphabet = ss->sstype;
+	else if(bg_type == 9) ss_alphabet = ss->alphabet1;
+
+	score_bg_aa = gvector<float>(prof_len);
+	score_bg_ss = gvector<float>(prof_len);
+	for(i=1;i<=prof_len;i++) {
+		score_bg_aa[i] = 0;
+		for(j=1;j<=20;j++) {
+			// IMPORTANT: aa_loop[i][j] is the logarithm of loop frequencies
+			score_bg_aa[i] += aa_loop0[j] * prof_effn[i][j]; 
+		}
+		score_bg_aa[i] /= prof_sum_eff[i];
+		score_bg_ss[i] = log(ss_loop0[ss_alphabet[i]]);
+	}
+
+	done_score_bg2 = 1;
+} 
+			
+
+void subalign::add_NC_terminal(char *query_name, char *query_seq) {
+
+	int i, j, k;
+
+   char *tmpstring = new char [alilen+1];
+   j = 0;
+   for(i=0;i<alilen;i++) {
+        if(aseq[0][i]!='-') {
+                tmpstring[j] = aseq[0][i];
+                j++;
+        }
+   }
+   tmpstring[j] = '\0';
+
+   int right_numbers, left_numbers;
+
+   right_numbers = string(query_seq).find(tmpstring, 0);
+   if(right_numbers == string::npos) {
+	cout << "Warning: cannot find the sequence in " << query_name << endl;
+	return;
+   }
+   left_numbers =strlen(query_seq) - right_numbers - strlen(tmpstring);
+
+   assert(right_numbers>=0);
+   assert(left_numbers >=0);
+
+   // the first sequence of blast matches the query sequence exactly
+   if( (right_numbers+left_numbers) ==  0) return;
+
+   string Nterm, Cterm, Nterm_gap, Cterm_gap;
+   Nterm = string(query_seq).substr(0, right_numbers);
+   Cterm = string(query_seq).substr(right_numbers+strlen(tmpstring), left_numbers);
+   Nterm_gap = string("");
+   for(i=0;i<Nterm.size();i++) Nterm_gap += "-";
+   Cterm_gap = string("");
+   for(i=0;i<Cterm.size();i++) Cterm_gap += "-";
+
+   char **tmpseq = cmatrix(nal, alilen+right_numbers+left_numbers+1);
+   for(i=0;i<nal;i++) {
+        if(i==0) {
+                strcpy(tmpseq[i], Nterm.c_str());
+                strcat(tmpseq[i], aseq[i]);
+        }
+        else {
+                strcpy(tmpseq[i], Nterm_gap.c_str());
+                strcat(tmpseq[i], aseq[i]);
+        }
+   }
+   //cout << "nstr: " << Nterm_gap.c_str() << endl;
+   //cout << "nstr: " << Nterm.c_str() << endl;
+   if( left_numbers!=0 ) {
+        //cout << "cstr: " <<  Cterm_gap.c_str() << endl;
+        //cout << "cstr: " <<  Cterm.c_str() << endl;
+        for(i=0;i<nal;i++) {
+                if(i==0) {
+                        strcat(tmpseq[i], Cterm.c_str());
+                        tmpseq[i][alilen+right_numbers+left_numbers] = '\0';
+                }
+                else {
+                        strcat(tmpseq[i], Cterm_gap.c_str());
+                        tmpseq[i][alilen+right_numbers+left_numbers] = '\0';
+                }
+        }
+   }
+   for(i=0;i<nal;i++) {
+        delete [] aseq[i];
+        aseq[i] = tmpseq[i];
+        //cout << aseq[i] << endl;
+   }
+
+   //cout << "alilen: " << alilen << endl;
+   alilen = alilen + right_numbers + left_numbers;
+   //cout << "alilen: " << alilen << endl;
+   for(i=1;i<=nal;i++) {
+        delete [] alignment[i];
+        alignment[i] = new int [alilen+1];
+        for(j=1;j<=alilen;j++) {
+                alignment[i][j] = am2num(aseq[i-1][j-1]);
+           }
+   }
+}
 

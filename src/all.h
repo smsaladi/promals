@@ -22,7 +22,14 @@
 #include <vector>
 #include <map>
 #include "refinegap.h"
+#include "ss_prof.h"
 //#include "multiple.h"
+#include "profilehmm.h"
+#include "regularizer.h"
+#include "blastpgp.h"
+#include "hmm_psipred.h"
+#include <algorithm>
+#include "refine.h"
 
 using namespace std;
 

@@ -3,6 +3,11 @@
 
 #include "util.h"
 #include "amino.h"
+#include "ss_prof.h"
+#include "regularizer.h"
+//#include "hmm_psipred.h"
+//#include "param.h"
+#include <unistd.h>
 
 class subalign {
 
@@ -20,7 +25,7 @@ class subalign {
 	void readali(char *filename);
 	void printali(int blocksize);
 	void printali(int blocksize, int header);
-	void printali(char *filename, int blocksize);
+	void printali(const char *filename, int blocksize);
 	void printProfile();
 
 	int getNal();
@@ -76,7 +81,7 @@ class subalign {
 	double **pseudoCnt;
         double *sum_eff_let;
         int *maskgapRegion;
-	double qmatrix[21][21];
+	//double qmatrix[21][21];
 	double average_sum_eff_let;
 	
 	double *gap_content;
@@ -124,10 +129,61 @@ class subalign {
 	void prof_positions(double prof_gap_threshold_here);
 	void set_prof_raw_gap_threshold(double gapthr);
 	void set_prof_gap_threshold(double gapthr);
+	// only getting the effective counts portion
 	void prof();
+	void prof(double tmp_gap_threshold);
 	void prof_get_effn(int **ali, int n, int len, int prof_len, double **n_effAa, double *sum_eff_let, int *prof_pos, double *nef);
 	int done_prof;
+	int done_prof_freq;
+	void pseudoCounts(double **matrix, double n_eff, int len, double **pseudoCnt, float ***input_matrices, float **input_freqs, int *mat_selections);
+	void pseudoCounts(double **matrix, double n_eff, int len, double **pseudoCnt, float **input_matrix, float *input_bfreq);
+	void log_pseudoCounts();
+	// get_freq, 0: blosum62; 1: general SCOP; 2: alphabet1-dependent SCOP
+	void get_prof_freq(int get_freq, int take_log);
+	void checkSubalign();
+	void checkSSprof();
 
+
+
+    // secondary structure profile
+    public:
+	ss_prof *ss; // it is currently depending on only one representative sequence
+	//1. select representative
+	char *repres_name;
+	subalign *oneSeqAln;
+	void select_representative();
+
+	//2. get secondary structure profile for the representative
+	void get_ss_prof(char *dir_name, char *runpsipred_command);
+	void get_ss_prof1(char *dir_name, char *query_name, char *runpsipred1_command);
+
+	//3. map between profile positions and secondary structure profile positions
+	int *prof_map_ss; // mapping the profile positions to ss profile positions
+	void get_prof_map_ss(char *rep_name);  // representative name
+
+	//4. map alphabet1 to profile positions
+	int *prof_alphabet1;
+	void get_prof_alphabet1();
+
+	//5. get alphabet1 dependent frequencies if needed
+	// get_freq, 0: blosum62; 1: general SCOP; 2: alphabet1-dependent SCOP
+	//void get_prof_freq(int get_freq);
+
+    public:
+	float *score_bg_aa;
+	float *score_bg_ss;
+	void get_score_bg(int bg_type);
+	void get_score_bg_mine(float **aa_loop, int bg_type);
+	void get_score_bg_mine(float *aa_loop0, float *ss_loop0, int bg_type);
+	void get_score_bg_mine2(float *aa_loop0, float *ss_loop0, int bg_type);
+	int done_get_score_bg;
+	int bg_type_here;
+	subalign *purge_align_one_seq_name(char *seqname);
+	int done_score_bg;
+	int done_score_bg2;
+
+    public:
+	void add_NC_terminal(char *query_name, char *query_seq);
 	
 };
 

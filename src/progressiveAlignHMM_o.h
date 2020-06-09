@@ -69,7 +69,7 @@ void btree<TNODE>::progressiveAlignHMM_FastStage(TNODE *n, float distCutoff) {
 		progressiveAlignHMM_FastStage(n->childR, distCutoff);
 	}
 
-	//if( (!n->childL->aligned) || (!n->childR->aligned) ) { return; }
+	if( (!n->childL->aligned) || (!n->childR->aligned) ) { return; }
 
 	// determine the distance from the TNODE to the leafs
 	float dist=0;
@@ -79,19 +79,6 @@ void btree<TNODE>::progressiveAlignHMM_FastStage(TNODE *n, float distCutoff) {
 		k = k->childL;
 	}
 	//cout << "dist: " << dist << endl;
-	// Debug here
-	// NEW debug
-	if(Debug>1) {
-		if (dist>distCutoff) {
-			if(n->childL->aligned) {
-				cout << "Just aligned size: " << n->childL->aln->alilen << " " << n->childL->aln->nal << " " << n->childL->aln->alilen * n->childL->aln->nal << endl;
-			}
-			if(n->childR->aligned) {
-				cout << "Just aligned size: " << n->childR->aln->alilen << " " << n->childR->aln->nal << " " << n->childR->aln->alilen * n->childR->aln->nal << endl;
-			}
-		}
-	}
-	if( (!n->childL->aligned) || (!n->childR->aligned) ) { return; }
 	if(dist > distCutoff) return;
 
 	//cout << "======" << endl;
@@ -111,33 +98,15 @@ void btree<TNODE>::progressiveAlignHMM_FastStage(TNODE *n, float distCutoff) {
 	if(Debug>1) newalign->printali(70);
 	if(Debug>1) cout << "------------" << endl;
 	gap_refine *gr = new gap_refine();
-	char **tmpseq = newalign->aseq;
 	newalign->aseq = gr->batch_refine(newalign, 2);
-	free_cmatrix(tmpseq, newalign->nal, newalign->alilen);
 	delete_complete_gap_positions(newalign);
 	newalign->alilen = strlen(newalign->aseq[0]);
 	newalign->convertAseq2Alignment();
 	n->aln = newalign;
 	n->aligned = 1;
 	delete gr;
-	// delete the alignment in child nodes
-	delete n->childL->aln;
-	delete n->childR->aln;
-	// NEW debug
-	if(Debug>1) {
-		cout << "The alignment size: " << n->aln->alilen << " " <<  n->aln->nal << " " << n->aln->alilen * n->aln->nal << endl;
-	}
 	if(Debug>1) n->aln->printali(70);
 	if(Debug>1) cout << "------------" << endl;
-	/*
-	tnode *T = n->childL;
-	double len = 0;
-	while(T) { 
-		len += T->branchlen;
-		T = T->childL;
-	}
-	cout << "distance to the leaf node: " << len << endl;
-	*/
 }
 			
 template <typename TNODE>
@@ -145,18 +114,6 @@ void  btree<TNODE>::obtainPreAligned(TNODE *n) {
 
 	int i;
 	if(n==0) return;
-
-	/*if(n->aligned && (!n->parent->aligned) ) n->aln->printali(70);
-	if(!n->rootFlag) cout << "aligned: " << n->aligned << " parent_aligned: " << n->parent->aligned << endl; 
-	if(n->aligned) n->aln->printali(70);
-	tnode *T = n->childL;
-	double len = 0;
-	while(T) { 
-		len += T->branchlen;
-		T = T->childL;
-	}
-	cout << "distance to the leaf node: " << len << endl;
-	*/
 	// if root is already aligned
 	//if( (n->aligned) && (n->rootFlag) ) {return;}
 	if( (n->aligned) && (n->rootFlag) ) {
@@ -176,12 +133,10 @@ void  btree<TNODE>::obtainPreAligned(TNODE *n) {
 		return;
 	}
 	//preAligned.clear();
-	if(n->aligned && (!n->rootFlag) && (!n->parent->aligned) ) {
-		//n->aln->printali(80);
+	if(n->aligned && (!n->parent->aligned) ) {
 		TNODE *a = n;
 		preAligned.push_back(a);
 		n->p = preAligned.size()-1;
-		//cout << n->aln->nal << endl;
 		// get the abstractSeq
 		int *tmpList = new int [n->aln->alilen+1];
 		for(i=1;i<=n->aln->alilen;i++) tmpList[i] = i;
@@ -191,10 +146,6 @@ void  btree<TNODE>::obtainPreAligned(TNODE *n) {
 		n->abstractSeq.push_back(tmpList);
 		n->absSeqnum = 1;
 		n->absSeqlength = n->aln->alilen;
-		//cout <<"=======================" << endl;
-		//n->aln->printali(80);
-		//cout <<"+++++++++++++++++++++++" << endl;
-		//if(!n->childL) {cout << "afasdfafd\n" << endl; }
 	}
 	obtainPreAligned(n->childL);
 	obtainPreAligned(n->childR);
@@ -547,7 +498,6 @@ void btree<TNODE>::profileConsistency_psipred(hmm_psipred_parameters *params, do
                        		    //cout << realmat[k][l] << " ";
                 		} //cout << endl;
         		}
-			//NEW debug
 			if(debug>1) cout << "None-zero counts: " << i << "\t" << j << "\t" << nonZeroCounts << endl;
 			//cout << "Here " << endl;
 			smat[i][j] = new sparseMatrix(realmat, lenx, leny);
@@ -567,6 +517,8 @@ void btree<TNODE>::profileConsistency_psipred(hmm_psipred_parameters *params, do
 			//cout << "Here " << endl;
 			delete hmmProfPair;
 			//cout << "Here " << endl;
+			
+
 		}
 	}
 	if(debug>1) {
@@ -579,7 +531,6 @@ void btree<TNODE>::profileConsistency_psipred(hmm_psipred_parameters *params, do
 	//relaxConsistMatrix();
 	fprintf(logfp, "\n");
 	fflush(logfp);
-	/*
 	for(i=0;i<relax_number;i++) {
 	    //cout << " Before relax" << endl;
 	    relaxConsistMatrix(dist_matrix, max_dist_cutoff);
@@ -587,9 +538,6 @@ void btree<TNODE>::profileConsistency_psipred(hmm_psipred_parameters *params, do
 	    fflush(logfp);
 	    //cout << " After relax" << endl;
 	}
-	*/
-	relaxConsistMatrix(dist_matrix, max_dist_cutoff, minProb);
-	relaxConsistMatrix(dist_matrix, max_dist_cutoff, minProb*0.1);
 	/*
 	for(i=0;i<(int)preAligned.size();i++) {
 		for(j=i+1;j<(int)preAligned.size();j++) {
@@ -732,9 +680,7 @@ void btree<TNODE>::profileConsistency_profilehmm(hmm_parameters *params, char *s
 
 			profilehmm *hmmProfPair = new profilehmm(preAligned[i]->similarSet);
 			hmmProfPair->set_align(preAligned[j]->similarSet);
-                        char tmpstr[200];
-			//hmmProfPair->set_parameters(params, ss_dir_name, use_ss);
-			hmmProfPair->set_parameters(tmpstr, ss_dir_name, use_ss);
+			hmmProfPair->set_parameters(params, ss_dir_name, use_ss);
 			//hmmProfPair->x->get_score_bg(use_ss);
 			hmmProfPair->ss_weight = ss_weight;
 			hmmProfPair->get_scores(use_ss);
@@ -748,8 +694,7 @@ void btree<TNODE>::profileConsistency_profilehmm(hmm_parameters *params, char *s
 			if(reverse_align_order) {
 				profilehmm *hmmProfPair1 = new profilehmm(preAligned[j]->aln);
 				hmmProfPair1->set_align(preAligned[i]->similarSet);
-				//hmmProfPair1->set_parameters(params, ss_dir_name, use_ss);
-				hmmProfPair1->set_parameters(tmpstr, ss_dir_name, use_ss);
+				hmmProfPair1->set_parameters(params, ss_dir_name, use_ss);
 				//hmmProfPair1->x->get_score_bg(use_ss);
 				hmmProfPair1->ss_weight = ss_weight;
 				hmmProfPair1->get_scores(use_ss);
@@ -1170,105 +1115,11 @@ void btree<TNODE>::relaxConsistMatrix() {
 } 
 
 template <typename TNODE> 
-void btree<TNODE>::relaxConsistMatrix(double **dist_matrix, double max_dist_cutoff, double min_cutoff) {
-
-	int i, j, k,l;
-	float **tmpMat;
-
-	int totalElements = 0;
-	if(debug>1) {
-	cout << "Number of elements in the matrices before consistency: " << endl;
-	for(i=0;i<preAligned.size();i++) { // Update the matrices
-		for(j=0;j<preAligned.size();j++) {
-			if(i==j) { cout << "0\t"; if(i==preAligned.size()-1) cout << endl; continue; }
-			cout << smat[i][j]->nelements<<"\t";
-		}
-		cout << endl;
-	}
-	}
-	// consistency measurement among the probability matrices
-	for(i=0;i<preAligned.size();i++) {
-		for(j=i+1;j<preAligned.size();j++) {
-			//cout << "I: " << i << "\tJ: " << j <<endl;
-			//smat1[i][j] = new sparseMatrix(&smat[i][j]);
-			tmpMat = smat[i][j]->sparseCrs2Regular(); 
-			// x-x-y and x-y-y
-			for(k=1;k<=preAligned[i]->aln->alilen;k++) {
-				for(l=1;l<=preAligned[j]->aln->alilen;l++) {
-					tmpMat[k][l] *= 2;
-				}
-			}
-			// relaxation 
-			int number_for_relax=2;
-			for(k=0;k<preAligned.size();k++) {
-				if(k==i) continue; if(k==j) continue;
-				if( (dist_matrix[i][k]==0)&&(dist_matrix[j][k]==0) ) continue;
-				if(dist_matrix[i][k]>max_dist_cutoff) continue;
-				if(dist_matrix[j][k]>max_dist_cutoff) continue;
-				relaxTwoSparse(smat[i][k], smat[k][j], tmpMat);
-				number_for_relax+=1;
-			}
-			if(Debug>1) cout << i << " " << j << " Number for relax: " << number_for_relax << endl;
-			//cout << "HERE: " << endl;
-			// normalize
-		        for(k=1;k<=preAligned[i]->aln->alilen;k++) {
-               		        for(l=1;l<=preAligned[j]->aln->alilen;l++) {
-				    //tmpMat[k][l] /= preAligned.size();
-				    tmpMat[k][l] /= number_for_relax;
-				    //if(relax_number>1) if(tmpMat[k][l]<min_cutoff) tmpMat[k][l] = 0;
-				    if(tmpMat[k][l]<min_cutoff) tmpMat[k][l] = 0;
-                		}
-        		}
-			//cout << "HERE: " << endl;
-			smat1[i][j] = new sparseMatrix(tmpMat,preAligned[i]->aln->alilen, preAligned[j]->aln->alilen); 
-			//cout << "HERE: " << endl;
-			// normalize
-			//smat1[i][j]->multiplyConstant(1.0/preAligned.size() );
-			smat1[j][i] = smat1[i][j]->transpose();
-			//smat1[i][j]->printCrs();
-			free_gmatrix<float>(tmpMat, preAligned[i]->aln->alilen, preAligned[j]->aln->alilen);
-			tmpMat = NULL;
-			// NEW debug
-			if(debug>1) cout << "Elements after relax: " << smat1[i][j]->nelements << endl;
-			totalElements += smat1[i][j]->nelements;
-		}
-	}
-	// NEW debug
-	if(debug>-1) cout << "totalElements: " << totalElements << endl;
-	for(i=0;i<preAligned.size();i++) { // Update the matrices
-		for(j=i+1;j<preAligned.size();j++) {
-			//cout << "II: "<< i << "\tJJ: " << j << endl;
-			//smat[i][j]->clear();
-			delete smat[i][j];
-			smat[i][j] = smat1[i][j];
-			if(Debug>1) smat[i][j]->printCrs();
-			delete smat[j][i];
-			//smat[j][i]->clear();
-			smat[j][i] = smat1[j][i];
-		}
-	}
-	if(debug>1) {
-	cout << "Number of elements in the matrices after consistency: " << endl;
-	for(i=0;i<preAligned.size();i++) { // Update the matrices
-		for(j=0;j<preAligned.size();j++) {
-			if(i==j) { cout << "0\t"; if(i==preAligned.size()-1) cout << endl; continue; }
-			cout << smat[i][j]->nelements<<"\t";
-		}
-		cout << endl;
-	}
-	cout << "Time after the relaxation: " << endl;
-	times(&tmsend); timeDiff();
-	}
-
-} 
-
-template <typename TNODE> 
 void btree<TNODE>::relaxConsistMatrix(double **dist_matrix, double max_dist_cutoff) {
 
 	int i, j, k,l;
 	float **tmpMat;
 
-	int totalElements = 0;
 	if(debug>1) {
 	cout << "Number of elements in the matrices before consistency: " << endl;
 	for(i=0;i<preAligned.size();i++) { // Update the matrices
@@ -1321,22 +1172,15 @@ void btree<TNODE>::relaxConsistMatrix(double **dist_matrix, double max_dist_cuto
 			//smat1[i][j]->printCrs();
 			free_gmatrix<float>(tmpMat, preAligned[i]->aln->alilen, preAligned[j]->aln->alilen);
 			tmpMat = NULL;
-			// NEW debug
-			if(debug>1) cout << "Elements after relax: " << smat1[i][j]->nelements << endl;
-			totalElements += smat1[i][j]->nelements;
 		}
 	}
-	// NEW debug
-	if(debug>-1) cout << "totalElements: " << totalElements << endl;
 	for(i=0;i<preAligned.size();i++) { // Update the matrices
 		for(j=i+1;j<preAligned.size();j++) {
 			//cout << "II: "<< i << "\tJJ: " << j << endl;
-			//smat[i][j]->clear();
-			delete smat[i][j];
+			smat[i][j]->clear();
 			smat[i][j] = smat1[i][j];
 			if(Debug>1) smat[i][j]->printCrs();
-			delete smat[j][i];
-			//smat[j][i]->clear();
+			smat[j][i]->clear();
 			smat[j][i] = smat1[j][i];
 		}
 	}
@@ -1353,7 +1197,7 @@ void btree<TNODE>::relaxConsistMatrix(double **dist_matrix, double max_dist_cuto
 	times(&tmsend); timeDiff();
 	}
 
-}
+} 
 
 template <typename TNODE> 
 void btree<TNODE>::computeConsistencyAlignment(TNODE *a) {
@@ -1372,7 +1216,6 @@ void btree<TNODE>::computeConsistencyAlignment(TNODE *a) {
 
 	consistScoringMatrix = computeConsistMatrix(a->childL, a->childR);
 	path = computePairwiseAlignment(consistScoringMatrix, a->childL->absSeqlength, a->childR->absSeqlength, len);
-	//free_imatrix(consistScoringMatrix, a->childL->absSeqlength, a->childR->absSeqlength);
 
 	//get the abstractSeq for the node a
 	if(debug>1) cout << "len: " << len << endl;
@@ -1445,7 +1288,6 @@ void btree<TNODE>::computeConsistencyAlignment(TNODE *a) {
 	}
 	a->absSeqnum = a->childL->absSeqnum + a->childR->absSeqnum;
 	a->absSeqlength = alignmentLength;
-	//cout << "Number of letters for node a: " << a->absSeqnum << " * " << a->absSeqlength << " + " << a->absSeqlength*a->absSeqnum<<endl;
 	if(debug>1) cout << "Obtain the abstract alignment" << endl;
 	//for(i=1;i<=a->absSeqnum;i++) { for(j=0;j<=a->absSeqlength;j++) { cout << "IJ: " << i << "\t" << j << "\t" << a->abstractSeq[i][j]<< endl; } }
 	//printAlignmentFromAbs(a);
@@ -1455,8 +1297,7 @@ void btree<TNODE>::computeConsistencyAlignment(TNODE *a) {
 	delete [] path;
 
 	// print the intermediate results
-	//cout << "Here: " << endl;
-	//printAlignmentFromAbs(a);
+	printAlignmentFromAbs(a);
 	return;
 
 }
@@ -1680,13 +1521,11 @@ void btree<TNODE>::printAlignmentFromAbs(TNODE *n, char *outfilename) {
 	assert(n->absSeqnum >0);
 
 	for(i=1;i<=n->absSeqnum;i++) { seqNUM += preAligned[n->abstractSeq[i][0]]->aln->nal; }
-	//for(i=1;i<=n->absSeqnum;i++) { preAligned[n->abstractSeq[i][0]]->aln->printali(60); }
 	//cout << "seqNUM: " << seqNUM << endl;
 	tmpSeq->aseq = new char *[seqNUM+1];//cmatrix(0, seqNUM-1, 0, n->absSeqlength);
 	for(i=0;i<=seqNUM;i++) tmpSeq->aseq[i] = new char [n->absSeqlength+1];
 	tmpSeq->aname = new char *[seqNUM+1];
 	for(i=0;i<=seqNUM;i++) tmpSeq->aname[i] = new char [100];
-	//cout << "finished assign tmpSeq" << endl;
 
 	if(debug>1) 
 	for(i=1;i<=n->absSeqnum;i++) {
@@ -1698,8 +1537,6 @@ void btree<TNODE>::printAlignmentFromAbs(TNODE *n, char *outfilename) {
 	}
 	int S=0; for(i=1;i<=n->absSeqnum;i++) { S+=preAligned[n->abstractSeq[i][0]]->aln->nal; } tmpSeq->nal = S;
 	if(debug>1) cout << "Nal: " << tmpSeq->nal << endl;
-
-	//cout << n->absSeqnum << endl;
 
 	S=0;
 	for(i=1;i<=n->absSeqnum;i++) {
@@ -1720,7 +1557,7 @@ void btree<TNODE>::printAlignmentFromAbs(TNODE *n, char *outfilename) {
 		seqStr[k-1]='\0';
 		assert(k-1==n->absSeqlength);
 		strcpy(tmpSeq->aname[S], preAligned[n->abstractSeq[i][0]]->aln->aname[j-1]);
-		//cout << left << setw(30) << tmpSeq->aname[S] << tmpSeq->aseq[S] << endl;
+		//cout << left << setw(20) << tmpSeq->aname[S] << tmpSeq->aseq[S] << endl;
 		
 		//cout << setw(20) << seqStr << endl;
 		//(tmpSeq->nal)++;
@@ -1751,9 +1588,6 @@ void btree<TNODE>::printAlignmentFromAbs(TNODE *n, char *outfilename) {
 			}
 			tmpSeq1 = merge_align_by_one_sequence(tmpSeq, preAligned[i]->similarSet, tmpSeq->aname[k]);	
 			//delete tmpSeq;
-			//***old *** for(k=0;k<=tmpSeq->nal;k++) {delete [] tmpSeq->aseq[k]; delete [] tmpSeq->aname[k];}
-			//***old *** delete [] tmpSeq->aseq; delete [] tmpSeq->aname;
-			delete tmpSeq;
 			tmpSeq = tmpSeq1;
 		}
 	}
@@ -1765,32 +1599,21 @@ void btree<TNODE>::printAlignmentFromAbs(TNODE *n, char *outfilename) {
 	    }
 	}
 
-	//cout << "before refine: "<< endl;
-	//tmpSeq->printali(80);
+	cout << "before refine: "<< endl;
+	tmpSeq->printali(80);
 
 	
-	//delete_complete_gap_positions(tmpSeq);
-	fprintf(logfp, "\nStart refining alignment ...\n");
-	fprintf(logfp, "\t- step 1\n");
-	fflush(logfp);
-	if( (tmpSeq->nal <= 1000)&&(tmpSeq->alilen<=4000) )  refine_align_new(tmpSeq);
-	fprintf(logfp, "\t- step 2\n");
-	fflush(logfp);
-	//cout << "after refine1: " << endl;
-	//tmpSeq->printali(80);
+	refine_align_new(tmpSeq);
+	cout << "after refine1: " << endl;
+	tmpSeq->printali(80);
 	refinegap(tmpSeq, 0.8, 1, 1, 1);
-	fprintf(logfp, "\t- step 3\n");
-	fflush(logfp);
-	//cout << "after refine1: " << endl;
 	delete_complete_gap_positions(tmpSeq);
-	//cout << "after refine2: " << endl;
-	//tmpSeq->printali(80);
-	if( (tmpSeq->nal <= 1000)&&(tmpSeq->alilen<=4000) ) {
-		alignrefine *y = new alignrefine(tmpSeq, 0);
-		y->treat_single_and_doublet();
-	}
-	//cout << "after refine3: " << endl;
-	//tmpSeq->printali(80);
+	cout << "after refine2: " << endl;
+	tmpSeq->printali(80);
+	alignrefine *y = new alignrefine(tmpSeq, 0);
+	y->treat_single_and_doublet();
+	cout << "after refine3: " << endl;
+	tmpSeq->printali(80);
 	//treat_single_residues(tmpSeq, 0.5);
 
 	//gap_refine *gr = new gap_refine();
@@ -1889,7 +1712,6 @@ void btree<TNODE>::refine_align_new(subalign *x) {
 	y->get_sw();
 	y->calculate_weights();
 
-
 	y->deal_with_gappy(1);
 	y->deal_with_gappy(2);
 	y->deal_with_gappy(3);
@@ -1898,14 +1720,9 @@ void btree<TNODE>::refine_align_new(subalign *x) {
 	y->deal_with_N();
 	y->deal_with_C();
 	y->delete_NC_terminal_gaps();
-
-	delete y;
 	
 	alignrefine *y1 = new alignrefine(x, 0);
 	y1->treat_single_and_doublet();
-
-	delete y1;
-
 	/*alignrefine *y2 = new alignrefine(x, 0);
 	y2->treat_single_and_doublet();
 	*/

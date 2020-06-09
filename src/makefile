@@ -1,5 +1,7 @@
-install: mummals
-install: meta_align
+#install: testPurge
+#install: merge_align
+#install: mummals
+install: promals_c al2co
 
 CC = g++
 OTHERFLAGS = -DNumInsertStates=1 -DVERSION="1.09"
@@ -8,30 +10,43 @@ OTHERFLAGS = -DNumInsertStates=1 -DVERSION="1.09"
 CXXFLAGS = -O3
 CFLAGS = -c
 
-meta_align: meta_align.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h hmm_profpair.o smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o
-	g++ meta_align.o sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o hmm_profpair.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o -o meta_align -lm $(CXXFLAGS)
+promals_c: progress.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o ss_prof.o regularizer.o hmm_psipred.o blastpgp.o gap_refining.o refine.o 
+	g++ progress.o  sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o ss_prof.o regularizer.o hmm_psipred.o blastpgp.o gap_refining.o refine.o -o promals_c -lm $(CXXFLAGS)
 
-
-mummals: mummals.o kmer_dist.o util.o amino.o mathfunc.o subalign.o sequences.o tnode.o btree_template.h hmm_profpair.o smallnumber.o progressiveAlignHMM.h sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o
-	g++ mummals.o sequences.o kmer_dist.o util.o amino.o mathfunc.o subalign.o tnode.o hmm_profpair.o smallnumber.o sparsematrix.o time.o mm.o hmm_profpair1.o param.o hmm_local.o hmm_multim.o refinegap.o consv1.o multiple.o -o mummals -lm $(CXXFLAGS)
-
+refine.o: refine.c refine.h
+	$(CC) $(CFLAGS)  refine.c $(CXXFLAGS)
 refinegap: refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o
 	g++ refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o -o refinegap -lm
-
-refinegap.o: refinegap.c refinegap.h
-	$(CC) $(CFLAGS)  refinegap.c $(CXXFLAGS)
 
 consv1.o: consv1.c consv1.h
 	$(CC) $(CFLAGS)  consv1.c $(CXXFLAGS)
 
+gap_refining.o: gap_refining.c gap_refining.h
+	$(CC) $(CFLAGS) gap_refining.c $(CXXFLAGS)
+
 multiple.o: multiple.c multiple.h progressiveAlignHMM.h btree_template.h
 	$(CC) $(CFLAGS)  multiple.c $(CXXFLAGS)
 
-meta_align.o: meta_align.c 
-	$(CC) $(CFLAGS)  meta_align.c $(CXXFLAGS)
+blastpgp.o: blastpgp.c blastpgp.h
+	$(CC) $(CFLAGS) blastpgp.c $(CXXFLAGS)
 
-mummals.o: mummals.c 
-	$(CC) $(CFLAGS)  mummals.c $(CXXFLAGS)
+test_pairwise_psipred_aln.o: test_pairwise_psipred_aln.c hmm_psipred.h
+	$(CC) $(CFLAGS)  test_pairwise_psipred_aln.c $(CXXFLAGS)
+
+hmm_psipred.o: hmm_psipred.c hmm_psipred.h ScoreType.h
+	$(CC) $(CFLAGS)  hmm_psipred.c $(CXXFLAGS)
+
+regularizer.o: regularizer.c 
+	$(CC) $(CFLAGS)  regularizer.c $(CXXFLAGS)
+
+ss_prof.o: ss_prof.c  ss_prof.h
+	$(CC) $(CFLAGS)  ss_prof.c $(CXXFLAGS)
+
+profilehmm.o: profilehmm.c  profilehmm.h
+	$(CC) $(CFLAGS)  profilehmm.c $(CXXFLAGS)
+
+progress.o: progress.c 
+	$(CC) $(CFLAGS)  progress.c $(CXXFLAGS)
 
 smallnumber.o: smallnumber.c smallnumber.h
 	$(CC) $(CFLAGS) smallnumber.c $(CXXFLAGS)
@@ -75,8 +90,14 @@ param.o: param.c param.h
 mm.o: mm.h mm.c
 	$(CC) $(CFLAGS) mm.c $(CXXFLAGS)
 
+subalign.o: subalign.h subalign.c
+	$(CC) $(CFLAGS) subalign.c  $(CXXFLAGS)
+
+al2co: al2co.c
+	gcc al2co.c -o al2co $(CXXFLAGS) -lm
+
 .c.o :
 	$(CC) $(CFLAGS) $(CXXFLAGS) $?
 
 clean: 
-	rm *.o
+	rm *.o al2co promals_c

@@ -193,6 +193,7 @@ void consv::freq() {
 		aacount[alignment[j][i]]++; 
 		if( (alignment[j][i]>=1) && (alignment[j][i]<=20) ) totalcount++;
 	     }
+	     //cout << i << " " << totalcount << endl;;
 	     for(j=1;j<=20;j++) fq[i][j] = 1.0*aacount[j]/totalcount;
 	     gap_fraction[i] = 1.0 * aacount[0] / ( aacount[0]+totalcount);
 	     if(gap_fraction[i]<gap_thr) {

@@ -44,7 +44,8 @@ hmm_profpair1::~hmm_profpair1() {
 	free_gvector<int>(path);
 	free_gvector<int>(path1);
 	free_gvector<int>(path2);
-	
+
+	//cout << "indeed freed" << endl;
 
 }	
 

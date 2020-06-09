@@ -1,0 +1,322 @@
+#!/usr1/local/bin/python
+
+import os, sys, re, glob
+
+# this script run promals given a fasta file
+# process promals output alignment
+# calculate conservation
+
+name_width = 25
+
+normal_finish1 = 0
+
+# read the log file
+def read_pummals_log(log_file, csv_string, cutoff_csv):
+
+	output_lines = ""
+	#output_lines += '<html><head><title>PROMALS Result</title></head>\n<body><font face="Courier New">\n'
+
+	record_begin = 0
+	normal_finish = 0
+	group_num = 0
+	ss_color_array1 = []
+	ss_color_array2 = []
+	ss_counts = 0
+	fp = open(log_file)
+	for line in fp.readlines():
+	
+		if re.match("ss:", line): record_begin = 1
+		if not record_begin: continue
+		
+		#if "program finished" in line: 
+		if re.search("program finished", line): 
+			normal_finish = 1
+			normal_finish1 = 1
+			break
+		
+		if re.match("ss:", line): 
+			group_num += 1
+			if(group_num%2==1): name_bg_color = 1
+			else: name_bg_color = 0
+				
+			group_seq_num = 0
+	
+			ss_array = line.split()[1]
+			ss_array_length = len(ss_array)
+			ss_array = '-'+ss_array+'-';
+			ss_color_array1 = []
+			ss_color_array2 = []
+			#for i, c  in enumerate(ss_array):
+			for i in range(len(ss_array)):
+				c = ss_array[i]
+				if(i==0): continue
+				if(i==ss_array_length+1): continue
+				# color helix red, and underscore
+				if c=='H':
+					if ss_array[i-1]!='H':
+						#ss_color_array1.append("<FONT style='color:RED;'><u><b>")
+						ss_color_array1.append("<FONT style='color:RED;'>")
+					else: ss_color_array1.append("")
+					if ss_array[i+1]!='H':
+						#ss_color_array2.append("</b></u></FONT>")
+						ss_color_array2.append("</FONT>")
+					else: ss_color_array2.append("")
+					continue
+				# color strand blue, and underscore
+				if c=='E':
+					if ss_array[i-1]!='E':
+						#ss_color_array1.append("<FONT style='color:BLUE;'><u><b>")
+						ss_color_array1.append("<FONT style='color:BLUE;'>")
+					else: ss_color_array1.append("")
+					if ss_array[i+1]!='E':
+						ss_color_array2.append("</FONT>")
+						#ss_color_array2.append("</b></u></FONT>")
+					else: ss_color_array2.append("")
+					continue
+				ss_color_array2.append("")
+				ss_color_array1.append("")
+			#for i in range(len(ss_color_array1)): print i, ss_color_array1[i], ss_color_array2[i]
+
+			# color the csv string
+			ss_counts += 1
+			if ss_counts == 1:
+				if len(csv_string)==0: continue
+				this_csv = csv_string[0:ss_array_length]
+				csv_string = csv_string[ss_array_length:]
+				this_color_csv = "Conservation:"
+				#for i in range(14): this_color_csv += "&nbsp;"
+				for i in range(15): this_color_csv += " "
+				this_color_csv += color_csv_string(this_csv, cutoff_csv)
+				output_lines += this_color_csv
+				output_lines += "\n"
+	
+		elif line!='\n':
+			group_seq_num += 1
+	
+			name, seq = line.split()
+			name = name[0:name_width]
+			name = "%-25s" %name
+			#name = re.sub(" ", "&nbsp;", name)
+			#if name_bg_color==0: name = '<span style="background-color: RGB(175,175, 175)">'+name+'</span>'
+			#else: name = '<span style="background-color: RGB(235,235,235)">'+name+'</span>'
+			# this is for representative
+			if(group_seq_num==1):
+				# make the name in bold and color in magenta
+				#name = '<b><font color="#800000">'+name+'</font></b>'
+				#name = '<font color="#800000">'+name+'</font>'
+				name = '<font color="#FF00FF">'+name+'</font>'
+				seq1 = seq
+				seq = ""
+				for i in range(len(seq1)):
+					c = seq1[i]
+					seq += ss_color_array1[i] + seq1[i] + ss_color_array2[i]
+			#name += "&nbsp;&nbsp;&nbsp;"
+			name += "   "
+
+			# for consensus secondary structure
+			if re.search("Consensus_ss:", name):
+				#seq = re.sub("e", '<FONT style="color:BLUE">e</font>', seq)
+				#seq = re.sub("h", '<FONT style="color:RED">h</font>', seq)
+				seq = re.sub("\.", " ", seq)
+	
+			#web_line = name+seq+"<br>"
+			web_line = name+seq
+	
+			output_lines +=  web_line
+			output_lines += "\n"
+	
+		else:
+			#output_lines += "<br>"
+			output_lines += "\n"
+			group_num = 0
+			ss_counts = 0
+
+	#output_lines += "</font></body></html>\n"
+
+	fp.close()
+
+	if record_begin: return output_lines
+	fp = open(log_file)
+	seqnum = 0
+	for line in fp.readlines():
+	
+		if re.match("nblocks:", line): 
+			record_begin = 1
+			continue
+		if not record_begin: continue
+		
+		if re.match("------------------", line): 
+			normal_finish = 1
+			normal_finish1 = 1
+			break
+		if re.search("program finished", line): 
+			normal_finish = 1
+			normal_finish1 = 1
+			break
+
+		#output_lines += line.replace(" ", "&nbsp;")
+		if line!= '\n':
+			seqnum += 1
+		else:
+			seqnum = 0
+		if seqnum == 1:
+			ss_array_length = len(line.split()[1])
+			if len(csv_string)!=0:
+				this_csv = csv_string[0:ss_array_length]
+				csv_string = csv_string[ss_array_length:]
+				this_color_csv = "Conservation:"
+				#for i in range(14): this_color_csv += "&nbsp;"
+				for i in range(15): this_color_csv += " "
+				this_color_csv += color_csv_string(this_csv, cutoff_csv)
+				output_lines += this_color_csv
+				output_lines += "\n"
+			else:
+				output_lines += "Conservation: none\n"
+
+		if seqnum >= 1:
+			name, seq = line.split()
+			name = "%-25s" %(name[0:25])
+			#line = '<span style="background-color: RGB(175,175, 175)">%s</span>   %s\n' %(name, seq)
+			line = '%s   %s\n' %(name, seq)
+			
+		output_lines += line
+		#output_lines += "<br>"
+
+	fp.close()
+	return output_lines
+		
+
+
+def color_csv_string(conservation_array, cutoff):
+
+	span_bg_color = []
+	j = 0
+
+	blue_spectrum = [ "EEFFFF", "C6EFF7", "94D6E7", "63C6DE", "31B5D6", "00A5C6", "0084A5", "006B84", "005263", "00394A"]
+
+	for i in range(0, 10):
+
+		if i<cutoff: color_string = ' '
+		elif i <=7: 
+			color_string = '<font color="#%s">%d</font>' %("000000", i)
+		elif i >= 8:
+			color_string = '<font color="#%s">%d</font>' %("800000", i)	
+		span_bg_color.append(color_string)
+		continue
+			
+		if i<=5: color_string = " "
+		#if i>=5: color_string = '<font color="#%s">%d</font>' %(blue_spectrum[i], i)
+		if i>5 and i<=7: color_string = '<font color="#%s">%d</font>' %("000000", i)
+		if i>=8: color_string = '<font color="#%s">%d</font>' %("800000", i)
+		#if i>=8: color_string = '<span style="background-color: #99FF33">' + color_string + '</span>'
+		#if i>=8: color_string = '<span style="background-color: #66FF33">' + color_string + '</span>'
+		span_bg_color.append(color_string)
+		continue
+
+		if(i<=5): color_string = '<span style="background-color: #%s"> </span>' %(blue_spectrum[i])
+		else: color_string = '<span style="background-color: #%s">%d</span>' %(blue_spectrum[i], i)
+		#if(i==6 or i==7): color_string = '<b>'+color_string+'</b>'
+		#if(i==8): color_string = '<b><font color="#BB00BB">'+color_string+'</font></b>'
+		#if(i==9): color_string = '<b><font color="#FF0000">'+color_string+'</font></b>'
+
+		#if(i==6 or i==7): color_string = color_string
+		if(i==8): color_string = '<font color="#FFFFFF">'+color_string+'</font>'
+		if(i==9): color_string = '<font color="#FFFFFF">'+color_string+'</font>'
+		#if(i>=5): color_string = '<font color="#FFFFFF">'+color_string+'</font>'
+		span_bg_color.append(color_string)
+	#for i in span_bg_color: print i
+
+	web_conservation_array = ""
+	for i in conservation_array:
+		int_value = int(i)
+		web_conservation_array += span_bg_color[int_value]
+	#web_conservation_array += "<br>"
+	return web_conservation_array
+
+def get_csv_string(alnfile):
+	print alnfile
+	command = "/home/jpei/promals_package/al2co -i %s -t %s.csv.aln -g 0.25 -b 1000000 > /dev/null" %(alnfile, alnfile)
+	#command = "/home/jpei/promals_package/al2co -i %s -t /tmp/csv.aln -g 0.25 -b 1000000 > /dev/null" %(alnfile)
+	os.system(command)
+        if not os.path.isfile(alnfile+".csv.aln"):
+        #if not os.path.isfile("/tmp/csv.aln"):
+		return ""
+	for line in open(alnfile+".csv.aln").readlines():
+	#for line in open("/tmp/csv.aln").readlines():
+		if(re.match("Conservation:", line) ) : break
+	csv_string = line.split()[1]
+	return csv_string
+
+def run_promals(inputfile):
+	
+	command = "/home/jpei/profile_hmm/profile_hmm/progress %s -outfile %s.promals.aln > %s.log" %(inputfile, inputfile, inputfile)
+	os.system(command)
+
+	if(not os.path.isfile(inputfile+".promals.aln") ):
+		print "No alignment generated"
+		sys.exit(0)
+
+if __name__ == "__main__":
+
+	inputfile = sys.argv[1]
+	#run_promals(inputfile)	
+	mycsv = get_csv_string(inputfile)
+	os.system("rm -f " + inputfile + ".csv.aln")
+	out_log_file = inputfile.replace(".result", "")
+	out_log_file = re.sub("\/php", "/QUERY_", out_log_file) + ".lock"
+	if(len(sys.argv) > 2): 
+		if sys.argv[2][0]!='-': out_log_file = sys.argv[2]
+	cutoff_value = 5
+	for i in range(len(sys.argv)):
+		if sys.argv[i] == '-cutoff':
+			cutoff_value = int(sys.argv[i+1])
+	if cutoff_value >=10: cutoff_value = 9
+	#out_log_file = re.sub("\/php", "/QUERY_", out_log_file) + ".err"
+	check_lock_finish = open(out_log_file)
+	check_finish = 0
+	for myline in check_lock_finish.readlines():
+		if re.search("program finished", myline):
+			check_finish = 1
+        check_lock_finish.close()
+	if check_finish==0: sys.exit()
+	web_alignment = read_pummals_log(out_log_file, mycsv, cutoff_value)
+	#out_web_file = "/tmp/" + inputfile+".html"
+	out_web_file = inputfile+".html"
+	out_web_fp = open(out_web_file, "w")
+
+	out_web_fp.write('<html><head><title>PROMALS Result</title></head><body><font face="Courier New">')
+	out_web_fp.write('<h2> <a href="http://prodata.swmed.edu//promals/info/promals_output.html">Colored</a> PROMALS alignment</h2><hr><pre>')
+
+	#############################
+	'''
+	ref_file = "/home/jpei/prefab4/ref/" + inputfile
+	reflines = open(ref_file).readlines()
+	for line in reflines.readlines(): 
+		tmpline = ""
+		for re.search(aletter,line):
+			if aletter.isupper():
+				tmpline = tmpline+"<b><u>"+aletter+"</u></b>"
+			else: tmpline += aletter
+		tmpline += "<br>"
+		out_web_fp.write(tmpline)
+	out_web_fp.write("<br>")
+	'''
+	#############################
+	
+	out_web_fp.write(web_alignment)
+	out_web_fp.write('<br><br>\n')
+	#out_web_fp.write('<a href="http://prodata.swmed.edu//promals/info/promals_output.html">Here is information about this alignment format</a>')
+	out_web_fp.write("</font></body></html>\n")
+	out_web_fp.write("<!---promals_now_finished--->\n")
+
+	out_web_fp.close()
+	#print web_alignment
+
+	'''
+	if not normal_finish1:
+		command = "rm -f %s" %out_web_file
+		os.system(command)
+		print "Here:"
+	'''
+
+				

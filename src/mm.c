@@ -42,6 +42,7 @@ MM::MM(int m, int n, int _g, int _gh) {
 	last_print = 0;
 	print_ptr = 1;
 	endgappenalties = 1;
+	cout <<" Using this constructer" << endl;
 }
 
 MM::~MM() {

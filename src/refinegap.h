@@ -6,3 +6,5 @@ void refinegap(subalign *aln, double gap_thr_lowest, int use_hwt, int remove_fra
 void adjust_gap(subalign *aln, int start, int end);
 
 void delete_complete_gap_positions(subalign *aln);
+
+void treat_single_residues(subalign *aln, double position_fraction);

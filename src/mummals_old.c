@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 	int i,j,k;
 
 	getParameter(argc, argv, 1);
-	//printParameters();
+	printParameters();
 
 	get_log_robinson_freq();
 	get_log_q_blosum62_ratio();
@@ -18,13 +18,7 @@ int main(int argc, char **argv) {
 
 	if(probconsBLOSUM) useProbconsFrequencies();
 
-	multiple_alignment(argv[1]);
-
-}
-
-void multiple_alignment(char *input_file) {
-
-	sequences tmpseq(input_file, 1);
+	sequences tmpseq(argv[1], 1);
 
 	sequences tmpseq1(tmpseq);
 
@@ -37,7 +31,7 @@ void multiple_alignment(char *input_file) {
 	tmpseq1.diffCountD2t(tmpseq1.d6t[1], tmpseq1.d6t[2]);
 
 
-if(debug>1) {
+	if(debug>1) {
 	cout << "Difference in Kmer counts:" << endl;
 	for(i=1;i<=tmpseq1.nseqs;i++) {
 		for(j=1;j<=tmpseq1.nseqs;j++) {
@@ -56,28 +50,29 @@ if(debug>1) {
 	cout << endl;
 	cout << "Estimated evolutionary distances using Kmer counts:" << endl;
 	cout << "  " << tmpseq1.nseqs << endl;
-}
-	tmpseq1.d6t2DistMat(6);
-if(debug>1) {
-	for(i=1;i<=tmpseq1.nseqs;i++) {
-		//cout << tmpseq1.name[i] << "  ";
-		for(j=1;j<=tmpseq1.nseqs;j++) {
-			cout << tmpseq1.name[i] << "  " << tmpseq1.name[j] << " " << tmpseq1.distMat[i][j] << endl;
-			//fprintf(stdout, "%5f ", tmpseq1.distMat[i][j]) ;
-		}
-		//cout << endl;
 	}
-	//tmpseq1.printDistMat();
-}
-
-
+	tmpseq1.d6t2DistMat(6);
+	if(debug>1) {
+	for(i=1;i<=tmpseq1.nseqs;i++) {
+		cout << tmpseq1.name[i] << "  ";
+		for(j=1;j<=tmpseq1.nseqs;j++) {
+			fprintf(stdout, "%5f ", tmpseq1.distMat[i][j]) ;
+		}
+		cout << endl;
+	}
+	tmpseq1.printDistMat();
+	}
+	
 	// test the btree
 	btree<tnode> tree;
 	tree.UPGMA(tmpseq1.distMat, tmpseq.seq, tmpseq1.name, tmpseq1.nseqs);
 	if(debug>1) tree.writeTree("tmptree.tre");
 
 	// progressive alignment
+	if(debug>1) times(&tmsstart);
 	tree.progressiveAlignHMM(tree.root);
+	if(debug>1){ times(&tmsend); timeDiff(); }
+	if(debug>1) tree.root->aln->printali("1csp.hmm.aln", 50);
 
 	// get a new sequence object
 	sequences tmpseq2( *(tree.root->aln) );

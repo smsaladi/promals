@@ -7,7 +7,6 @@ void adjust_gap(subalign *aln, int start, int end);
 
 void delete_complete_gap_positions(subalign *aln);
 
-/*
 int main (int argc, char **argv) {
 
 	int i,j,k;
@@ -33,7 +32,6 @@ int main (int argc, char **argv) {
 	return 0;
 
 }
-*/
 
 void refinegap(subalign *aln, double gap_thr_lowest, int use_hwt, int remove_frag, int extend_gap_region) {
 
@@ -164,16 +162,10 @@ void refinegap(subalign *aln, double gap_thr_lowest, int use_hwt, int remove_fra
 	}
 
 	for(i=0;i<start_count;i++) {
-		//cout << starts[i] << " " << ends[i] << endl;
 		adjust_gap(aln, starts[i], ends[i]);
 	}		
 	// aln->printali("tmp.aln", 60);
-
-	delete csv;
-	delete [] gap_fraction;
-	delete [] gap_fraction1;
-	delete [] gap_flag;	
-	delete [] num_eff_pos;
+		
 			
 }
 
@@ -249,13 +241,10 @@ void delete_complete_gap_positions(subalign *aln) {
     int nal=aln->nal;
     int alilen = aln->alilen;
 
-	//cout << nal << " " << alilen << endl;
     int all_gap_flag;
 
     char **tmp_seq = new char *[nal];
-    for(i=0;i<nal;i++) tmp_seq[i] = new char[alilen+1];
-	//cout << nal << " " << alilen << endl;
-
+    for(i=0;i<nal;i++) tmp_seq[i] = new char[alilen];
 
     int tmp_len = 0;
     for(i=0;i<alilen;i++) {
@@ -277,75 +266,9 @@ void delete_complete_gap_positions(subalign *aln) {
 	strcpy(aln->aseq[j], tmp_seq[j]);
     }
     aln->alilen = tmp_len;
-	
-    free_cmatrix(tmp_seq, nal-1, alilen);
 
 }
 	
 
-void treat_single_residues(subalign *aln, double position_fraction) {
-
-	int i, j, k;
-	int nal = aln->nal;
-	int alilen = aln->alilen;
-	int gap_count;
-
-	int **sr_record = imatrix(nal, alilen);
-	double *gap_fraction = dvector(alilen);
-
-	for(j=1;j<=alilen;j++) {
-		gap_count = 0;
-		for(i=1;i<=nal;i++) {
-			if(j==1) { if(aln->alignment[i][j+1] == 0) { sr_record[i][j] = 1; } }
-			else if(j==alilen) { if(aln->alignment[i][j-1]==0) {sr_record[i][j] = 1; } }
-			else if((aln->alignment[i][j+1] == 0)&&(aln->alignment[i][j-1]==0)) {sr_record[i][j] = 1; }
-
-			if(aln->alignment[i][j]==0) gap_count++;
-		}
-		gap_fraction[j] = 1.0 * gap_count/nal;
-	}
-	int sr_count = 0;
-	int n_pos, c_pos, t_pos;
-	for(j=1;j<=alilen;j++) {
-		sr_count = 0;
-		// find out how many residues are single residues in a position
-		for(i=1;i<=nal;i++) {
-			if(sr_record[i][j] == 1) sr_count++;
-		}
-		// if the fraction of single residues exceeds position_fraction; do not consider them
-		if(1.0 * sr_count/nal > position_fraction) {
-			for(i=1;i<=nal;i++) sr_record[i][j] = 0;
-		}
-		// otherwise make the corrections --> find N, C adjacent residues, switch with the gap
-		else {
-			for(i=1;i<=nal;i++) {
-				if(sr_record[i][j] == 1) {
-					n_pos = c_pos = 0;
-					for(k=1;k<alilen;k++) {
-						if(j+k>alilen) break;
-						if(aln->alignment[i][j+k]!=0) {break;} 
-					}
-					c_pos = j+k-1;
-					for(k=1;k<alilen;k++) {
-						if(j-k<0) break;
-						if(aln->alignment[i][j-k]!=0) {break;}
-					}
-					n_pos = j-k+1;
-					if(j==1) t_pos = c_pos;
-					else if(j==alilen) t_pos = n_pos;
-					else if(gap_fraction[n_pos]>gap_fraction[c_pos]) t_pos = c_pos;
-					else t_pos = n_pos;
-					aln->alignment[i][t_pos] = aln->alignment[i][j];
-					aln->alignment[i][j] = 0;
-					aln->aseq[i-1][t_pos-1] = aln->aseq[i-1][j-1];
-					aln->aseq[i-1][j-1] = '-';
-				}
-			}
-		}
-	}
-
-	free_imatrix(sr_record, nal, alilen);
-	delete [] gap_fraction;
-}
 
 

@@ -53,6 +53,11 @@ class sequences {
 	void printDistMat();
 	void seqIdentity2DistMat(); // dist = 1 - (percentage seq. ident.)
 
+	// do not use map; use array to get the evolutionary distances
+	int **kmer_array;
+	void get_kmer_array(int K);
+	void get_kmer_distance(int K);
+
 };
 
 double seqIdentity(const string &c1, const string &c2, int length);

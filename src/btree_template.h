@@ -64,6 +64,8 @@ template <typename TNODE> class btree {
 	void profileConsistency_multim2(hmm_parameters *params1, hmm_parameters *params2, sequences *tmpSeq2, double id_cutoff);
 	//void profileConsistency_multim(char *params);
 	void printAlignmentFromAbs(TNODE *n, char *outfilename);
+	void printAlignmentFromAbs(TNODE *n);
+	void profileConsistency_profilehmm(hmm_parameters *params, char *ss_dir_name, int use_ss, float ss_weight, double **dist_matrix, double max_dist_cutoff);
 
 	// consistency derived from a set of alignments
 	void alignment_consistency(vector<sequences> seq_vector);
@@ -73,9 +75,18 @@ template <typename TNODE> class btree {
 	int **computeConsistMatrix(TNODE *a, TNODE *b);
 	void relaxConsistMatrix();
 	void relaxConsistMatrix(double **dist_matrix, double max_dist_cutoff);
+	void relaxConsistMatrix(double **dist_matrix, double max_dist_cutoff, double min_cutoff);
 	int *computePairwiseAlignment(int **scoreMat, int m, int n, int &len); // by dynamic programming
+	void computeConsistencyAlignment(TNODE *a, float divergent_cutoff);
+	void profileConsistency_psipred(hmm_psipred_parameters *params, double **dist_matrix, double max_dist_cutoff, int use_homologs);
+	void profileConsistency_psipred_sum_of_pairs(hmm_psipred_parameters *params, double **dist_matrix, double max_dist_cutoff, int use_homologs);
 
 	static int btreecount;
+
+	void get_descendants(TNODE *r);
+	void assign_weights(TNODE *r);
+	void refine_align_new(subalign *x);
+	
 
      private: 
 	void readTreefile(ifstream &tf, TNODE *rt);

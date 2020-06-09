@@ -1,0 +1,116 @@
+PROMALS - PROfile Multiple Alignment with predicted Local Structure
+
+________________________________________________________________________
+
+                        LICENSE AGREEMENT 
+
+PROMALS is a progressive method for aligning multiple protein sequences, 
+with enhanced profile information from database searches and secondary 
+structure prediction. PROMALS is free for academic use only. For non-
+academic use, please contact Jimin Pei.
+________________________________________________________________________
+
+1. Install PROMALS
+
+   System requirements: g++; gcc; python; UNIX or MAC systems
+  
+   ATTENTION: The whole PROMALS package is about 2.2G. The major 
+   disk-consuming part is the uniref90 protein sequence database for 
+   running PSI-BLAST. Please check if your computer has enough free 
+   disk space before installation.
+
+   Installation Instructions: 
+
+       1.1 Download the whole 'promals/' directory to your computer.
+
+       1.2 Go to the directory 'promals/':
+	     cd promals
+
+       1.3 Run the following command:
+              python install.py
+
+       1.4 Check if the python script file 'promals' is generated in 
+           the 'bin/' directory.
+   
+   Notes: 
+       PROMALS requires programs blastpgp and PSIPRED. The script 
+       'install.py' installs these two programs from directories 
+       'blastpgp/' and 'psipred/', respectively. Inside directory 
+       'blastpgp/', there are a number of 'blastpgp' and 'makemat' 
+       executables for different systems and processors (downloaded 
+       from ftp://ftp.ncbi.nih.gov/blast/executables/release/2.2.14).
+       The script 'install.py' can find the correct package and install 
+       blastpgp for some systems, but may fail to install blastpgp for 
+       other systems. If 'install.py' fails to install blastpgp program, 
+       you should install two executable files 'blastpgp' and 'makemat'
+       in the 'bin/' directory.
+
+2. Running PROMALS
+
+	command: 
+		promals input_file [options]
+
+	example:
+		promals yfp.fa -id_thr 0.6 -ss_w 0.2 -aa_w 0.8 -outfile yfp.promals.aln
+
+	output:
+		TWO files will be generated. One is the CLUSTAL format alignment (file name
+                specified by option -outfile; default is *.promals.aln). The other file is
+                an html file of colored alignment with information of conservation and predicted 
+		secondary structures. The above command example produces two result files:
+                yfp.promals.aln and yfp.promals.aln.html.
+
+3. PROMALS options
+
+     Options for alignment parameters:
+	-id_thr  Identity threshold for partition of fast and slow alignment stages.
+	         default: 0.6 [real number between 0 and 1]
+	-ssw    Weight for secondary structure scores.
+		 default: 0.2 [real number]
+	-aaw    Weight for amino acid scores.
+		 default: 0.8 [real number]
+
+    Options for running PSI-BLAST:
+       	-blast_dir  Directory to run blastpgp
+		 default: input file name with "_blast" attached. [String]
+	-clear_blast_dir To remove the files in the directory of running blastpgp
+		 default: 1 [Integer value 1 or 0. 1: clear directory; 0: do not clear]
+        -evalue  E-value cutoff for including homologs for the next iteraion
+		 default: 0.001 [real number]
+	-iter_num Number of iterations for blastpgp 
+		 default: 3 [Integer]
+        -max_homologs  Number of maximum homologs used for generation of profile
+		 default: 300 [Integer]
+        -low_id_cutoff: identity cutoff below which divergent homologs found by blastpgp are removed
+		 default: 0.2 [real number between 0 and 1]
+
+    Options for output:
+	-outfile  Output CLUSTAL format alignment file name
+		 default: input file name with ".promals.aln" attached. [String]
+        -blocksize  Number of letters in alignment blocks for the output alignment files
+		 default: 70 [Integer]
+        -csv_index Show conservation indices above or equal to this number 
+		 default: 5 [Integer number between 0 and 9]
+
+    Options for cleaning intermediate blastpgp and psipred result files
+        -clean_blast_before: clean any file in the directory that stores intermediate files (specified
+		by -blast_dir option) before running blastpgp and psipred
+		default: 1 [Integer. By setting this value to 0, intermediate files will not be deleted]
+        -clean_blast_before: clean intermediate files (*.ss2, *.horiz, *.aln, etc) in the directory 
+                 after running blastpgp and psipred
+		default: 1 [Integer. By setting this value to 0, intermediate files will not be deleted]
+
+	caution: If intermediate files are found in the blast directory, they will be used. This will
+                 bypass the time-consuming blastpgp and psipred steps. However, if these files are wrong 
+		 and do not contain the necessary contents, they will cause problems and give errors.
+		 The default is to clean the directory both before and after running blastpgp and psipred.
+		 If you want to use these intermediate files (under the condition that they are generated
+    		 correctly), you can set both -clean_blast_before and -clean_blast_before to 0, and use 
+		 the same blast directory for future runs of PROMALS.
+
+4. Contact 
+
+    Jimin Pei
+    Email: jpei [at] chop [.] swmed [.] edu
+
+

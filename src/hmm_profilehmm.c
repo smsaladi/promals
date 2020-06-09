@@ -35,6 +35,7 @@ void hmm_parameters::read_parameters(char *filename) {
 	}
 	ifstream fp(filename, ios::in);
 	if (!fp) {
+		cout << "Error: parameter file " << endl;
 		cout << filename << " not readable"<< endl;
 		exit(0);
 	}
@@ -600,8 +601,8 @@ void hmm_multim::backward() {
 	if(debug>1) cout << "Obtain posterior probabilities (>0.01): " << x->aname[0] << "\t" << y->aname[0] << endl;
 	ScoreType **aligned_pair_prob = gmatrix<ScoreType>(lenx, leny);
 	probMat = gmatrix<float>(lenx, leny);
-	//int useful_num_match_states=num_match_states-unaligned;
-	int useful_num_match_states=num_match_states;
+	int useful_num_match_states=num_match_states-unaligned;
+	//int useful_num_match_states=num_match_states;
 	for(i=1;i<=lenx;i++) {
 		for(j=1;j<=leny;j++) {
 			aligned_pair_prob[i][j] = LOG_ZERO;

@@ -8,52 +8,18 @@ sparseMatrix::sparseMatrix() {
 	nelements = 0;
 	// isCrs = 0;
 	aux = 0;
-	rvalue = 0;
-	rindex = 0;
-	rstart = 0;
-	cvalue = 0;
-	cindex = 0;
-	cstart = 0;
 }
 	
 sparseMatrix::sparseMatrix(const sparseMatrix & mat) {
 
-	int i;
 	nrows = mat.nrows; ncols = mat.ncols;
 	nelements = mat.nelements;
-
-	if(mat.rvalue) {
-		rvalue = gvector<float>(nelements);
-		for(i=0;i<nelements;i++) rvalue[i] = mat.rvalue[i];
-	}
-	if(mat.rindex) {
-		rindex = ivector(nelements);
-		for(i=0;i<nelements;i++) rindex[i] = mat.rindex[i];
-	}
-	if(mat.rstart) {
-		rstart = ivector(nrows);
-		for(i=0;i<nrows;i++) rstart[i] = mat.rstart[i];
-	}
-	if(mat.cvalue) {
-		cvalue = gvector<float>(nelements);
-		for(i=0;i<nelements;i++) cvalue[i] = mat.cvalue[i];
-	}
-	if(mat.cindex) {
-		cindex = ivector(nelements);
-		for(i=0;i<nelements;i++) cindex[i] = mat.cindex[i];
-	}
-	if(mat.cstart) {
-		cstart = ivector(ncols);
-		for(i=0;i<ncols;i++) cstart[i] = mat.cstart[i];
-	}
-	/*
 	rvalue = mat.rvalue;
 	rindex = mat.rindex;
 	rstart = mat.rstart;
 	cvalue = mat.cvalue;
 	cindex = mat.cindex;
 	cstart = mat.cstart;
-	*/
 	
 	aux = NULL;
 }
@@ -76,20 +42,12 @@ sparseMatrix::~sparseMatrix() {
 		assert(nrows); assert(ncols);
 		free_gmatrix<float>(aux, nrows, ncols);
 	}
-	delete [] rvalue;
-	delete [] rindex;
-	delete [] rstart;
-	delete [] cvalue;
-	delete [] cindex;
-	delete [] cstart;
-	/*
 	rvalue.clear();
 	rindex.clear();
 	rstart.clear();
 	cvalue.clear();
 	cindex.clear();
 	cstart.clear();
-	*/
 }
 
 void sparseMatrix::clear() {
@@ -99,20 +57,12 @@ void sparseMatrix::clear() {
 		free_gmatrix<float>(aux, nrows, ncols);
 		aux = 0;
 	}
-	delete [] rvalue;
-	delete [] rindex;
-	delete [] rstart;
-	delete [] cvalue;
-	delete [] cindex;
-	delete [] cstart;
-	/*
 	rvalue.clear();
 	rindex.clear();
 	rstart.clear();
 	cvalue.clear();
 	cindex.clear();
 	cstart.clear();
-	*/
 
 	nrows = ncols = 0; //isCrs = 0;
 }
@@ -127,37 +77,13 @@ void sparseMatrix::regular2Sparse(float **regularMat, int m, int n) {
 void sparseMatrix::regular2Crs(float **regularMat, int m, int n) {
 
 	int i,j;
-	//int counts=0;
+	int counts=0;
 	float **r = regularMat;
 
 	nrows = m;
 	ncols = n;
 	nelements = 0;
-	int tmp_n = 0;
 
-	for(i=1;i<=m;i++) {
-		for(j=1;j<=n;j++) {
-			if(r[i][j]) nelements++;
-		}
-	}
-
-	rstart = ivector(m);
-	rvalue = gvector<float>(nelements);
-	rindex = ivector(nelements);
-
-	for(i=1;i<=m;i++) {
-		rstart[i-1] = tmp_n;
-		for(j=1;j<=n;j++) {
-			if(r[i][j]) {
-				rvalue[tmp_n] = r[i][j];
-				rindex[tmp_n] = j;
-				tmp_n++;
-			}
-		}
-	}
-	rstart[i-1] = tmp_n;
-
-	/*
 	rstart.clear();
 	rvalue.clear();
 	rindex.clear();
@@ -174,7 +100,6 @@ void sparseMatrix::regular2Crs(float **regularMat, int m, int n) {
 		}
 	}
 	rstart.push_back(counts);
-	*/
 	// isCrs = 1; // is a compressed row storage
 }
 
@@ -188,31 +113,7 @@ void sparseMatrix::regular2Ccs(float **regularMat, int m, int n) {
 	nrows = m;
 	ncols = n;
 	nelements = 0;
-	int tmp_n = 0;
 
-	for(i=1;i<=m;i++) {
-		for(j=1;j<=n;j++) {
-			if(r[i][j]) nelements++;
-		}
-	}
-
-	cstart = ivector(n);
-	cvalue = gvector<float>(nelements);
-	cindex = ivector(nelements);
-
-	for(i=1;i<=n;i++) {
-		cstart[i-1] = tmp_n; 
-		for(j=1;j<=m;j++) {
-			if(r[j][i]) {
-				cvalue[tmp_n] = r[j][i];
-				cindex[tmp_n] = j;
-				tmp_n++;
-			}
-		}
-	}
-	cstart[i-1] = tmp_n;
-
-	/*
 	cstart.clear();
 	cindex.clear();
 	cvalue.clear();
@@ -231,7 +132,6 @@ void sparseMatrix::regular2Ccs(float **regularMat, int m, int n) {
 	}
 	//cstart.push_back(counts);
 	cstart.push_back(nelements);
-	*/
 	// isCrs = -1; // is a compressed column storage
 }
 
@@ -300,14 +200,9 @@ void sparseMatrix::Crs2Ccs() {
 	// else isCrs = -1;
 
 	Crs2Regular();
-	delete [] cvalue;
-	delete [] cindex;
-	delete [] cstart;
-	/*
 	cvalue.clear();
 	cindex.clear();
 	cstart.clear();
-	*/
 	regular2Ccs(aux, nrows, ncols);
 	free_gmatrix<float>(aux, nrows, ncols);
 	aux = NULL;
@@ -324,14 +219,9 @@ void sparseMatrix::Ccs2Crs() {
 	 //cout << "++++++++++++" << endl;
 	Ccs2Regular();
 	 //cout << "++++++++++++" << endl;
-	delete [] rvalue;
-	delete [] rindex;
-	delete [] rstart;
-	/*
 	rvalue.clear();
 	rindex.clear();
 	rstart.clear();
-	*/
 	regular2Crs(aux, nrows, ncols);
 	free_gmatrix<float>(aux, nrows, ncols);
 	aux = 0;
@@ -363,21 +253,6 @@ void sparseMatrix::printCrs() {
 	}
 
 }
-
-void sparseMatrix::printCrs(char *seq1, char *seq2) {
-
-        int i,j;
-
-        cout << "Number of elements in sparse matrix: " << nelements << endl;
-        for(i=1;i<=nrows;i++) {
-            cout << "Row number " << i << " " << seq1[i-1] << " :" << endl;
-            for(j=rstart[i-1];j<rstart[i];j++) {
-                cout << "\t" << rindex[j] << "\t" << seq2[rindex[j]-1] << "\t" << rvalue[j] << endl;
-            }
-        }
-
-}
-
 
 void sparseMatrix::printCcs() {
 
@@ -413,43 +288,18 @@ sparseMatrix * sparseMatrix::transpose() {
 	int i,j;
 
 	sparseMatrix * smat = new sparseMatrix();
+	
 	smat->nrows = ncols;
 	smat->ncols = nrows;
 	smat->nelements = nelements;
 	smat->aux = 0;
 
-	if(rvalue) {
-		smat->cvalue = gvector<float>(nelements);
-		for(i=0;i<nelements;i++) smat->cvalue[i] = rvalue[i];
-	}
-	if(rindex) {
-		smat->cindex = ivector(nelements);
-		for(i=0;i<nelements;i++) smat->cindex[i] = rindex[i];
-	}
-	if(rstart) {
-		smat->cstart = ivector(nrows);
-		for(i=0;i<nrows;i++) smat->cstart[i] = rstart[i];
-	}
-	if(cvalue) {
-		smat->rvalue = gvector<float>(nelements);
-		for(i=0;i<nelements;i++) smat->rvalue[i] = cvalue[i];
-	}
-	if(cindex) {
-		smat->rindex = ivector(nelements);
-		for(i=0;i<nelements;i++) smat->rindex[i] = cindex[i];
-	}
-	if(cstart) {
-		smat->rstart = ivector(ncols);
-		for(i=0;i<ncols;i++) smat->rstart[i] = cstart[i];
-	}
-	/*
 	smat->rstart = cstart;
 	smat->rindex = cindex;
 	smat->rvalue = cvalue;
 	smat->cstart = rstart;
 	smat->cindex = rindex;
 	smat->cvalue = rvalue;
-	*/
 
 	return smat;
 
@@ -458,12 +308,9 @@ sparseMatrix * sparseMatrix::transpose() {
 void sparseMatrix::multiplyConstant(float c) {
 
 	int i;
-	/*
+
 	for(i=0;i<rvalue.size();i++) rvalue[i] *= c;
 	for(i=0;i<cvalue.size();i++) cvalue[i] *= c;
-	*/
-	if(rvalue) for(i=0;i<nelements;i++) rvalue[i] *= c;
-	if(cvalue) for(i=0;i<nelements;i++) cvalue[i] *= c;
 
 }
 
@@ -473,7 +320,6 @@ void relaxTwoSparse(sparseMatrix *a, sparseMatrix *b, float **sum) {
 	int i, j, k, m, n;
 	int r = a->nrows, c = b->ncols;
 	int d = a->ncols;
-	float value_diff;
 
 	//vector<int>::iterator p1, p2;
 	//vector<float>::iterator v1, v2;
@@ -487,15 +333,6 @@ void relaxTwoSparse(sparseMatrix *a, sparseMatrix *b, float **sum) {
 		p1 = a->rstart[i-1];
 		p2 = b->cstart[j-1];
 		while( (p1<a->rstart[i]) && (p2<b->cstart[j]) ) {
-			/*
-			value_diff = a->rindex[p1] - b->cindex[p2];
-			if(value_diff<0) p1++;
-			else if(value_diff>0) p2++;
-			else {
-				p1++; p2++;
-				sum[i][j] += a->rvalue[p1] * b->cvalue[p2];
-			}
-			*/
 			if(a->rindex[p1]<b->cindex[p2]) {
 				p1++;
 			}

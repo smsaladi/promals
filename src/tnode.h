@@ -49,6 +49,19 @@ class tnode {
 
 	subalign *similarSet;
 	subalign *consiston;
+
+	subalign *aux_align;
+
+	// secondary structure profile
+	ss_prof *ssp;
+	//void get_ssp() { ssp = aln->get_ssp(); }
+
+	// weight for the branch above it
+	double branch_weight;
+	// weight for the sequence in a leaf node
+	double seq_weight;
+	// number of descendants 
+	int descendants;
 	
 };
 
