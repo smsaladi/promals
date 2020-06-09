@@ -171,11 +171,11 @@ subalign * run_blastpgp(char *query_name, char *query_seq) {
 	char command[2000];
 	//sprintf(command, "%s -i %s -o %s.br %s -d %s -C %s%s.chk -M %s", blastpgp_cmd, fasta_file_name, fasta_file_name, blastpgp_options, uniref90_file, blast_dir, query_name, blosum62_file);
 	sprintf(command, "%s -i %s -o %s.br %s -d %s -C %s%s.chk", blastpgp_cmd, fasta_file_name, fasta_file_name, blastpgp_options, uniref90_file, blast_dir, query_name);
-	//cout << "blastpgp command: " << endl;
-	//cout << "   " << command << endl;
+	cout << "blastpgp command: " << endl;
+	cout << "   " << command << endl;
 	system(command);
-        //cout << "print working directory" << endl;
-        //system("pwd");
+        cout << "print working directory" << endl;
+        system("pwd");
 
 	// get blastpgp results
 	char br_file_name[2000];
@@ -208,11 +208,11 @@ subalign * run_blastpgp(char *query_name, char *query_seq) {
 	// remove the blast output file
 	strcpy(command, "rm -f ");
 	strcat(command, br_file_name); 
-	system(command);
+	// system(command);
 
-	system( (string("rm -f ") + string(br_file_name) + string(".aln")).c_str());
+	// system( (string("rm -f ") + string(br_file_name) + string(".aln")).c_str());
 	//system( (string("rm -f ") + string(fasta_file_name) + string(".aln")).c_str());
-	system( (string("mv ") + string(fasta_file_name) + string(" ") + string(fasta_file_name1) ).c_str() );
+	// system( (string("mv ") + string(fasta_file_name) + string(" ") + string(fasta_file_name1) ).c_str() );
 	//system( (string("rm -f ") + string(fasta_file_name)).c_str());
 
 	delete x1;
