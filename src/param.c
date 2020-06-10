@@ -1,7 +1,8 @@
-#include "param.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include "param.h"
 
 double ave_grp_thr = 1;
 double minProb = 0.01;

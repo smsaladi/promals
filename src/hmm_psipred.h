@@ -38,7 +38,6 @@ class hmm_psipred_parameters {
 	void read_parameters(char *filename, int num, int log_mark_emission);
 	void print_parameters();
 	float mylog(float a);
-	float mylog0(float a);
 };
 		
 
@@ -127,10 +126,6 @@ class  hmm_psipred {
 	void backward();
 	void backward1();
 	void backward_no_end_penalty();
-
-	//
-	void forward2();
-	void backward2();
 
 	// posterior
 

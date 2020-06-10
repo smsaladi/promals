@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include "amino.h"
+
 using namespace std;
 
 // map a k-mer string to its number of occurances

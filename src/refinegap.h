@@ -8,4 +8,3 @@ void adjust_gap(subalign *aln, int start, int end);
 
 void delete_complete_gap_positions(subalign *aln);
 
-void treat_single_residues(subalign *aln, double position_fraction);

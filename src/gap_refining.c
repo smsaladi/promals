@@ -1,7 +1,8 @@
-#include "gap_refining.h"
 #include <algorithm>
 #include <queue>
 #include <stack>
+
+#include "gap_refining.h"
 
 static int debug_here = 1;
 

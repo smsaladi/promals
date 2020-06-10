@@ -1,7 +1,6 @@
-#include "header_cpp.h"
-//#include "mathfunc.h"
 #include <math.h>
 
+#include "header_cpp.h"
 #include "mathnr.h"
 #include "util.h"
 

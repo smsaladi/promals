@@ -1,5 +1,6 @@
 #ifndef __gap_refining__
 #define __gap_refining__
+
 #include "header_cpp.h"
 #include "subalign.h"
 #include "util.h"

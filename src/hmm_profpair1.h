@@ -69,7 +69,6 @@ class  hmm_profpair1 {
 
 };
 
-extern void trainingHMM_profpair1(char *fastaFileList);
 extern float newEP, newD;
 
 #endif

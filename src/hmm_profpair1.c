@@ -1,5 +1,5 @@
-#include "hmm_profpair1.h"
 #include "all.h"
+#include "hmm_profpair1.h"
 
 static int debug = 0;
 hmm_profpair1::hmm_profpair1(subalign *x1, subalign *y1) {
@@ -915,77 +915,6 @@ void hmm_profpair1::baumwelch() {
 }
 
 float newEP = 0.79, newD = 0.019;
-
-void trainingHMM_profpair1(char *fastaFileList) {
-  int i, j, k, m;
-
-  vector<string> fastaFileNames;
-  char tmpChar[1000], tmpChar1[5000], tmpChar2[100];
-  string tmpString;
-
-  ifstream fastaList(fastaFileList, ios::in);
-  while (fastaList.good()) {
-    fastaList.getline(tmpChar, 1000);
-    tmpString = tmpChar;
-    fastaFileNames.push_back(tmpString);
-  }
-  fastaList.close();
-
-  float e, e1, d, d1, ep, ep1, t, t1;
-  e = e1 = d = d1 = ep = ep1 = t = t1 = 0;
-
-  cout << "fastaFileNames size: " << fastaFileNames.size();
-  for (i = 0; i < fastaFileNames.size() - 1; i++) {
-    strcpy(tmpChar, fastaFileNames[i].c_str());
-    cout << "Fasta file name: " << tmpChar << endl;
-    sequences seqs(tmpChar, 1);
-    cout << "seqnum: " << seqs.nseqs << endl;
-    vector<subalign *> alns;
-    for (j = 1; j <= seqs.nseqs; j++) {
-      strcpy(tmpChar1, seqs.seq[j].c_str());
-      strcpy(tmpChar2, seqs.name[j].c_str());
-      alns.push_back(oneSeq2subalign(tmpChar1, tmpChar2));
-      alns[j - 1]->gap_threshold;
-      alns[j - 1]->beta = 0;
-      alns[j - 1]->profile();
-    }
-    cout << "alns size: " << alns.size() << endl;
-    for (k = 0; k < alns.size(); k++) {
-      for (m = k + 1; m < alns.size(); m++) {
-        cout << "HMM Training: " << i << " " << k << "  " << m << endl;
-        hmm_profpair1 trainHmm(alns[k], alns[m]);
-        trainHmm.epsilon = newEP;
-        trainHmm.delta = newD;
-        trainHmm.forward();
-        trainHmm.backward();
-        trainHmm.baumwelch();
-        ep += exp(trainHmm.countEP);
-        ep1 += exp(trainHmm.countEP1);
-        d += exp(trainHmm.countD);
-        d1 += exp(trainHmm.countD2);
-
-        cout << "New eta: " << e << endl;
-        cout << "New eta1: " << e1 << endl;
-        cout << "New delta: " << d << endl;
-        cout << "New delta1: " << d1 << endl;
-        cout << "New epsilon: " << ep << endl;
-        cout << "New epsilon1: " << ep1 << endl;
-        cout << "New tau: " << t << endl;
-        cout << "New tau1: " << t1 << endl;
-      }
-    }
-
-    // for(k=0;k<alns.size();k++) { delete alns[k]; }
-  }
-
-  newD = d / (d + d1) / 2;
-  newEP = ep / (ep + ep1);
-
-  cout << "============" << endl;
-  cout << "New delta: " << newD << endl;
-  cout << "New epsilon: " << newEP << endl;
-  cout << "=====================" << endl << endl;
-}
 
 int *hmm_profpair1::posteriorAlignment() {
   int i, j, k;

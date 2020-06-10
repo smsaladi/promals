@@ -1,5 +1,6 @@
-#include "refine.h"
 #include <algorithm>
+
+#include "refine.h"
 #include "progressiveAlignHMM.h"
 
 static int debug_here = 1;

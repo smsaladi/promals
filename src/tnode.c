@@ -1,6 +1,6 @@
+#include "header_cpp.h"
 #include "tnode.h"
 #include "amino.h"
-#include "header_cpp.h"
 #include "util.h"
 
 // functions of tnode

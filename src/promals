@@ -1,4 +1,4 @@
-#!/usr1/local/bin/python
+#!/usr/bin/env python
 
 import os, sys, re, shutil, random
 from tempfile import *
@@ -61,10 +61,6 @@ def run_promals():
                 if arg == '-blast_dir':
                         if i+1 < len(cmd_line): 
                                 cmd_line[i+1] = os.path.abspath(cmd_line[i+1])
-                #if arg == '-ssw': arg = '-ss_weight'
-                #if arg == '-aaw': arg = '-score_weight'
-                #if arg == '-max_homologs': arg = '-max_num_sequences'
-                #if arg == '-iter_num': arg = '-iter_number'
                 if arg == '-csv_index': 
                         if i+1 < len(cmd_line):
                                 csv_cutoff = int(cmd_line[i+1])
@@ -202,5 +198,5 @@ promals with 3D information
 
 
 if __name__ == '__main__':
-
         run_promals()
+

@@ -1,12 +1,12 @@
 #ifndef __subalign_
 #define __subalign_
 
+#include <unistd.h>
+
 #include "amino.h"
 #include "regularizer.h"
 #include "ss_prof.h"
 #include "util.h"
-//#include "hmm_psipred.h"
-#include <unistd.h>
 #include "param.h"
 
 class subalign {
@@ -28,30 +28,12 @@ class subalign {
   void printali(const char *filename, int blocksize);
   void printProfile();
 
-  int getNal();
-  int getAlilen();
-  int **getAlignment();
-  char **getAseq();
-  char **getAname();
   double *getEff_num_seq();
 
-  void setNal(int n);
-  void setAlilen(int len);
-  void setAlignment(int **ali);
-  void setAseq(char **seq);
-  void setAname(char **name);
   void convertAseq2Alignment();
-
-  void set_gapt(double gapt);
-
-  // subalign *sub2align(int *mark);
-  // subalign *sub2align(int *mark, int *mark1);
 
   subalign *sub2align(int *mark);
   subalign *sub2align(int *mark, int *mark1);
-
-  static int getsubaligncount();
-  void add_sequence(char *name, char *seq);
 
  public:
   char **aname, **aseq; /* aseq: [0,nal-1][0,alilen-1] */
@@ -149,8 +131,6 @@ class subalign {
   void log_pseudoCounts();
   // get_freq, 0: blosum62; 1: general SCOP; 2: alphabet1-dependent SCOP
   void get_prof_freq(int get_freq, int take_log);
-  void checkSubalign();
-  void checkSSprof();
 
   // secondary structure profile
  public:
@@ -191,9 +171,6 @@ class subalign {
   subalign *purge_align_one_seq_name(char *seqname);
   int done_score_bg;
   int done_score_bg2;
-
- public:
-  void add_NC_terminal(char *query_name, char *query_seq);
 };
 
 subalign *oneSeq2subalign(char *seq, char *name);

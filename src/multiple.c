@@ -144,7 +144,7 @@ void multiple::cluster2tree_and_similarSet() {
   char command[200];
   long int a1 = time(NULL);
   srand(a1);
-  // time(&timestart);
+  
   print_section_info("Below align each cluster");
   for (i = 1; i <= max_group_number; i++) {
     // 1.1 get the indexes in allseqs for each cluster
@@ -158,55 +158,42 @@ void multiple::cluster2tree_and_similarSet() {
     // 1.2 write the sequences to a temporary file
     // 1.2.1 set up a directory
     int myrand = rand();
+    
     sprintf(tmpdir, "/tmp/%d_%d", getpid(), myrand);
     sprintf(command, "mkdir %s", tmpdir);
-    // cout << command << endl;
     system(command);
+    
     char tmpfa[300];
     sprintf(tmpfa, "%s/tmp.fa", tmpdir);
     ofstream ofp(tmpfa, ios::out);
     for (j = 1; j <= clustersize; j++) {
-      // cout << i << " " << index[i] << endl;
-      // cout << index[i] << endl; cout << v[index[i]]->aligned << endl;
       ofp << ">" << allseqs.name[index[j]] << endl;
       ofp << allseqs.seq[index[j]] << endl;
     }
     ofp.close();
     ofp.clear();
-    // Debug
-    // cout << "Debug of index" << endl;
-    // cout << "cluster size: " << clustersize << endl;
 
     // 1.3 run mafft on the sequence
-    // sprintf(command, "%s --maxiterate 1000 --localpair %s/tmp.fa
-    // 1>%s/tmp.aln.fa 2>%s/tmp.err", mafft, tmpdir, tmpdir, tmpdir);
     if (clustersize > 1)
       sprintf(command,
               "%s --localpair --maxiterate 10 %s/tmp.fa 1>%s/tmp.aln.fa "
-              "2>%s/tmp.err",
+              "2> %s/tmp.err",
               mafft, tmpdir, tmpdir, tmpdir);
     else
       sprintf(command, "cp %s/tmp.fa %s/tmp.aln.fa", tmpdir, tmpdir);
     system(command);
     char outalnfile[200];
     sprintf(outalnfile, "%s/tmp.aln.fa", tmpdir);
-    // cout << "This place" << endl;
     subalign *a = new subalign(outalnfile, "fasta", 25);
     prealn.push_back(a);
-    // Debug
-    // cout << "Debug of mafft alignment" << endl;
+    
     if (debug_here > -11) cout << "mafft alignment for cluster " << i << endl;
     if (debug_here > -11) a->printali(80);
-    // cout << "This place" << endl;
-    // exit(0);
+    
     // 1.4. clear up the tmp directory
     sprintf(command, "rm -rf %s", tmpdir);
     system(command);
   }
-  // time(&timeend);
-  // Debug
-  // cout << "Seconds spent on running mafft to get prealn: " <<
-  // timediff(timestart, timeend) << endl;
   print_time_diff("running mafft to get prealn");
 
   // 2. select representatives, and get alignments with single sequences
@@ -219,10 +206,6 @@ void multiple::cluster2tree_and_similarSet() {
   for (j = 0; j < max_group_number; j++) {
     cout << "cluster number: " << j + 1 << endl;
     int tmp_index = prealn[j]->select_representative_henikoff(0.5);
-    // Debug
-    // prealn[j]->printali(80);
-    // cout << "tmp_index: " << tmp_index << endl;
-    // cout << strlen(prealn[j]->aname[tmp_index])+1 << endl;
     char *tmp_name = new char[strlen(prealn[j]->aname[tmp_index]) + 1];
     strcpy(tmp_name, prealn[j]->aname[tmp_index]);
     int count_aa = 0;
@@ -233,23 +216,15 @@ void multiple::cluster2tree_and_similarSet() {
     int tmp_array_index = 0;
     for (i = 0; i < prealn[j]->alilen; i++) {
       if (prealn[j]->aseq[tmp_index][i] != '-') {
-        // if(prealn[j]->aseq[tmp_index][i] > 'Z') {
-        //        tmp_seq[tmp_array_index] = prealn[j]->aseq[tmp_index][i]-32;
-        //}
-        // else tmp_seq[tmp_array_index] = prealn[j]->aseq[tmp_index][i];
         tmp_seq[tmp_array_index] = prealn[j]->aseq[tmp_index][i];
         tmp_array_index++;
       }
     }
     tmp_seq[tmp_array_index] = '\0';
-    // Debug
-    // cout << "tmp_name: " << tmp_name<< endl << " tmp_seq: " << tmp_seq <<
-    // endl;
     repseqs.seq.push_back(string(tmp_seq));
     repseqs.name.push_back(string(tmp_name));
     delete[] tmp_name;
     delete[] tmp_seq;
-    // cout << "here" << endl;
   }
 
   // 3 build the tree based on repseqs
@@ -261,8 +236,6 @@ void multiple::cluster2tree_and_similarSet() {
   for (i = 1; i <= max_group_number; i++) {
     alltree.v[i]->similarSet = prealn[i - 1];
     alltree.v[i]->aligned = 1;
-    // after done tree, v[i]->aln is single sequence alignment
-    // alltree.v[i]->aln->printali(80);
   }
   print_time_diff("select_rep, tree_rep, assign similarset");
 }
@@ -284,9 +257,7 @@ void multiple::set_distance_cutoff_similar(double dist_cutoff, int Ngroup) {
   double dist2leaf[allseqs.nseqs];
   arrayindex = 1;
   distance2leaf(alltree.root, dist2leaf);
-  // for(i=1;i<=allseqs.nseqs-1;i++) { cout << dist2leaf[i] << endl; }
   sort(allseqs.nseqs - 1, dist2leaf);
-  // for(i=1;i<=allseqs.nseqs-1;i++) { cout << dist2leaf[i] << endl; }
   double tmp_dist_cutoff = (dist2leaf[allseqs.nseqs - 1 - (Ngroup - 1)] +
                             dist2leaf[allseqs.nseqs - 1 - (Ngroup - 2)]) /
                            2 * 2;
@@ -305,9 +276,6 @@ void multiple::set_distance_cutoff_similar(double dist_cutoff, int Ngroup) {
             1 - distance_cutoff_similar);
   } else
     distance_cutoff_similar = dist_cutoff;
-  // cout << dist_cutoff << "\t"<< tmp_dist_cutoff << endl;
-  // cout << "\t: " << distance_cutoff_similar  << endl;
-  // exit(0);
 }
 
 void multiple::distance2leaf(tnode *r, double *array) {
@@ -322,7 +290,6 @@ void multiple::distance2leaf(tnode *r, double *array) {
     tmp = tmp->childL;
   }
   array[arrayindex] = dist;
-  // cout << arrayindex << " " << dist << endl;
   arrayindex++;
   distance2leaf(r->childL, array);
   distance2leaf(r->childR, array);
@@ -333,42 +300,25 @@ void multiple::alignSimilar() {
 
   // 1. progressively align similar sequences using general substitution matrix
   print_section_info("Below align similar sequences");
-  // cout << "allseqs.nseqs: " << allseqs.nseqs << endl;
   if (allseqs.nseqs != 1) {
     fprintf(logfp, "Start aligning similar sequences ...");
     fflush(logfp);
-    // alltree.progressiveAlignHMM_FastStage(alltree.root,
-    // distance_cutoff_similar/2);
     alltree.progressiveAlignHMM_FastStage_mafft(alltree.root,
                                                 distance_cutoff_similar / 2);
     fprintf(logfp, " Done.\n");
     fflush(logfp);
   } else {
     alltree.root->aligned = 1;
-    // cout << "here........." << endl;
     alltree.root->aln->printali(80);
   }
-  // if the root is aligned, stop
-  if (alltree.root->aligned) {
-    // output_alignment();
-    // cout << "NUMBER OF SEQUENCES: " << allseqs.nseqs << " NUMBER OF GROUPS: "
-    // << 1  << endl; fprintf(logfp, "Number of input sequences: %d\n",
-    // allseqs.nseqs); fprintf(logfp, "Number of pre-aligned groups: 1\n");
-    // fprintf(logfp, "PROMALS is now finished\n");
-    // fclose(logfp);
-    // exit(0);
-  }
-
+  
   // 2. store pre-aligned groups in the stopped nodes and select one
   // representative from each group
-  // store_similar(alltree.root);
   print_section_info("Below select representatives");
   store_similar_henikoff(alltree.root);
-  // cout << "here........" << endl;
 
   // 3. obtain nodes of for preAligned vector
   alltree.obtainPreAligned(alltree.root);
-  // cout << "here........" << endl;
   fprintf(logfp, "      Number of input sequences: %d\n", allseqs.nseqs);
   fprintf(logfp, "      Number of pre-aligned groups: %d\n",
           alltree.preAligned.size());
@@ -379,7 +329,6 @@ void multiple::alignSimilar() {
   map_allseqs_pos_to_tnode();
   get_distance_matrix_for_preAligned(N_small);
 
-  // Debug
   // output distance matrix for representatives
   if (debug > 1) {
     for (i = 0; i < alltree.preAligned.size(); i++) {
@@ -389,30 +338,12 @@ void multiple::alignSimilar() {
       cout << endl;
     }
   }
-  // cout << "here........" << endl;
   if (debug_here > 1) {
     cout << "NUMBER OF SEQUENCES: " << allseqs.nseqs
          << " NUMBER OF GROUPS: " << alltree.preAligned.size() << endl;
-    // exit(0);
   }
 
   print_time_diff("align_similar_and_select_reps");
-}
-
-void multiple::alignDivergent() {
-  int i, j;
-  // right now, just the option of multim - for probablistic consistency
-  hmm_parameters params(solv, ss, unaligned);
-  params.read_parameters(parameter_file);
-  if (debug_here > 11) {
-    cout << "Before consistency" << endl;
-  }
-  alltree.profileConsistency_multim(&params, dist_matrix_preAligned, 1);
-  if (debug_here > 11) {
-    cout << "After consistency" << endl;
-  }
-  alltree.computeConsistencyAlignment(alltree.root);
-  output_alignment();
 }
 
 extern hmm_psipred_parameters *params1;
@@ -429,10 +360,6 @@ void multiple::alignDivergent_psipred(int use_homologs) {
   hmm_psipred_parameters params(psipred_env_number);
   params.read_parameters(psipred_parameter_file, psipred_env_number, 1);
   params1 = &params;
-
-  // cout << "Here: " << endl;
-
-  // cout << psipred_dir << endl;
 
   // select representatives
   for (i = 0; i < alltree.preAligned.size(); i++) {
@@ -460,8 +387,6 @@ void multiple::alignDivergent_psipred(int use_homologs) {
           get_blastpgp_alignment(alltree.preAligned[i]->aln->aname[0],
                                  alltree.preAligned[i]->aln->aname[0],
                                  alltree.preAligned[i]->aln->aseq[0]);
-      // cout << alltree.preAligned[i]->aln->aname[0] << " " <<
-      // alltree.preAligned[i]->aln->aname[0] << endl; exit(0);
       alltree.preAligned[i]->aln->get_ss_prof1(
           blast_dir, alltree.preAligned[i]->aln->aname[0], runpsipred1_command);
       if (!alltree.preAligned[i]->aux_align) {
@@ -469,7 +394,6 @@ void multiple::alignDivergent_psipred(int use_homologs) {
              << alltree.preAligned[i]->aln->aname[0] << endl;
         alltree.preAligned[i]->aux_align = alltree.preAligned[i]->aln;
       }
-      // fprintf(logfp, "             Repres. sequence %d\r", i+1);
       if (clean_blast_after)
         clean_blast_psipred(alltree.preAligned[i]->aln->aname[0]);
       fprintf(logfp, "*");
@@ -482,7 +406,6 @@ void multiple::alignDivergent_psipred(int use_homologs) {
     for (i = 0; i < alltree.preAligned.size(); i++)
       alltree.preAligned[i]->aux_align = alltree.preAligned[i]->aln;
   }
-  // cout << "Here: " << endl;
 
   print_time_diff("psiblast_and_psipred");
   print_section_info("Below calculate profiles");
@@ -517,35 +440,26 @@ void multiple::alignDivergent_psipred(int use_homologs) {
                            taln->ss->sstype);
     }
     taln->log_pseudoCounts();
-
-    // alltree.preAligned[i]->aux_align->get_prof_freq(use_ss_freq);
-    // alltree.preAligned[i]->aux_align->get_prof_map_ss(alltree.preAligned[i]->aln->aname[0]);
-    // a1->get_prof_alphabet1();
-    // a1->get_prof_freq(0);
-    // alltree.preAligned[i]->aux_align->get_score_bg_mine(params.aa_loop,
-    // use_ss_freq); fprintf(logfp, "             Repres. sequence %d\r", i+1);
+    
     fprintf(logfp, "*");
     fflush(logfp);
   }
   fprintf(logfp, "\n");
-  // cout << "Here: " << endl;
 
   print_time_diff("calculate_profiles");
   if (debug_here > 11) {
     cout << "Before consistency" << endl;
   }
-  // cout << "Here: " << endl;
   fprintf(logfp, "      - Making consistency scoring fuction ...\n");
   fprintf(logfp, "        ");
   fflush(logfp);
-  // vector<seq_str_aln *> *ssaln = get_seq_str_alns();
+  
   if (struct_weight == 0) {
     print_section_info("Below make consistency scoring");
     alltree.profileConsistency_psipred(&params, dist_matrix_preAligned, 1,
                                        use_homologs);
     alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb);
     alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb * 0.1);
-    // alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb*0.1);
   } else if (!use_updated_database) {
     print_section_info("Below get seq_str_aln, old database");
     ssaln = *(get_seq_str_alns());
@@ -558,12 +472,10 @@ void multiple::alignDivergent_psipred(int use_homologs) {
       combine_structure_alignments3(alltree, ssaln);
     alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb);
     print_time_diff("relax_consistency_first_round");
-    // alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb);
     if (before_relax_combine == 1)
       combine_structure_alignments3(alltree, ssaln);
     alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb * 0.1);
     print_time_diff("relax_consistency_second_round");
-    // alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb*0.1);
     if (before_relax_combine == 2)
       combine_structure_alignments3(alltree, ssaln);
   } else {
@@ -578,21 +490,17 @@ void multiple::alignDivergent_psipred(int use_homologs) {
       combine_structure_alignments3_updated(alltree, ssaln);
     alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb);
     print_time_diff("relax_consistency_first_round");
-    // alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb);
     if (before_relax_combine == 1)
       combine_structure_alignments3_updated(alltree, ssaln);
     alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb * 0.1);
     print_time_diff("relax_consistency_second_round");
-    // alltree.relaxConsistMatrix(dist_matrix_preAligned, 1, minProb*0.1);
     if (before_relax_combine == 2)
       combine_structure_alignments3_updated(alltree, ssaln);
-    // exit(0);
   }
   print_time_diff("structure comparisons and constraints");
 
   // read and combine structure constraints
   if (strlen(constraint_file) != 0) {
-    // vector<constraint *> vcons = read_multiple_constraint("yfp.promals.fa");
     print_section_info("Below combine outside structural constraints");
     vector<constraint *> vcons = read_multiple_constraint(constraint_file);
     for (i = 0; i < vcons.size(); i++) {
@@ -609,7 +517,6 @@ void multiple::alignDivergent_psipred(int use_homologs) {
   // read and combine user-defined constraints
   if (strlen(user_constraint) != 0) {
     print_section_info("Below combine user constraints");
-    // vector<constraint *> vcons = read_multiple_constraint("yfp.promals.fa");
     vector<constraint *> vcons1 = read_multiple_constraint(user_constraint);
     for (i = 0; i < vcons1.size(); i++) {
       if (vcons1[i]->nseqs == 0) continue;
@@ -622,34 +529,14 @@ void multiple::alignDivergent_psipred(int use_homologs) {
       combine_constraint(alltree, *(vcons1[i]), user_constraint_weight);
     }
   }
-  // check constraint
-  // check constraint
-  /*
-  constraint *cons = new constraint();
-  cons->assign_prealigned(&alltree.preAligned);
-  cons->assign_originalseq(&allseqs);
-
-  cout << "cons: " << cons->prealigned->size() << endl;
-  cout << "cons: " << cons->oseq->nseqs << endl;
-
-  cons->readFasta("yfp.promals.fa", 0);
-  cons->printSeqs();
-  //cout << "here"<< endl;
-  cons->allocate_index();
-  cons->checkNamesSequences();
-
-  combine_constraint(alltree, *cons);
-  */
 
   if (debug_here > 11) {
     cout << "After consistency" << endl;
   }
-  // cout << "Here: " << endl;
 
   print_section_info("Below compute consistency alignment");
   fprintf(logfp, "      - Making progressive alignments ...\n");
   fflush(logfp);
-  // cout << "check root: " << alltree.root->aligned << endl;
   alltree.computeConsistencyAlignment(alltree.root);
   print_time_diff("compute_consistency_alignment");
 
@@ -657,7 +544,6 @@ void multiple::alignDivergent_psipred(int use_homologs) {
   alltree.iterativeRefinement(iterRef_round);
   cout << "iterative refinement for " << iterRef_round << " rounds." << endl;
   print_time_diff("iterative_refinement");
-  // cout << "Here: " << endl;
 
   print_section_info("Below refine and print alignment");
   output_alignment();
@@ -665,83 +551,6 @@ void multiple::alignDivergent_psipred(int use_homologs) {
   fflush(logfp);
   fclose(logfp);
 
-  // print_time_diff("refine_and_print_alignment");
-}
-
-void multiple::alignDivergent_psipred_sum_of_pairs(int use_homologs) {
-  int i, j;
-
-  // right now, just the option of multim - for probablistic consistency
-  hmm_psipred_parameters params(psipred_env_number);
-  params.read_parameters(psipred_parameter_file, psipred_env_number, 1);
-
-  // cout << "Here: " << endl;
-
-  // cout << psipred_dir << endl;
-
-  for (i = 0; i < alltree.preAligned.size(); i++) {
-    // psipred_dir is global variable
-    alltree.preAligned[i]->aln->select_representative();
-    // DO NOT run psipred from scratch
-    // alltree.preAligned[i]->aln->get_ss_prof(psipred_dir, runpsipred_command);
-  }
-  // cout << "Here: " << endl;
-
-  if (use_homologs == 1) {
-    for (i = 0; i < alltree.preAligned.size(); i++)
-      alltree.preAligned[i]->aux_align =
-          alltree.preAligned[i]->similarSet->purge_align_one_seq_name(
-              alltree.preAligned[i]->aln->aname[0]);
-  } else if (use_homologs == 2) {
-    for (i = 0; i < alltree.preAligned.size(); i++) {
-      alltree.preAligned[i]->aux_align =
-          get_blastpgp_alignment(alltree.preAligned[i]->aln->aname[0],
-                                 alltree.preAligned[i]->aln->aname[0],
-                                 alltree.preAligned[i]->aln->aseq[0]);
-      alltree.preAligned[i]->aln->get_ss_prof1(
-          blast_dir, alltree.preAligned[i]->aln->aname[0], runpsipred1_command);
-
-      if (!alltree.preAligned[i]->aux_align) {
-        cout << "reading blastpgp alignment failed "
-             << alltree.preAligned[i]->aln->aname[0] << endl;
-        alltree.preAligned[i]->aux_align = alltree.preAligned[i]->aln;
-      }
-    }
-  } else {
-    for (i = 0; i < alltree.preAligned.size(); i++)
-      alltree.preAligned[i]->aux_align = alltree.preAligned[i]->aln;
-  }
-  // cout << "Here: " << endl;
-
-  for (i = 0; i < alltree.preAligned.size(); i++) {
-    alltree.preAligned[i]->aux_align->ss = alltree.preAligned[i]->aln->ss;
-    // alltree.preAligned[i]->aux_align->ss->print_ss_info();
-    alltree.preAligned[i]->aux_align->prof(1);
-    // alltree.preAligned[i]->aux_align->get_prof_freq(use_ss_freq);
-    // alltree.preAligned[i]->aux_align->get_prof_map_ss(alltree.preAligned[i]->aln->aname[0]);
-    // a1->get_prof_alphabet1();
-    // a1->get_prof_freq(0);
-    // alltree.preAligned[i]->aux_align->get_score_bg_mine(params.aa_loop,
-    // use_ss_freq);
-  }
-  // cout << "Here: " << endl;
-
-  if (debug_here > 11) {
-    cout << "Before consistency" << endl;
-  }
-  // cout << "Here: " << endl;
-  alltree.profileConsistency_psipred_sum_of_pairs(
-      &params, dist_matrix_preAligned, 1, use_homologs);
-
-  if (debug_here > 11) {
-    cout << "After consistency" << endl;
-  }
-  // cout << "Here: " << endl;
-
-  alltree.computeConsistencyAlignment(alltree.root);
-  // cout << "Here: " << endl;
-
-  output_alignment();
 }
 
 void multiple::output_alignment() {
@@ -757,7 +566,6 @@ void multiple::output_alignment() {
   if (!outFile.empty()) {
     strcpy(outFileName, outFile.c_str());
   }
-  // cout << endl << "  output file Name: " << outFileName << endl << endl;
   alltree.printAlignmentFromAbs(alltree.root, outFileName, similaraln,
                                 repnames);
   cout << "  program finished" << endl << endl;
@@ -767,82 +575,6 @@ void multiple::output_alignment() {
     cout << allseqs.name[i] << endl;
   }
 }
-
-void multiple::align_profilehmm(int use_ss, char *ss_dir_name) {
-  int i, j, k;
-  subalign *x;
-
-  // get the sequence profile and secondary structure profile for each tnode
-  for (i = 0; i < alltree.preAligned.size(); i++) {
-    x = alltree.preAligned[i]->similarSet;
-    x->prof();
-    if ((use_ss == 1) || (use_ss == 0)) {
-      x->get_prof_freq(use_ss, 1);
-    } else if (use_ss == 2) {
-      x->select_representative();
-      x->get_ss_prof(ss_dir_name, runpsipred_command);
-      // cout << x->repres_name << endl;
-      x->get_prof_map_ss(x->repres_name);
-      x->get_prof_alphabet1();
-      x->get_prof_freq(use_ss, 1);
-      // use_position_specific_regularizer = 1;
-    } else {
-      cout << "Error: use_ss must be 0, 1, or 2" << endl;
-      exit(0);
-    }
-    x->get_score_bg(use_ss);
-  }
-}
-
-/*
-// align divergent sequences to form pre-aligned groups, until distance between
-any two
-// neighboring groups is larger than divergent_cutoff
-void multiple::alignDivergent(float divergent_cutoff) {
-
-        int i, j;
-
-        // right now, just the option of multim - for probablistic consistency
-        hmm_parameters params(solv,ss,unaligned);
-        params.read_parameters(parameter_file);
-        if(debug_here>11) { cout << "Before consistency" << endl; }
-        alltree.profileConsistency_multim(&params, dist_matrix_preAligned);
-
-        if(debug_here>11) { cout << "After consistency" << endl; }
-
-        alltree.computeConsistencyAlignment(alltree.root, divergent_cutoff/2);
-
-        if(!alltree.root->aligned) return;
-
-        char outFileName[200];
-        strcpy(outFileName, inputfileName);
-        int tmpLen = strlen(outFileName);
-        if(
-(outFileName[tmpLen-1]=='a')&&(outFileName[tmpLen-2]=='f')&&(outFileName[tmpLen-3]=='.')){
-            outFileName[tmpLen-3] = '\0';
-        }
-        strcat(outFileName, ".mummals.aln");
-        if(!outFile.empty()) {
-                strcpy(outFileName, outFile.c_str() );
-        }
-        cout << "  output file Name: " << outFileName << endl << endl;
-        alltree.printAlignmentFromAbs(alltree.root, outFileName);
-}
-
-void alignExtremelyDivergent() {
-
-        int i, j;
-
-        alltree.obtainPreAligned(alltree.root);
-
-}
-
-void multiple::addSimilar() {
-
-        int i,j;
-}
-
-*/
 
 // store pre-aligned groups in the stopped nodes and select one representative
 // from each group
@@ -878,9 +610,6 @@ void multiple::store_similar_henikoff(tnode *r) {
   int tmp_array_index = 0;
   for (i = 0; i < r->aln->alilen; i++) {
     if (r->aln->aseq[tmp_index][i] != '-') {
-      // if(r->aln->aseq[tmp_index][i]>'Z') tmp_seq[tmp_array_index] =
-      // r->aln->aseq[tmp_index][i]-32; else tmp_seq[tmp_array_index] =
-      // r->aln->aseq[tmp_index][i];
       tmp_seq[tmp_array_index] = r->aln->aseq[tmp_index][i];
       tmp_array_index++;
     }
@@ -902,7 +631,6 @@ void multiple::map_allseqs_pos_to_tnode() {
   for (i = 0; i < alltree.preAligned.size(); i++) {
     tmpaln = alltree.preAligned[i]->aln;
     for (j = 1; j <= allseqs.nseqs; j++) {
-      // cout << tmpaln->aname[0] << "  " <<  allseqs.name[j].c_str() << endl;
       if (strcmp(tmpaln->aname[0], allseqs.name[j].c_str()) == 0) {
         alltree.preAligned[i]->p_seq = j;
         if (debug_here > 11)
@@ -923,7 +651,6 @@ void multiple::get_distance_matrix_for_preAligned(int N_smallest) {
 
   dist_matrix_preAligned =
       dmatrix(alltree.preAligned.size(), alltree.preAligned.size());
-  // cout << "Here " << alltree.preAligned.size() << endl;
 
   for (i = 0; i < alltree.preAligned.size(); i++) {
     for (j = 0; j < alltree.preAligned.size(); j++) {
@@ -953,7 +680,6 @@ void multiple::get_distance_matrix_for_preAligned(int N_smallest) {
              << dist_matrix_preAligned[i][j] << endl;
       }
     }
-  // cout << "Here" << endl;
 }
 
 vector<seq_str_aln *> *multiple::get_seq_str_alns() {
@@ -1004,8 +730,6 @@ vector<seq_str_aln *> *multiple::get_seq_str_alns1() {
   strcpy(suffix, "pdb.br");
   strcpy(options, "-z 1665828471 -e 0.001 -h 0.001");
   sprintf(database, "%s/db/structure_db/struct.fasta", program_dir);
-  // strcpy(database,
-  // "/home/jpei/promals/src_structure/structure_db/struct.fasta");
 
   k = strlen(blast_dir);
   if (blast_dir[k - 1] != '/') {
@@ -1096,8 +820,6 @@ int *kcenter(int **simmat, int dim, int nc, int maxelem, int maxiter,
       centercount++;
       clusters[centercount][0] = randindex;
     }
-    // for(i=1;i<=nc;i++) { cout << "cluster center number: " << clusters[i][0]
-    // << endl; }
 
     lsum_maxsumsim = -10000;
     for (iter = 1; iter <= maxiter; iter++) {
@@ -1117,7 +839,6 @@ int *kcenter(int **simmat, int dim, int nc, int maxelem, int maxiter,
         }
         clustersize[maxclusterindex]++;
         clusters[maxclusterindex][clustersize[maxclusterindex]] = i;
-        // cout << i << " maxclusterindex: " << maxclusterindex << endl;
       }
 
       // update the cluster centers
@@ -1153,9 +874,6 @@ int *kcenter(int **simmat, int dim, int nc, int maxelem, int maxiter,
       // print information
       if (debug_here > 11)
         cout << "after round " << iter << " : " << sum_maxsumsim << endl;
-      // for(i=1;i<=nc;i++) { cout << "cluster " << i << endl;
-      // for(j=0;j<=clustersize[i];j++) { cout << "\t\t" << clusters[i][j] <<
-      // endl; } }
 
       // stop criteria
       if (lsum_maxsumsim < sum_maxsumsim) {
@@ -1167,8 +885,6 @@ int *kcenter(int **simmat, int dim, int nc, int maxelem, int maxiter,
           }
         }
       }
-      // else { break; }
-
     }  // end of the iterations for one initial condition
 
     if (debug_here > 11) cout << "lsum_maxsumsim: " << lsum_maxsumsim << endl;
@@ -1215,9 +931,9 @@ int *kcenter(int **simmat, int dim, int nc, int maxelem, int maxiter,
   }
   cout << "\tfinal ilsum_maxsumsim: " << ilsum_maxsumsim << endl;
 
-  // clear up
   delete[] tmpclusterindex;
   delete[] clustersize;
   free_imatrix(clusters, nc, maxelem);
   return clusterindex;
 }
+

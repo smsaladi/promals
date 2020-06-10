@@ -1,6 +1,5 @@
-#include "util.h"
 #include "header_cpp.h"
-//#include "matrixalgebra.c"
+#include "util.h"
 
 double *dvector(int d1) {
   int i;

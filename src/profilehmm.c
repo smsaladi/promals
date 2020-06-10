@@ -1,5 +1,5 @@
-#include "profilehmm.h"
 #include "all.h"
+#include "profilehmm.h"
 
 static int debug = 0;
 profilehmm::profilehmm(subalign *x1) {

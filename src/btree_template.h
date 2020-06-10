@@ -2,6 +2,7 @@
 #define _tree_template__
 
 #include <vector>
+
 #include "amino.h"
 #include "hmm_multim.h"
 #include "hmm_psipred.h"

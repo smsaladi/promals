@@ -1,5 +1,5 @@
-#include "time.h"
 #include "all.h"
+#include "time.h"
 
 struct tms tmsstart, tmsend;
 

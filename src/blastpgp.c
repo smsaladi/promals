@@ -43,7 +43,6 @@ subalign *get_blastpgp_alignment(char *basename, char *query_name,
       query_name, query_seq);
   if (x != NULL) return x;
 
-  // get_blastpgp_cmd();
   strcpy(blastpgp_cmd, blastpgp_command);
   cout << "blastpgp_cmd: " << blastpgp_cmd << endl;
   // set_blastpgp_options("");
@@ -52,7 +51,6 @@ subalign *get_blastpgp_alignment(char *basename, char *query_name,
           iteration_number, evalue, evalue, filter_query);
   set_blastpgp_options(optionStr);
   // set_blastpgp_options("");
-  // set_uniref90(uniref90_file);
 
   x = run_blastpgp(query_name, query_seq);
   return x;
@@ -67,44 +65,6 @@ void clean_blast_psipred(char *seqname) {
 
   // cout << cmdname << endl;
   system(cmdname);
-}
-
-// return 0 if successfully get the blastpgp command in blastpgp_cmd
-// otherwise return 1
-int get_blastpgp_cmd() {
-  int i;
-
-  if (blastpgp_cmd[0] != '\0') {
-    return 0;
-  }
-
-  int random_int = rand();
-
-  char command[2000], blastpgp_file[2000];
-  sprintf(command, "which blastpgp > blastpgp%d.tmpfile", random_int);
-  sprintf(blastpgp_file, "blastpgp%d.tmpfile", random_int);
-
-  i = system(command);
-
-  if (i != 0) {
-    cout << "blastpgp is not found in your paths\n" << endl;
-    system((string("rm ") + string(blastpgp_file)).c_str());
-    return 1;
-  }
-
-  ifstream ifp(blastpgp_file, ios::in);
-  ifp >> blastpgp_cmd;
-  ifp.close();
-
-  system((string("rm ") + string(blastpgp_file)).c_str());
-
-  return 0;
-}
-
-void set_uniref90(char *file1) {
-  int i, j;
-
-  strcpy(uniref90_file, file1);
 }
 
 void set_blastpgp_options(char *options) {

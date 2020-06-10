@@ -1,6 +1,8 @@
 #ifndef __progressiveAlignHmm_
 #define __progressiveAlignHmm_
 
+#include <vector>
+
 #include "amino.h"
 #include "btree_template.h"
 #include "hmm_profpair.h"
@@ -9,8 +11,6 @@
 #include "sequences.h"
 #include "tnode.h"
 #include "util.h"
-//#include "ScoreType.h"
-#include <vector>
 #include "gap_refining.h"
 #include "hmm_local.h"
 #include "hmm_multim.h"

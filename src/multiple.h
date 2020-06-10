@@ -35,8 +35,6 @@ class multiple {
   void build_cluster();
   void alignSimilar();
 
-  void alignDivergent();
-  void alignDivergent(float divergent_cutoff);
 
   void store_similar(tnode *r);
   void store_similar_henikoff(tnode *r);
@@ -54,12 +52,9 @@ class multiple {
   void distance2leaf(tnode *r, double *array);
   void output_alignment();
 
-  void align_profilehmm(int use_ss, char *ss_dir_name);
-
   void addSimilar();
 
   void alignDivergent_psipred(int x);
-  void alignDivergent_psipred_sum_of_pairs(int x);
 
   vector<seq_str_aln *> ssaln;
   vector<seq_str_aln *> *get_seq_str_alns();

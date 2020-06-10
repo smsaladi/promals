@@ -3,7 +3,6 @@
 #include "header_cpp.h"
 #include "regularizer.h"
 #include "util.h"
-//#include "hmm_psipred.h"
 
 static int mydebug = 11;
 static int debug = 11;
@@ -61,8 +60,6 @@ subalign::subalign() {
 
   subaligncount++;
 }
-
-void subalign::set_gapt(double gapt) { gapt_threshold = gapt; }
 
 // Copy constructor
 subalign::subalign(const subalign &init) {
@@ -460,9 +457,6 @@ const subalign &subalign::operator=(const subalign &right) {
   return *this;
 }
 
-// Return the number of subalign objects intantiated
-int subalign::getsubaligncount() { return subaligncount; }
-
 /******************************************************************/
 /*adapted from align.c, auxilary routines used for readali...*/
 /*memory allocations follow the C language constoms */
@@ -522,118 +516,6 @@ int *subalign::incibuf(int n, int *was) {
 
 /* end of auxilary routines from align.c ****************************/
 /********************************************************************/
-
-int subalign::getNal() { return (nal); }
-
-int subalign::getAlilen() { return (alilen); }
-
-int **subalign::getAlignment() {
-  /* int **ali;
-  int i, j;
-
-  ali = imatrix(0, nal+1, 0, alilen+1);
-  for(j=1;j<=nal;j++)
-  for(i=1;i<=alilen;i++) {
-          ali[j][i] = alignment[j][i];
-  } */
-
-  return alignment;
-}
-
-char **subalign::getAseq() {
-  /* char **seq;
-  int i, j;
-
-  seq = cmatrix(0, nal+1, 0, alilen+1);
-  for(j=0;j<nal;j++)
-  for(i=0;i<alilen;i++) {
-          seq[j][i] = aseq[j][i];
-  } */
-
-  return aseq;
-}
-
-char **subalign::getAname() {
-  /* char **name;
-  int i, j;
-  int mlen;
-
-  for (i=1, mlen=strlen(aname[0]); i < nal; i++) {
-          if (mlen < strlen(aname[i])) {
-                  mlen = strlen(aname[i]);
-          }
-  }
-
-  name = cmatrix(0,nal,0,mlen);
-  for(i=0;i<nal;i++) {
-          strcpy(name[i], aname[i]);
-  } */
-
-  return (aname);
-}
-
-void subalign::setNal(int n) { nal = n; }
-
-void subalign::setAlilen(int len) { alilen = len; }
-
-void subalign::setAlignment(int **ali) {
-  int i, j;
-
-  if (ali == NULL) {
-    fprintf(stderr, "WARNING:: alignment is null\n");
-    return;
-  }
-
-  alignment = new int *[nal + 1];
-  for (i = 1; i <= nal; i++) alignment[i] = new int[alilen + 1];
-  // fprintf(stderr, "nal: %d\n", nal);
-  for (i = 1; i <= nal; i++) {
-    for (j = 1; j <= alilen; j++) {
-      alignment[i][j] = ali[i][j];
-      //              fprintf(stderr,"%d",ali[i][j]);
-    }
-  }
-
-  /*alignment = ali;*/
-}
-
-void subalign::setAseq(char **seq) {
-  int i, j;
-
-  if (seq == NULL) {
-    fprintf(stderr, "WARNING:: alignment sequences are null\n");
-    return;
-  }
-
-  aseq = new char *[nal];
-  for (i = 0; i < nal; i++) aseq[i] = new char[alilen + 1];
-  for (i = 0; i < nal; i++) {
-    for (j = 0; j < alilen; j++) aseq[i][j] = seq[i][j];
-    aseq[i][alilen] = '\0';
-  }
-}
-
-void subalign::setAname(char **name) {
-  int i, j;
-  int mlen;
-
-  if (name == NULL) {
-    fprintf(stderr, "ALign name empty\n");
-    return;
-  }
-
-  // fprintf(stderr, "nal: %d\n", nal);
-  for (i = 0, mlen = strlen(name[0]); i < nal; i++) {
-    if (mlen < strlen(name[i])) {
-      mlen = strlen(name[i]);
-    }
-  }
-
-  aname = new char *[nal];
-  for (i = 0; i < nal; i++) aname[i] = new char[mlen + 1];
-  for (i = 0; i < nal; i++) strcpy(aname[i], name[i]);
-  mnamelen = mlen;
-}
 
 // Read an input alignment in ClustalW (with or without header) format
 void subalign::readali(char *filename) {
@@ -1401,66 +1283,6 @@ void subalign::convertAseq2Alignment() {
     for (j = 1; j <= alilen; j++) {
       alignment[i][j] = am2num(aseq[i - 1][j - 1]);
     }
-  }
-}
-
-void subalign::add_sequence(char *name, char *seq) {
-  int i, j;
-
-  if (nal == 0) {
-    nal++;
-    alilen = strlen(seq);
-    mnamelen = strlen(name) + 1;
-
-    aname = cmatrix(nal, mnamelen);
-    aseq = cmatrix(nal, alilen);
-    strcpy(aname[nal - 1], name);
-    strcpy(aseq[nal - 1], seq);
-    alignment = imatrix(nal, alilen);
-    for (i = 1; i <= nal; i++) {
-      for (j = 1; j <= alilen; j++) {
-        alignment[i][j] = am2num(aseq[i - 1][j - 1]);
-      }
-    }
-  }
-
-  else {
-    nal++;
-    if (mnamelen < strlen(name) + 1) mnamelen = strlen(name) + 1;
-    char **new_aname = cmatrix(nal, mnamelen);
-    char **new_aseq = cmatrix(nal, alilen);
-    for (i = 0; i < nal - 1; i++) {
-      strcpy(new_aname[i], aname[i]);
-      strncpy(new_aseq[i], aseq[i], alilen);
-      new_aseq[i][alilen] = '\0';
-      // cout << new_aname[i] << "\t"<<new_aseq[i]<<endl;
-    }
-    strcpy(new_aname[nal - 1], name);
-    strncpy(new_aseq[nal - 1], seq, alilen);
-    new_aseq[nal - 1][alilen] = '\0';
-    // cout << new_aname[nal-1] << "\t"<<new_aseq[nal-1]<<endl;
-
-    int **new_alignment = imatrix(nal, alilen);
-
-    for (i = 1; i <= nal; i++) {
-      for (j = 1; j <= alilen; j++) {
-        new_alignment[i][j] = am2num(new_aseq[i - 1][j - 1]);
-      }
-    }
-
-    for (i = 0; i < nal - 1; i++) {
-      delete[] aseq[i];
-      delete[] aname[i];
-    }
-    for (i = 0; i <= nal - 1; i++) delete[] alignment[i];
-    delete[] aseq;
-    delete[] aname;
-    delete[] alignment;
-
-    aseq = new_aseq;
-    aname = new_aname;
-    alignment = new_alignment;
-    // cout << "===========" << endl;
   }
 }
 
@@ -2378,58 +2200,6 @@ void subalign::get_ss_prof1(char *dir_name, char *query_name,
   chdir(cwd);
 }
 
-void subalign::checkSubalign() {
-  int i, j, k;
-
-  cout << "alilen: " << alilen << endl;
-  cout << "nal: " << nal << endl;
-
-  if (done_prof == 0) return;
-
-  cout << "prof_len: " << prof_len << endl;
-  cout << "prof_nef: " << prof_nef << endl;
-  cout << "prof_average_sum_eff_let: " << prof_average_sum_eff_let << endl;
-  cout << "prof_gap_threshold: " << prof_gap_threshold << endl;
-  cout << "prof_raw_gap_threshold: " << prof_raw_gap_threshold << endl;
-  cout << "num     prof_pos     prof_sum_eff   prof_gap_content" << endl;
-  for (i = 1; i <= prof_len; i++) {
-    cout << i << " " << prof_pos[i] << " " << aseq[0][prof_pos[i] - 1] << " "
-         << prof_sum_eff[i] << " " << prof_gap_content[prof_pos[i]] << endl;
-  }
-
-  cout << "nal " << nal << endl;
-  cout << "prof_hwt_all " << endl;
-  for (i = 1; i <= nal; i++) {
-    cout << i << " " << prof_hwt_all[i] << endl;
-  }
-
-  cout << endl;
-  cout << "num prof_effn prof_freq" << endl;
-  for (i = 1; i <= prof_len; i++) {
-    cout << i << endl;
-    for (j = 1; j <= 20; j++) {
-      cout << am[j] << " " << setw(20) << prof_effn[i][j] << setw(20)
-           << prof_freq[i][j] << endl;
-    }
-    cout << endl;
-  }
-
-  cout << endl;
-}
-
-void subalign::checkSSprof() {
-  int i, j, k;
-
-  cout << "secondary structure profile" << endl;
-  cout << "repres_name:" << repres_name << endl;
-  cout << "oneSeqAln:" << endl;
-  oneSeqAln->printali(60);
-  cout << "profpos prof_alphabet1   prof_map_ss:" << endl;
-  for (i = 1; i <= prof_len; i++) {
-    cout << i << " " << prof_alphabet1[i] << " " << prof_map_ss[i] << endl;
-  }
-}
-
 void subalign::get_score_bg(int bg_type) {
   int i, j, k;
 
@@ -2566,87 +2336,6 @@ void subalign::get_score_bg_mine2(float *aa_loop0, float *ss_loop0,
   }
 
   done_score_bg2 = 1;
-}
-
-void subalign::add_NC_terminal(char *query_name, char *query_seq) {
-  int i, j, k;
-
-  char *tmpstring = new char[alilen + 1];
-  j = 0;
-  for (i = 0; i < alilen; i++) {
-    if (aseq[0][i] != '-') {
-      tmpstring[j] = aseq[0][i];
-      j++;
-    }
-  }
-  tmpstring[j] = '\0';
-
-  int right_numbers, left_numbers;
-
-  right_numbers = string(query_seq).find(tmpstring, 0);
-  if (right_numbers == string::npos) {
-    cout << "Warning subalign: cannot find the sequence in " << query_name
-         << endl;
-    return;
-  }
-  left_numbers = strlen(query_seq) - right_numbers - strlen(tmpstring);
-
-  assert(right_numbers >= 0);
-  assert(left_numbers >= 0);
-
-  // the first sequence of blast matches the query sequence exactly
-  if ((right_numbers + left_numbers) == 0) return;
-
-  string Nterm, Cterm, Nterm_gap, Cterm_gap;
-  Nterm = string(query_seq).substr(0, right_numbers);
-  Cterm =
-      string(query_seq).substr(right_numbers + strlen(tmpstring), left_numbers);
-  Nterm_gap = string("");
-  for (i = 0; i < Nterm.size(); i++) Nterm_gap += "-";
-  Cterm_gap = string("");
-  for (i = 0; i < Cterm.size(); i++) Cterm_gap += "-";
-
-  char **tmpseq = cmatrix(nal, alilen + right_numbers + left_numbers + 1);
-  for (i = 0; i < nal; i++) {
-    if (i == 0) {
-      strcpy(tmpseq[i], Nterm.c_str());
-      strcat(tmpseq[i], aseq[i]);
-    } else {
-      strcpy(tmpseq[i], Nterm_gap.c_str());
-      strcat(tmpseq[i], aseq[i]);
-    }
-  }
-  // cout << "nstr: " << Nterm_gap.c_str() << endl;
-  // cout << "nstr: " << Nterm.c_str() << endl;
-  if (left_numbers != 0) {
-    // cout << "cstr: " <<  Cterm_gap.c_str() << endl;
-    // cout << "cstr: " <<  Cterm.c_str() << endl;
-    for (i = 0; i < nal; i++) {
-      if (i == 0) {
-        strcat(tmpseq[i], Cterm.c_str());
-        tmpseq[i][alilen + right_numbers + left_numbers] = '\0';
-      } else {
-        strcat(tmpseq[i], Cterm_gap.c_str());
-        tmpseq[i][alilen + right_numbers + left_numbers] = '\0';
-      }
-    }
-  }
-  for (i = 0; i < nal; i++) {
-    delete[] aseq[i];
-    aseq[i] = tmpseq[i];
-    // cout << aseq[i] << endl;
-  }
-
-  // cout << "alilen: " << alilen << endl;
-  alilen = alilen + right_numbers + left_numbers;
-  // cout << "alilen: " << alilen << endl;
-  for (i = 1; i <= nal; i++) {
-    delete[] alignment[i];
-    alignment[i] = new int[alilen + 1];
-    for (j = 1; j <= alilen; j++) {
-      alignment[i][j] = am2num(aseq[i - 1][j - 1]);
-    }
-  }
 }
 
 // assume a directory contains .fa file and psitmp.chk file

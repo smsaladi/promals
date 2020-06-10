@@ -4,14 +4,10 @@
 #include <cctype>
 #include <string>
 #include "header_cpp.h"
-int a3let2num(char *let);
+
 int am2num_c(int c);
 int am2num(int c);
-int am2num_dayhoff(int c);
 int am2numBZX(int c);
-int am2nm(int c);
-int a3let2num(char *let);
-void read_aa_matrix(char *filename, int **arr);
 
 extern double dayhoff_freq[];
 extern double robinson_freq[];
