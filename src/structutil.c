@@ -15,50 +15,6 @@ hmm_psipred_parameters *params1;
 #define MIN_HERE(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX_HERE(x, y) (((x) > (y)) ? (x) : (y))
 
-/*
-// combine structure alignment only for dali
-void combine_structure_alignments(btree<tnode> &alltree, vector<seq_str_aln *>
-&ssaln) {
-
-        int i, j, k, l;
-
-        float **structmat, **tmpMat;
-        sparseMatrix ***smat = alltree.smat;
-
-        cout << "sequence weight: " << sequence_weight << endl;
-
-        for(i=0;i<(int)alltree.preAligned.size();i++) {
-                for(j=i+1;j<(int)alltree.preAligned.size();j++) {
-                        //cout << "+++++++++++" << i << " " << j << endl;
-                        structmat = map_structure(ssaln[i], ssaln[j]);
-                        //cout << "This place" << endl;
-                        if(!structmat) continue;
-                        //cout << "This place" << endl;
-                        tmpMat = smat[i][j]->sparseCrs2Regular();
-                        for(k=1;k<=alltree.preAligned[i]->aln->alilen;k++) {
-                                for(l=1;l<=alltree.preAligned[j]->aln->alilen;l++)
-{
-                                        //tmpMat[k][l] +=
-structmat[k][l]*struct_weight; tmpMat[k][l] = tmpMat[k][l]*sequence_weight +
-structmat[k][l]*struct_weight;
-                                }
-                        }
-                        //cout << "This place" << endl;
-                        delete smat[i][j];
-                        delete smat[j][i];
-                        smat[i][j] = new
-sparseMatrix(tmpMat,alltree.preAligned[i]->aln->alilen,
-alltree.preAligned[j]->aln->alilen); smat[j][i] = smat[i][j]->transpose();
-                        free_gmatrix<float>(tmpMat,
-alltree.preAligned[i]->aln->alilen, alltree.preAligned[j]->aln->alilen);
-                        free_gmatrix<float>(structmat,
-alltree.preAligned[i]->aln->alilen, alltree.preAligned[j]->aln->alilen);
-                        //cout << "This place" << endl;
-                }
-        }
-}
-*/
-
 // combine structure alignment for dali, fast and tmalign
 void combine_structure_alignments3(btree<tnode> &alltree,
                                    vector<seq_str_aln *> &ssaln) {
@@ -119,35 +75,20 @@ void combine_structure_alignments3(btree<tnode> &alltree,
         combine_structmat(structmat, structmat_fast,
                           alltree.preAligned[i]->aln->alilen,
                           alltree.preAligned[j]->aln->alilen, 1.0);
-      // cout << "Here fast2: " << endl;
+      
       if (use_tmalign)
         combine_structmat(structmat, structmat_tmalign,
                           alltree.preAligned[i]->aln->alilen,
                           alltree.preAligned[j]->aln->alilen, 1.0);
-      // debugging
-      /*cout << alltree.preAligned[i]->aln->aname[0] << " " <<
-      alltree.preAligned[j]->aln->aname[0] << endl;
-      for(k=1;k<=alltree.preAligned[i]->aln->alilen;k++) {
-              for(l=1;l<=alltree.preAligned[j]->aln->alilen;l++) {
-                      if(structmat_dali[k][l]) {
-                              cout << k << " " << l << " " <<
-      alltree.preAligned[i]->aln->aseq[0][k-1] << " " <<
-      alltree.preAligned[j]->aln->aseq[0][l-1] << " " << structmat_dali[k][l] <<
-      endl;
-                      }
-              }
-      }*/
-
-      // cout << "This place" << endl;
+      
       tmpMat = smat[i][j]->sparseCrs2Regular();
       for (k = 1; k <= alltree.preAligned[i]->aln->alilen; k++) {
         for (l = 1; l <= alltree.preAligned[j]->aln->alilen; l++) {
-          // tmpMat[k][l] += structmat[k][l]*struct_weight;
           tmpMat[k][l] =
               tmpMat[k][l] * sequence_weight + structmat[k][l] * struct_weight;
         }
       }
-      // cout << "This place" << endl;
+      
       delete smat[i][j];
       delete smat[j][i];
       smat[i][j] = new sparseMatrix(tmpMat, alltree.preAligned[i]->aln->alilen,
@@ -163,7 +104,6 @@ void combine_structure_alignments3(btree<tnode> &alltree,
                           alltree.preAligned[j]->aln->alilen);
       free_gmatrix<float>(structmat_tmalign, alltree.preAligned[i]->aln->alilen,
                           alltree.preAligned[j]->aln->alilen);
-      // cout << "This place" << endl;
     }
   }
 }
@@ -180,8 +120,6 @@ void combine_structure_alignments3_updated(btree<tnode> &alltree,
         **structmat_tmalign = NULL, **tmpMat, **structmat;
   sparseMatrix ***smat = alltree.smat;
 
-  // cout << "sequence weight: " << sequence_weight << endl;
-
   for (i = 0; i < (int)alltree.preAligned.size(); i++) {
     for (j = i + 1; j < (int)alltree.preAligned.size(); j++) {
       // cout << "+++++++++++" << i << " " << j << endl;
@@ -192,21 +130,6 @@ void combine_structure_alignments3_updated(btree<tnode> &alltree,
         structmat_dali = map_structure_promals_updated(
             alltree.preAligned[i]->aux_align, alltree.preAligned[j]->aux_align,
             ssaln[i], ssaln[j], use_dali, use_fast, use_tmalign);
-        // if(use_dali) structmat_dali = map_structure(ssaln[i], ssaln[j]);
-        /*
-        if(use_dali) structmat_dali =
-        map_structure_promals_updated(alltree.preAligned[i]->aux_align,
-        alltree.preAligned[j]->aux_align, ssaln[i], ssaln[j], "dali");
-        //if(use_fast) structmat_fast = map_structure_fast(ssaln[i], ssaln[j]);
-        if(use_fast) structmat_fast =
-        map_structure_promals_updated(alltree.preAligned[i]->aux_align,
-        alltree.preAligned[j]->aux_align, ssaln[i], ssaln[j], "fast");
-        //cout << "Here fast updated: " << endl;
-        //if(use_tmalign) structmat_tmalign = map_structure_tmalign(ssaln[i],
-        ssaln[j]); if(use_tmalign) structmat_tmalign =
-        map_structure_promals_updated(alltree.preAligned[i]->aux_align,
-        alltree.preAligned[j]->aux_align, ssaln[i], ssaln[j], "tmalign");
-        */
       } else {
         if (use_dali)
           structmat_dali =
@@ -235,35 +158,19 @@ void combine_structure_alignments3_updated(btree<tnode> &alltree,
         combine_structmat(structmat, structmat_fast,
                           alltree.preAligned[i]->aln->alilen,
                           alltree.preAligned[j]->aln->alilen, 1.0);
-      // cout << "Here fast2: " << endl;
       if (use_tmalign)
         combine_structmat(structmat, structmat_tmalign,
                           alltree.preAligned[i]->aln->alilen,
                           alltree.preAligned[j]->aln->alilen, 1.0);
-      // debugging
-      /*cout << alltree.preAligned[i]->aln->aname[0] << " " <<
-      alltree.preAligned[j]->aln->aname[0] << endl;
-      for(k=1;k<=alltree.preAligned[i]->aln->alilen;k++) {
-              for(l=1;l<=alltree.preAligned[j]->aln->alilen;l++) {
-                      if(structmat_dali[k][l]) {
-                              cout << k << " " << l << " " <<
-      alltree.preAligned[i]->aln->aseq[0][k-1] << " " <<
-      alltree.preAligned[j]->aln->aseq[0][l-1] << " " << structmat_dali[k][l] <<
-      endl;
-                      }
-              }
-      }*/
-
-      // cout << "This place" << endl;
+      
       tmpMat = smat[i][j]->sparseCrs2Regular();
       for (k = 1; k <= alltree.preAligned[i]->aln->alilen; k++) {
         for (l = 1; l <= alltree.preAligned[j]->aln->alilen; l++) {
-          // tmpMat[k][l] += structmat[k][l]*struct_weight;
           tmpMat[k][l] =
               tmpMat[k][l] * sequence_weight + structmat[k][l] * struct_weight;
         }
       }
-      // cout << "This place" << endl;
+      
       delete smat[i][j];
       delete smat[j][i];
       smat[i][j] = new sparseMatrix(tmpMat, alltree.preAligned[i]->aln->alilen,
@@ -279,7 +186,6 @@ void combine_structure_alignments3_updated(btree<tnode> &alltree,
                           alltree.preAligned[j]->aln->alilen);
       free_gmatrix<float>(structmat_tmalign, alltree.preAligned[i]->aln->alilen,
                           alltree.preAligned[j]->aln->alilen);
-      // cout << "This place" << endl;
     }
   }
   print_time_diff("calculate and combine structural_aligments");
@@ -311,12 +217,8 @@ void combine_constraint(btree<tnode> &alltree, constraint &cons,
   int i, j, k, l;
   int ci, cj;  // index for sequences in cons
 
-  // float **structmat_dali=NULL, **structmat_fast=NULL,
-  // **structmat_tmalign=NULL, **tmpMat, **structmat;
   float **structmat_constraint = NULL, **tmpMat;
   sparseMatrix ***smat = alltree.smat;
-
-  // cout << "sequence weight: " << sequence_weight << endl;
 
   for (i = 0; i < (int)alltree.preAligned.size(); i++) {
     // check if index i can be found in the constraint rep_index
@@ -335,15 +237,12 @@ void combine_constraint(btree<tnode> &alltree, constraint &cons,
       if (cj == -1)
         continue;  // if not found, there is no constraint on prealigned group i
 
-      // cout << "+++++++++++" << i << " " << j << endl;
       structmat_constraint = NULL;
       structmat_constraint = cons.get_constraint_matrix(ci, cj);
       if (!structmat_constraint) continue;
-      // cout << "This place" << endl;
       tmpMat = smat[i][j]->sparseCrs2Regular();
       for (k = 1; k <= alltree.preAligned[i]->aln->alilen; k++) {
         for (l = 1; l <= alltree.preAligned[j]->aln->alilen; l++) {
-          // tmpMat[k][l] += structmat[k][l]*struct_weight;
           tmpMat[k][l] =
               tmpMat[k][l] + structmat_constraint[k][l] * constraint_w;
           cout << k << " " << l << " "
@@ -352,7 +251,6 @@ void combine_constraint(btree<tnode> &alltree, constraint &cons,
                << tmpMat[k][l] << endl;
         }
       }
-      // cout << "This place" << endl;
       delete smat[i][j];
       delete smat[j][i];
       smat[i][j] = new sparseMatrix(tmpMat, alltree.preAligned[i]->aln->alilen,
@@ -363,7 +261,6 @@ void combine_constraint(btree<tnode> &alltree, constraint &cons,
       free_gmatrix<float>(structmat_constraint,
                           alltree.preAligned[i]->aln->alilen,
                           alltree.preAligned[j]->aln->alilen);
-      // cout << "This place" << endl;
     }
   }
 }
@@ -379,18 +276,13 @@ int **get_salnpos(char *name1, char *name2, int &numalignedp) {
   sprintf(result_file, "%s%s.result", dali_dir, name1);
   sprintf(index_file, "%s%s.result.idx", dali_dir, name1);
 
-  // cout << result_file << endl;
-  // cout << index_file << endl;
-
   int name2_index;
   sscanf(name2, "%d", &name2_index);
-  // cout << name2_index << endl;
+  
   int address_daliscore[2];
   FILE *idxfp = fopen(index_file, "r");
   fseek(idxfp, (name2_index - 1) * 8, 0);
   fread(address_daliscore, 4, 2, idxfp);
-  // cout << "names: " << name1 << " " << name2 << " " << address_daliscore[0]
-  // << " " << address_daliscore[1] << endl;
   fclose(idxfp);
   if (address_daliscore[1] < minDaliZ * 10) return NULL;
   FILE *resultfp = fopen(result_file, "r");
@@ -409,9 +301,7 @@ int **get_salnpos(char *name1, char *name2, int &numalignedp) {
       numalignedp++;
     }
   }
-  // cout << "numalignedp: " << numalignedp << endl;
-  // cout << "alnseq1: " << alnseq1 << endl;
-  // cout << "alnseq2: " << alnseq2 << endl;
+  
   int **salpos = imatrix(1, numalignedp);
   int count1 = 0;  // residue number in sequence 1
   int count2 = 0;  // residue number in sequence 2
@@ -422,12 +312,9 @@ int **get_salnpos(char *name1, char *name2, int &numalignedp) {
     if ((alnseq1[i] >= 65) && (alnseq1[i] <= 90)) {
       salpos[0][countp] = count1;
       salpos[1][countp] = count2;
-      // cout << countp << " " <<  salpos[0][countp] << " " << salpos[1][countp]
-      // << endl;
       countp++;
     }
   }
-  // cout << "HEERElllll" <<endl;
   fclose(resultfp);
   return salpos;
 }
@@ -437,7 +324,6 @@ int **get_salnpos_fast(char *name1, char *name2, int &numalignedp) {
   int i, j, k;
   char dali_dir[100], index_dir[100];
   strcpy(dali_dir, "/usr2/db/fast_1.69/");
-  // strcpy(dali_dir, "/home/jpei/db/fast_1.69/");
   strcpy(index_dir, "/home/jpei/db/fast_1.69/");
 
   char result_file[100];
@@ -447,19 +333,14 @@ int **get_salnpos_fast(char *name1, char *name2, int &numalignedp) {
   cout << result_file << endl;
   cout << index_file << endl;
 
-  // cout << result_file << endl;
-  // cout << index_file << endl;
-
   int name2_index;
   sscanf(name2, "%d", &name2_index);
-  // cout << name2_index << endl;
   int address_daliscore[2];
   FILE *idxfp = fopen(index_file, "r");
   fseek(idxfp, (name2_index)*4, 0);
   fread(address_daliscore, 4, 1, idxfp);
   cout << name1 << " " << name2 << " " << address_daliscore[0] << endl;
   fclose(idxfp);
-  // if(address_daliscore[1]<minDaliZ * 10) return NULL;
   FILE *resultfp = fopen(result_file, "r");
   fseek(resultfp, address_daliscore[0], 0);
 
@@ -477,7 +358,6 @@ int **get_salnpos_fast(char *name1, char *name2, int &numalignedp) {
   }
   cout << "combined names: " << combinednames << endl;
   cout << "combined names in result file: " << alnseq1 << endl;
-  // fgets( alnseq1, 3000, resultfp);
   fgets(alnseq1, 3000, resultfp);
   fgets(alnseq2, 3000, resultfp);
 
@@ -487,9 +367,6 @@ int **get_salnpos_fast(char *name1, char *name2, int &numalignedp) {
       numalignedp++;
     }
   }
-  // cout << "numalignedp: " << numalignedp << endl;
-  // cout << alnseq1 << endl;
-  // cout << alnseq2 << endl;
   int **salpos = imatrix(1, numalignedp);
   int count1 = 0;  // residue number in sequence 1
   int count2 = 0;  // residue number in sequence 2
@@ -500,12 +377,9 @@ int **get_salnpos_fast(char *name1, char *name2, int &numalignedp) {
     if ((alnseq1[i] >= 65) && (alnseq1[i] <= 90)) {
       salpos[0][countp] = count1;
       salpos[1][countp] = count2;
-      // cout << countp << " " <<  salpos[0][countp] << " " << salpos[1][countp]
-      // << endl;
       countp++;
     }
   }
-  // cout << "HEERElllll" <<endl;
   fclose(resultfp);
   return salpos;
 }
@@ -515,7 +389,6 @@ int **get_salnpos_tmalign(char *name1, char *name2, int &numalignedp) {
   int i, j, k;
   char dali_dir[100], index_dir[100];
   strcpy(dali_dir, "/usr2/db/tmalign_1.69/");
-  // strcpy(dali_dir, "/home/jpei/db/tmalign_1.69/");
   strcpy(index_dir, "/home/jpei/db/tmalign_1.69/");
 
   char result_file[100];
@@ -528,18 +401,13 @@ int **get_salnpos_tmalign(char *name1, char *name2, int &numalignedp) {
 
   int name2_index;
   sscanf(name2, "%d", &name2_index);
-  // cout << name2_index << endl;
   int address_daliscore[2];
   FILE *idxfp = fopen(index_file, "r");
-  // cout << name2_index << endl;
   if (!idxfp) cout << "not readable" << endl;
   fseek(idxfp, (name2_index)*4, 0);
-  // cout << name2_index << endl;
   fread(address_daliscore, 4, 1, idxfp);
-  // cout << name2_index << endl;
   cout << name1 << " " << name2 << " " << address_daliscore[0] << endl;
   fclose(idxfp);
-  // if(address_daliscore[1]<minDaliZ * 10) return NULL;
   FILE *resultfp = fopen(result_file, "r");
   fseek(resultfp, address_daliscore[0], 0);
 
@@ -553,7 +421,6 @@ int **get_salnpos_tmalign(char *name1, char *name2, int &numalignedp) {
     cout << "combined names: " << combinednames << endl;
     cout << "combined names in result file: " << alnseq1 << endl;
   }
-  // fgets( alnseq1, 3000, resultfp);
   fgets(alnseq2, 3000, resultfp);
   fgets(alnseq1, 3000, resultfp);
 
@@ -563,9 +430,7 @@ int **get_salnpos_tmalign(char *name1, char *name2, int &numalignedp) {
       numalignedp++;
     }
   }
-  // cout << "numalignedp: " << numalignedp << endl;
-  // cout << alnseq1 << endl;
-  // cout << alnseq2 << endl;
+  
   int **salpos = imatrix(1, numalignedp);
   int count1 = 0;  // residue number in sequence 1
   int count2 = 0;  // residue number in sequence 2
@@ -576,12 +441,9 @@ int **get_salnpos_tmalign(char *name1, char *name2, int &numalignedp) {
     if ((alnseq1[i] >= 65) && (alnseq1[i] <= 90)) {
       salpos[0][countp] = count1;
       salpos[1][countp] = count2;
-      // cout << countp << " " <<  salpos[0][countp] << " " << salpos[1][countp]
-      // << endl;
       countp++;
     }
   }
-  // cout << "HEERElllll" <<endl;
   fclose(resultfp);
   return salpos;
 }
@@ -592,7 +454,6 @@ int **get_salnpos_updated(seq_str_aln *a1, seq_str_aln *a2, int ind1, int ind2,
   int i, j, k;
   char dali_dir[100], index_dir[100];
   strcpy(dali_dir, "/usr2/db/tmalign_1.69/");
-  // strcpy(dali_dir, "/home/jpei/db/tmalign_1.69/");
   strcpy(index_dir, "/home/jpei/db/tmalign_1.69/");
   int **salpos = NULL;
 
@@ -605,7 +466,6 @@ int **get_salnpos_updated(seq_str_aln *a1, seq_str_aln *a2, int ind1, int ind2,
     cout << "a2 end:   " << a2->str_end[ind2] << endl;
   }
 
-  // cout << a1->id[ind1] << " " << a2->id[ind2] << " " << prog_name << endl;
   fprintf(stdout, "# %s %s by %s\n", a1->id[ind1], a2->id[ind2], prog_name);
   // check if the pdb code ids are the same; if the same, no need to run
   // structural comparison program
@@ -621,7 +481,6 @@ int **get_salnpos_updated(seq_str_aln *a1, seq_str_aln *a2, int ind1, int ind2,
     for (i = maxstart; i <= minend; i++) {
       salpos[0][i - maxstart] = i;
       salpos[1][i - maxstart] = i;
-      // Debug
       if (debug_here > 11)
         cout << salpos[0][i - maxstart] << " " << salpos[1][i - maxstart]
              << endl;
@@ -635,11 +494,6 @@ int **get_salnpos_updated(seq_str_aln *a1, seq_str_aln *a2, int ind1, int ind2,
   char tmpstr[10000];
   char *ss;
   int start_recording = 0;
-  // sprintf(command,
-  // "/home/jpei/evolvable_database/bin/get_struct_constraint.py %s %s -%s
-  // -dirname %s -start1 %d -start2 %d -end1 %d -end2 %d -clear 1", a1->id[ind1],
-  // a2->id[ind2], prog_name, blast_dir, a1->str_start[ind1],
-  // a2->str_start[ind2], a1->str_end[ind1], a2->str_end[ind2]);
   sprintf(command,
           "python %s/prog/saln/get_struct_constraint.py %s %s -%s -dirname %s "
           "-start1 %d -start2 %d -end1 %d -end2 %d -clear 1 -pdbdir "
@@ -676,9 +530,6 @@ int **get_salnpos_updated(seq_str_aln *a1, seq_str_aln *a2, int ind1, int ind2,
     for (ss = ss; !isdigit(*ss); ss++)
       ;
     salpos[1][start_recording - 1] = atoi(ss);
-    // Debug
-    // cout << salpos[0][start_recording-1] << " " <<
-    // salpos[1][start_recording-1] << endl;
     start_recording++;
   }
   pclose(pfp);
@@ -706,37 +557,22 @@ float **map_structure_nopromals(seq_str_aln *a1, seq_str_aln *a2,
     for (j = 1; j <= a2->len; j++) tmpMat[i][j] = 0;
   // p1 and p2 are the correponding position numbers of the queries
   int p1, p2;
-  // cout << "here " << endl;
-  // cout << a1->query << endl;
-  // cout << a2->query << endl;
-  // cout << a1->nhits << " " << a2->nhits << endl;
-  ////cout << a1->id[1] << "  ----  " <<  a2->id[1] << endl;
   int tmpMat_count = 0;
   for (i = 1; i <= a1->nhits; i++) {
     for (j = 1; j <= a2->nhits; j++) {
-      // cout << "HHHHH" << endl;
-      // cout << a1->id[i] << "  ----  " <<  a2->id[j] << endl;
-      // salnpos = get_salnpos_tmalign(a1->id[i], a2->id[j], numalignedp);
       if (strcmp(prog_name, "dali") == 0) {
         salnpos = get_salnpos(a1->id[i], a2->id[j], numalignedp);
-        // cout << "here" << endl;
       } else if (strcmp(prog_name, "fast") == 0) {
         salnpos = get_salnpos_fast(a1->id[i], a2->id[j], numalignedp);
       } else if (strcmp(prog_name, "tmalign") == 0) {
         salnpos = get_salnpos_tmalign(a1->id[i], a2->id[j], numalignedp);
       }
       if (!salnpos) continue;
-      // cout << numalignedp << endl;
       for (k = 0; k < numalignedp; k++) {
-        // cout << "1: " << salnpos[0][k] <<  " " << a1->aln[i][salnpos[0][k]]
-        // << endl;
         p1 = a1->aln[i][salnpos[0][k]];
         if (!p1) {
-          // cout << "not p1" << endl;
           continue;
         }
-        // cout << "2: " << endl; cout << salnpos[1][k] <<  endl; cout <<  " "
-        // << a2->aln[j][salnpos[1][k]] << endl;
         p2 = a2->aln[j][salnpos[1][k]];
         if (!p2) continue;
         if (tmpMat[p1][p2] == 0) {
@@ -747,14 +583,12 @@ float **map_structure_nopromals(seq_str_aln *a1, seq_str_aln *a2,
       free_imatrix(salnpos, 1, numalignedp);
     }
   }
-  // cout << "tmpMat_count: " << tmpMat_count << endl;
   if (tmpMat_count)
     return tmpMat;
   else {
     free_gmatrix<float>(tmpMat, a1->len, a2->len);
     return NULL;
   }
-  // cout << "This place" << endl;
 }
 
 // prog_name: the name of the structural alignment program
@@ -778,11 +612,6 @@ float **map_structure_promals(subalign *auxa, subalign *auxb, seq_str_aln *a1,
     for (j = 1; j <= a2->len; j++) tmpMat[i][j] = 0;
   // p1 and p2 are the correponding position numbers of the queries
   int p1, p2;
-  // cout << "here " << endl;
-  // cout << a1->query << endl;
-  // cout << a2->query << endl;
-  // cout << a1->nhits << " " << a2->nhits << endl;
-  ////cout << a1->id[1] << "  ----  " <<  a2->id[1] << endl;
   int tmpMat_count = 0;
 
   float **realmat;
@@ -791,48 +620,30 @@ float **map_structure_promals(subalign *auxa, subalign *auxb, seq_str_aln *a1,
   for (i = 1; i <= a1->nhits; i++) {
     for (j = 1; j <= a2->nhits; j++) {
       // 1. get the structural alignment positions
-      // cout << "here" << endl;
       if (strcmp(prog_name, "dali") == 0) {
         salnpos = get_salnpos(a1->id[i], a2->id[j], numalignedp);
-        // cout << "here" << endl;
       } else if (strcmp(prog_name, "fast") == 0) {
         salnpos = get_salnpos_fast(a1->id[i], a2->id[j], numalignedp);
       } else if (strcmp(prog_name, "tmalign") == 0) {
         salnpos = get_salnpos_tmalign(a1->id[i], a2->id[j], numalignedp);
       }
       if (!salnpos) continue;
-      // cout << "here" << endl;
 
       // 2. transform the salnpos into a sparse matrix
-      // cout << "slen size: " << a1->slen.size() << endl;
-      // for(k=1;k<a1->slen.size();k++) {cout << a1->slen[k] << endl;}
       float **m_bc = gmatrix<float>(a1->slen[i], a2->slen[j]);
-      // cout << "here1" << endl;
       for (k = 1; k <= a1->slen[i]; k++)
         for (l = 1; l <= a2->slen[j]; l++) m_bc[k][l] = 0;
-      // cout << "here" << endl;
-      // cout << a1->query << " " << a1->id[i] << endl;
-      // cout << a2->query << " " << a2->id[j] << endl;
       for (k = 0; k < numalignedp; k++) {
-        // cout << a1->slen[i] << " " << a2->slen[j] << " " << salnpos[0][k] <<
-        // " " << salnpos[1][k] << endl;
         m_bc[salnpos[0][k]][salnpos[1][k]] = 1.0;
       }
-      // cout << "here" << endl;
       sparseMatrix *m_bc_S = new sparseMatrix(m_bc, a1->slen[i], a2->slen[j]);
-      // cout << "here" << endl;
       free_gmatrix<float>(m_bc, a1->slen[i], a2->slen[j]);
-      // cout << "here" << endl;
 
       // 3. get the residue match probability matrix between target a and
       // template b
-      // hmm_psipred *hmmProfPair = new hmm_psipred(auxa, auxb);
       hmm_psipred *hmmProfPair = new hmm_psipred(auxa, a1->prof[i]);
-      // cout << "here" << endl;
       hmmProfPair->set_parameters(params1);
-      // cout << "here" << endl;
       hmmProfPair->get_scores(ss_w, score_w);
-      // cout << "here" << endl;
       hmmProfPair->forward1();
       hmmProfPair->backward1();
       realmat = hmmProfPair->probMat;
@@ -846,7 +657,6 @@ float **map_structure_promals(subalign *auxa, subalign *auxb, seq_str_aln *a1,
       }
       sparseMatrix *m_ab_S = new sparseMatrix(realmat, lenx, leny);
       delete hmmProfPair;
-      // cout << "here" << endl;
 
       // 4. get the residue match probability matrix between template c and
       // target d
@@ -866,46 +676,34 @@ float **map_structure_promals(subalign *auxa, subalign *auxb, seq_str_aln *a1,
       }
       sparseMatrix *m_cd_S = new sparseMatrix(realmat, lenx, leny);
       delete hmmProfPair;
-      // cout << "here" << endl;
 
       // 5. multiply all three matrices
       lenx = auxa->alilen;
       leny = a2->prof[j]->alilen;
-      // cout << "lens: " << lenx << " " << leny << endl;
       realmat = gmatrix<float>(lenx, leny);
       for (k = 1; k <= lenx; k++)
         for (l = 1; l <= leny; l++) realmat[k][l] = 0;
       relaxTwoSparse(m_ab_S, m_bc_S, realmat);
-      // cout << "here___" << endl;
       sparseMatrix *m_abc_S =
           new sparseMatrix(realmat, lenx, a2->prof[j]->alilen);
-      // cout << "here___" << endl;
       free_gmatrix(realmat, lenx, leny);
       leny = auxb->alilen;
       realmat = gmatrix<float>(lenx, leny);
       for (k = 1; k <= lenx; k++)
         for (l = 1; l <= leny; l++) realmat[k][l] = 0;
       relaxTwoSparse(m_abc_S, m_cd_S, realmat);
-      // for(k=1;k<=lenx;k++) for(l=1;l<=leny;l++) if(realmat[k][l]<minProb)
-      // realmat[k][l]=0; cout << "here___" << endl;
 
       // 6. add realmat to tmpMat
       for (k = 1; k <= lenx; k++)
         for (l = 1; l <= leny; l++) tmpMat[k][l] += realmat[k][l];
       free_gmatrix(realmat, lenx, leny);
-      // cout << "here___=======" << endl;
 
       // 7. clean up the memories
       delete m_ab_S;
-      // cout << "here___*******" << endl;
       delete m_bc_S;
-      // cout << "here___*******" << endl;
       delete m_cd_S;
-      // cout << "here___*******" << endl;
       delete m_abc_S;
-      // cout << "here___*******" << endl;
       free_imatrix(salnpos, 1, numalignedp);
-      // cout << "here___*******" << endl;
     }
   }
   // filter the matrix with minProb
@@ -914,21 +712,17 @@ float **map_structure_promals(subalign *auxa, subalign *auxb, seq_str_aln *a1,
       if (tmpMat[i][j] < minProb)
         tmpMat[i][j] = 0;
       else {
-        // cout << "tmpMat: " << i << " " << j << " " << auxa->aseq[0][i-1] << "
-        // " << auxb->aseq[0][j-1]<< tmpMat[i][j] << endl;
         tmpMat_count++;
       }
     }
   }
 
-  // cout << "tmpMat_count: " << tmpMat_count << endl;
   if (tmpMat_count)
     return tmpMat;
   else {
     free_gmatrix<float>(tmpMat, a1->len, a2->len);
     return NULL;
   }
-  // cout << "This place" << endl;
 }
 
 float **map_structure_nopromals_updated(seq_str_aln *a1, seq_str_aln *a2,
@@ -950,31 +744,10 @@ float **map_structure_nopromals_updated(seq_str_aln *a1, seq_str_aln *a2,
     for (j = 1; j <= a2->len; j++) tmpMat[i][j] = 0;
   // p1 and p2 are the correponding position numbers of the queries
   int p1, p2;
-  // cout << "here " << endl;
-  // cout << a1->query << endl;
-  // cout << a2->query << endl;
-  // cout << a1->nhits << " " << a2->nhits << endl;
-  ////cout << a1->id[1] << "  ----  " <<  a2->id[1] << endl;
   int tmpMat_count = 0;
   for (i = 1; i <= a1->nhits; i++) {
     for (j = 1; j <= a2->nhits; j++) {
-      // Debug here
-      // cout << "HHHHH" << endl;
-      // cout << a1->id[i] << "  ----  " <<  a2->id[j] << endl;
-      // salnpos = get_salnpos_tmalign(a1->id[i], a2->id[j], numalignedp);
       salnpos = get_salnpos_updated(a1, a2, i, j, numalignedp, prog_name);
-      /*
-      if(strcmp(prog_name, "dali")==0) {
-              salnpos = get_salnpos(a1->id[i], a2->id[j], numalignedp);
-      //cout << "here" << endl;
-      }
-      else if(strcmp(prog_name, "fast")==0) {
-              salnpos = get_salnpos_fast(a1->id[i], a2->id[j], numalignedp);
-      }
-      else if(strcmp(prog_name, "tmalign")==0) {
-              salnpos = get_salnpos_tmalign(a1->id[i], a2->id[j], numalignedp);
-      }
-      */
       if (!salnpos) {
         if (strcmp("dali", prog_name) == 0) {
           cout << "Using_fast_instead" << endl;
@@ -987,7 +760,6 @@ float **map_structure_nopromals_updated(seq_str_aln *a1, seq_str_aln *a2,
       string s1, s2, tmpa1, tmpa2;
       int prev_p1 = 0, prev_p2 = 0;
       int k1 = 0;
-      // Debug here
       if (debug_here > 11) cout << "numalignedp: " << numalignedp << endl;
       for (k = 0; k < numalignedp; k++) {
         if (debug_here > 11)
@@ -995,17 +767,12 @@ float **map_structure_nopromals_updated(seq_str_aln *a1, seq_str_aln *a2,
                << endl;
         p1 = a1->aln[i][salnpos[0][k]];
         if (!p1) {
-          // cout << "not p1" << endl;
           continue;
         }
-        // cout << a2->id[j] << " " <<  a2->slen[j] << " " <<
-        // a2->aln[j][a2->aln[j][a2->slen[j]-1]] << endl;
-        // for(l=1;l<=a2->slen[j];l++) { cout << "l: " << l << " " <<
-        // a2->aln[j][l] << endl; } cout << "2: " << endl; cout << salnpos[1][k]
-        // <<  endl; cout <<  " " << a2->aln[j][salnpos[1][k]] << endl;
         p2 = a2->aln[j][salnpos[1][k]];
         if (!p2) continue;
-        // add here to print out the derived sequence
+        
+	// add here to print out the derived sequence
         tmpa1 = "";
         tmpa2 = "";
         if (k1 == 0) {
@@ -1038,19 +805,16 @@ float **map_structure_nopromals_updated(seq_str_aln *a1, seq_str_aln *a2,
       cout << s1 << endl;
       cout << s2 << endl;
       cout << endl;
-      // Debug here
-      // cout << "Here" << endl;
+      
       free_imatrix(salnpos, 1, numalignedp);
     }
   }
-  // cout << "tmpMat_count: " << tmpMat_count << endl;
   if (tmpMat_count)
     return tmpMat;
   else {
     free_gmatrix<float>(tmpMat, a1->len, a2->len);
     return NULL;
   }
-  // cout << "This place" << endl;
 }
 
 // prog_name: the name of the structural alignment program
@@ -1077,11 +841,6 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
     for (j = 1; j <= a2->len; j++) tmpMat[i][j] = 0;
   // p1 and p2 are the correponding position numbers of the queries
   int p1, p2;
-  // cout << "here " << endl;
-  // cout << a1->query << endl;
-  // cout << a2->query << endl;
-  // cout << a1->nhits << " " << a2->nhits << endl;
-  ////cout << a1->id[1] << "  ----  " <<  a2->id[1] << endl;
   int tmpMat_count = 0;
 
   float **realmat;
@@ -1093,7 +852,6 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
   for (i = 1; i <= a1->nhits; i++) {
     for (j = 1; j <= a2->nhits; j++) {
       // 1. get the structural alignment positions
-      // cout << "here" << endl;
       if (dali)
         salnpos = get_salnpos_updated(a1, a2, i, j, numalignedp, "dali");
       if (fast)
@@ -1102,7 +860,7 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
         salnpos2 = get_salnpos_updated(a1, a2, i, j, numalignedp2, "tmalign");
       if ((!salnpos) && (!salnpos1) && (!salnpos2)) continue;
 
-      // 1'. check dimensions
+      // 1. check dimensions
       offset_b = 0;
       offset_c = 0;
       lenx = a1->prof[i]->alilen;
@@ -1115,28 +873,16 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
       }
 
       // 2. transform the salnpos into a sparse matrix
-      // cout << "slen size: " << a1->slen.size() << endl;
-      // for(k=1;k<a1->slen.size();k++) {cout << a1->slen[k] << endl;}
-      // float **m_bc = gmatrix<float>(a1->slen[i], a2->slen[j]);
       float **m_bc = gmatrix<float>(lenx, leny);
-      // cout << "here1" << endl;
       for (k = 1; k <= lenx; k++)
         for (l = 1; l <= leny; l++) m_bc[k][l] = 0;
-      // cout << "here" << endl;
-      // cout << a1->query << " " << a1->id[i] << endl;
-      // cout << a2->query << " " << a2->id[j] << endl;
-      // cout << "numalignedp: " << numalignedp << endl;
       if (salnpos) {
         for (k = 0; k < numalignedp; k++) {
-          // cout << k << " " << a1->slen[i] << " " << a2->slen[j] << " " <<
-          // salnpos[0][k] << " " << salnpos[1][k] << endl;
           m_bc[salnpos[0][k] - offset_b][salnpos[1][k] - offset_c] += 1.0;
         }
       }
       if (salnpos1) {
         for (k = 0; k < numalignedp1; k++) {
-          // cout << k << " " << a1->slen[i] << " " << a2->slen[j] << " " <<
-          // salnpos[0][k] << " " << salnpos[1][k] << endl;
           cout << k << " " << salnpos1[0][k] - offset_b << " "
                << salnpos1[1][k] - offset_c << endl;
           m_bc[salnpos1[0][k] - offset_b][salnpos1[1][k] - offset_c] += 1.0;
@@ -1144,8 +890,6 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
       }
       if (salnpos2) {
         for (k = 0; k < numalignedp2; k++) {
-          // cout << k << " " << a1->slen[i] << " " << a2->slen[j] << " " <<
-          // salnpos[0][k] << " " << salnpos[1][k] << endl;
           cout << k << " " << salnpos2[0][k] - offset_b << " "
                << salnpos2[1][k] - offset_c << endl;
           m_bc[salnpos2[0][k] - offset_b][salnpos2[1][k] - offset_c] += 1.0;
@@ -1161,23 +905,16 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
         }
       }
 
-      // cout << "b dimension: " << a1->slen[i] << endl;
-      // cout << "c dimension: " << a1->slen[i] << endl;
       sparseMatrix *m_bc_S = new sparseMatrix(m_bc, lenx, leny);
       free_gmatrix<float>(m_bc, lenx, leny);
 
       // 3. get the residue match probability matrix between target a and
       // template b
-      // hmm_psipred *hmmProfPair = new hmm_psipred(auxa, auxb);
-      // cout << "a1 prof: " << endl; a1->prof[i]->printali(70);
       hmm_psipred *hmmProfPair = new hmm_psipred(auxa, a1->prof[i]);
       hmmProfPair->set_parameters(params1);
       hmmProfPair->get_scores(ss_w, score_w);
       hmmProfPair->forward1();
       hmmProfPair->backward1();
-      // weight_end_penalty = 0.001;
-      // hmmProfPair->forward_no_end_penalty();
-      // hmmProfPair->backward_no_end_penalty();
       realmat = hmmProfPair->probMat;
       lenx = hmmProfPair->lenx;
       leny = hmmProfPair->leny;
@@ -1191,10 +928,6 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
       if (debug > 1) m_ab_S->printCrs();
       delete hmmProfPair;
 
-      // cout << "b dimension 2: " << leny << endl;
-      // cout << "b start: " << a1->str_start[i] << endl;
-      // cout << "a dimension: " << lenx << endl;
-
       // 4. get the residue match probability matrix between template c and
       // target d
       hmmProfPair = new hmm_psipred(a2->prof[j], auxb);
@@ -1202,9 +935,6 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
       hmmProfPair->get_scores(ss_w, score_w);
       hmmProfPair->forward1();
       hmmProfPair->backward1();
-      // weight_end_penalty = 0.001;
-      // hmmProfPair->forward_no_end_penalty();
-      // hmmProfPair->backward_no_end_penalty();
       realmat = hmmProfPair->probMat;
       lenx = hmmProfPair->lenx;
       leny = hmmProfPair->leny;
@@ -1232,8 +962,6 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
       for (k = 1; k <= lenx; k++)
         for (l = 1; l <= leny; l++) realmat[k][l] = 0;
       relaxTwoSparse(m_abc_S, m_cd_S, realmat);
-      // for(k=1;k<=lenx;k++) for(l=1;l<=leny;l++) if(realmat[k][l]<minProb)
-      // realmat[k][l]=0;
 
       // 6. add realmat to tmpMat
       for (k = 1; k <= lenx; k++)
@@ -1242,13 +970,9 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
 
       // 7. clean up the memories
       delete m_ab_S;
-      // cout << "here___*******" << endl;
       delete m_bc_S;
-      // cout << "here___*******" << endl;
       delete m_cd_S;
-      // cout << "here___*******" << endl;
       delete m_abc_S;
-      // cout << "here___*******" << endl;
       free_imatrix(salnpos, 1, numalignedp);
     }
   }
@@ -1258,188 +982,20 @@ float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
       if (tmpMat[i][j] < minProb)
         tmpMat[i][j] = 0;
       else {
-        // cout << "tmpMat: " << i << " " << j << " " << auxa->aseq[0][i-1] << "
-        // " << auxb->aseq[0][j-1]<< tmpMat[i][j] << endl;
         tmpMat_count++;
       }
     }
   }
   cout << endl;
 
-  // cout << "tmpMat_count: " << tmpMat_count << endl;
   if (tmpMat_count)
     return tmpMat;
   else {
     free_gmatrix<float>(tmpMat, a1->len, a2->len);
     return NULL;
   }
-  // cout << "This place" << endl;
 }
 
-// prog_name: the name of the structural alignment program
-/*
-float **map_structure_promals_updated(subalign *auxa, subalign *auxb,
-seq_str_aln *a1, seq_str_aln *a2, char *prog_name) {
-
-        int i, j, k, l;
-
-        int **salnpos=NULL; // structure alignment positions; two arrays of
-integer values
-        // [0..1][0..numalignedp-1]
-        // Example:
-        // aCKE-EKaa
-        // -CEEKEKa-
-        // array 1: 2 3 4 5 6
-        // array 2: 1 2 3 5 6
-        // if no structural alignment with z-score > 5, salnpos = 0
-        int numalignedp;
-
-        float **tmpMat = gmatrix<float>(a1->len, a2->len);
-        for(i=1;i<=a1->len;i++) for(j=1;j<=a2->len;j++) tmpMat[i][j] = 0;
-        // p1 and p2 are the correponding position numbers of the queries
-        int p1, p2;
-        //cout << "here " << endl;
-        //cout << a1->query << endl;
-        //cout << a2->query << endl;
-        //cout << a1->nhits << " " << a2->nhits << endl;
-        ////cout << a1->id[1] << "  ----  " <<  a2->id[1] << endl;
-        int tmpMat_count = 0;
-
-        float **realmat;
-        int lenx, leny;
-        int offset_b, offset_c;
-        //cout << "nhits1: " << a1->nhits << " nhits2: " << a2->nhits << endl;
-        fprintf(stdout, "%s %s\n", a1->query_name, a2->query_name);
-
-        for(i=1;i<=a1->nhits;i++) {
-                for(j=1;j<=a2->nhits;j++) {
-
-                        // 1. get the structural alignment positions
-                        //cout << "here" << endl;
-                        salnpos = get_salnpos_updated(a1, a2, i, j, numalignedp,
-prog_name); if(!salnpos) continue;
-
-                        // 1'. check dimensions
-                        offset_b = 0; offset_c=0;
-                        lenx = a1->prof[i]->alilen;
-                        leny = a2->prof[j]->alilen;
-                        if(a1->slen[i]!=lenx) { offset_b = a1->str_start[i]-1; }
-                        if(a2->slen[j]!=leny) { offset_c = a2->str_start[j]-1; }
-
-                        // 2. transform the salnpos into a sparse matrix
-                        //cout << "slen size: " << a1->slen.size() << endl;
-                        //for(k=1;k<a1->slen.size();k++) {cout << a1->slen[k] <<
-endl;}
-                        //float **m_bc = gmatrix<float>(a1->slen[i],
-a2->slen[j]); float **m_bc = gmatrix<float>(lenx, leny);
-                        //cout << "here1" << endl;
-                        for(k=1;k<=lenx;k++) for(l=1;l<=leny;l++) m_bc[k][l] =
-0;
-                        //cout << "here" << endl;
-                        //cout << a1->query << " " << a1->id[i] << endl;
-                        //cout << a2->query << " " << a2->id[j] << endl;
-                        //cout << "numalignedp: " << numalignedp << endl;
-                        for(k=0;k<numalignedp;k++) {
-                                //cout << k << " " << a1->slen[i] << " " <<
-a2->slen[j] << " " << salnpos[0][k] << " " << salnpos[1][k] << endl;
-                                m_bc[salnpos[0][k]-offset_b][salnpos[1][k]-offset_c]
-= 1.0;
-                        }
-                        //cout << "b dimension: " << a1->slen[i] << endl;
-                        //cout << "c dimension: " << a1->slen[i] << endl;
-                        sparseMatrix *m_bc_S = new sparseMatrix(m_bc, lenx,
-leny); free_gmatrix<float>(m_bc, lenx, leny);
-
-                        // 3. get the residue match probability matrix between
-target a and template b
-                        //hmm_psipred *hmmProfPair = new hmm_psipred(auxa,
-auxb);
-                        //cout << "a1 prof: " << endl;
-a1->prof[i]->printali(70); hmm_psipred *hmmProfPair = new hmm_psipred(auxa,
-a1->prof[i]); hmmProfPair->set_parameters(params1);
-                        hmmProfPair->get_scores(ss_w, score_w);
-                        hmmProfPair->forward1();
-                        hmmProfPair->backward1();
-                        //weight_end_penalty = 0.001;
-                        //hmmProfPair->forward_no_end_penalty();
-                        //hmmProfPair->backward_no_end_penalty();
-                        realmat = hmmProfPair->probMat;
-                        lenx = hmmProfPair->lenx; leny = hmmProfPair->leny;
-
-                        for(k=1;k<=lenx;k++){for(l=1;l<=leny;l++){if(realmat[k][l]<minProb)realmat[k][l]
-= 0;}} sparseMatrix *m_ab_S = new sparseMatrix(realmat, lenx, leny); if(debug>1)
-m_ab_S->printCrs(); delete hmmProfPair;
-
-                        //cout << "b dimension 2: " << leny << endl;
-                        //cout << "b start: " << a1->str_start[i] << endl;
-                        //cout << "a dimension: " << lenx << endl;
-
-                        // 4. get the residue match probability matrix between
-template c and target d hmmProfPair = new hmm_psipred(a2->prof[j], auxb);
-                        hmmProfPair->set_parameters(params1);
-                        hmmProfPair->get_scores(ss_w, score_w);
-                        hmmProfPair->forward1();
-                        hmmProfPair->backward1();
-                        //weight_end_penalty = 0.001;
-                        //hmmProfPair->forward_no_end_penalty();
-                        //hmmProfPair->backward_no_end_penalty();
-                        realmat = hmmProfPair->probMat;
-                        lenx = hmmProfPair->lenx; leny = hmmProfPair->leny;
-
-                        for(k=1;k<=lenx;k++){for(l=1;l<=leny;l++){if(realmat[k][l]<minProb)realmat[k][l]
-= 0;}} sparseMatrix *m_cd_S = new sparseMatrix(realmat, lenx, leny); if(debug>1)
-m_cd_S->printCrs(); delete hmmProfPair;
-
-                        // 5. multiply all three matrices
-                        lenx = auxa->alilen;
-                        leny = a2->prof[j]->alilen;
-                        realmat = gmatrix<float>(lenx, leny);
-                        for(k=1;k<=lenx;k++) for(l=1;l<=leny;l++) realmat[k][l]
-= 0; relaxTwoSparse(m_ab_S, m_bc_S, realmat); sparseMatrix *m_abc_S = new
-sparseMatrix(realmat, lenx, leny); free_gmatrix(realmat, lenx, leny); leny =
-auxb->alilen; realmat = gmatrix<float>(lenx, leny); for(k=1;k<=lenx;k++)
-for(l=1;l<=leny;l++) realmat[k][l] = 0; relaxTwoSparse(m_abc_S, m_cd_S,
-realmat);
-                        //for(k=1;k<=lenx;k++) for(l=1;l<=leny;l++)
-if(realmat[k][l]<minProb) realmat[k][l]=0;
-
-                        // 6. add realmat to tmpMat
-                        for(k=1;k<=lenx;k++) for(l=1;l<=leny;l++) tmpMat[k][l]
-+= realmat[k][l]; free_gmatrix(realmat, lenx, leny);
-
-                        // 7. clean up the memories
-                        delete m_ab_S;
-                        //cout << "here___*******" << endl;
-                        delete m_bc_S;
-                        //cout << "here___*******" << endl;
-                        delete m_cd_S;
-                        //cout << "here___*******" << endl;
-                        delete m_abc_S;
-                        //cout << "here___*******" << endl;
-                        free_imatrix(salnpos, 1, numalignedp);
-                }
-        }
-        // filter the matrix with minProb
-        for(i=1;i<=a1->len;i++) {
-                for(j=1;j<=a2->len;j++) {
-                        if (tmpMat[i][j] < minProb) tmpMat[i][j]=0;
-                        else {
-                                //cout << "tmpMat: " << i << " " << j << " " <<
-auxa->aseq[0][i-1] << " " << auxb->aseq[0][j-1]<< tmpMat[i][j] << endl;
-                                tmpMat_count++;
-                        }
-                }
-        }
-
-        //cout << "tmpMat_count: " << tmpMat_count << endl;
-        if(tmpMat_count) return tmpMat;
-        else {
-                free_gmatrix<float>(tmpMat, a1->len, a2->len);
-                return NULL;
-        }
-        //cout << "This place" << endl;
-}
-*/
 
 // merge a and b according to the sequence with seq_name
 // b is added to a
@@ -1755,20 +1311,14 @@ subalign *merge_master_and_slaves(subalign *a, vector<subalign *> &b,
   newalign->alilen = a->alilen;
   newalign->mnamelen = a->mnamelen;
   int lenb;
-  // cout << "nal0: " << newalign->nal << endl;
   for (i = 0; i < ns; i++) {
     newalign->nal += (b[i]->nal - 1);
-    // cout << b[i]->nal-1 << endl;
     if (newalign->mnamelen < b[i]->mnamelen)
       newalign->mnamelen = b[i]->mnamelen;
   }
-  // cout << "newalign: " << endl;
-  // cout << "nal: " << newalign->nal << endl;
-  // cout << "mnamelen: " << newalign->mnamelen << endl;
   for (i = 0; i <= lena; i++) {
     newalign->alilen += added_gap_number[i];
   }
-  // cout << "alilen: " << newalign->alilen << endl;
 
   newalign->aname = cmatrix(newalign->nal, newalign->mnamelen);
   newalign->aseq = cmatrix(newalign->nal, newalign->alilen);
@@ -1795,13 +1345,10 @@ subalign *merge_master_and_slaves(subalign *a, vector<subalign *> &b,
     newseq[ni][nsi] = '\0';
     repindex = ni;
     ni++;
-    // cout << "ni: " << ni << endl;
 
     if (is_rep_index_in_a[i] == -1) continue;
     bi = is_rep_index_in_a[i];
     added_gap_number_1 = ivector(b[bi]->alilen);
-    // get_added_gap_number_1(b[bi]->aseq[rep_index_in_b[bi]], a->aseq[i],
-    // added_gap_number_1, b[bi]->alilen);
     get_added_gap_number_1(b[bi]->aseq[rep_index_in_b[bi]], newseq[repindex],
                            added_gap_number_1, b[bi]->alilen);
     lenb = b[bi]->alilen;
@@ -1821,12 +1368,10 @@ subalign *merge_master_and_slaves(subalign *a, vector<subalign *> &b,
       }
       newseq[ni][nsi] = '\0';
       ni++;
-      // cout << "ni: " << ni << endl;
     }
     delete[] added_gap_number_1;
   }
   delete[] added_gap_number;
-  // newalign->printali(80);
   return newalign;
 }
 
@@ -1860,9 +1405,6 @@ void get_added_gap_number_1(char *seq1, char *seq2, int *added_gap_number_1,
     s++;
     ss++;
   }
-  // cout << seq1 << endl;
-  // cout << seq2 << endl;
-  // for(i=0;i<=dim;i++) { cout << added_gap_number_1[i] << " "; } cout << endl;
 }
 
 char ssint2ss(int i) {
