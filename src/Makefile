@@ -45,9 +45,9 @@ $(MAIN): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $<  -o $@
 
 clean:
-	$(RM) *.o *~ $(MAIN) al2co_consensus
+	$(RM) *.o *~ $(MAIN)
 
-depend: $(SRCS)
-	makedepend $(INCLUDES) $^
+install:
+	cp promals_c promals ../bin/
 
 # DO NOT DELETE THIS LINE -- make depend needs it

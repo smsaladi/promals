@@ -64,24 +64,10 @@ class btree {
   getProfileForPreAligned();  // calculate the profile for the vector preAligned
   sparseMatrix ***smat,
       ***smat1;  // sparse matrix for installing posterior probabilities
-  void profileConsistency();
-  void profileConsistency_local();
-  void profileConsistency_glocal(float wg);
-  void profileConsistency_multim(hmm_parameters *params);
-  void profileConsistency_multim(hmm_parameters *params, double **dist_matrix,
-                                 double max_dist_cutoff);
-  void profileConsistency_multim2(hmm_parameters *params1,
-                                  hmm_parameters *params2, sequences *tmpSeq2,
-                                  double id_cutoff);
-  // void profileConsistency_multim(char *params);
   void printAlignmentFromAbs(TNODE *n, char *outfilename,
                              vector<subalign *> similaraln,
                              vector<char *> repnames);
   void printAlignmentFromAbs(TNODE *n);
-  void profileConsistency_profilehmm(hmm_parameters *params, char *ss_dir_name,
-                                     int use_ss, float ss_weight,
-                                     double **dist_matrix,
-                                     double max_dist_cutoff);
 
   // consistency derived from a set of alignments
   void alignment_consistency(vector<sequences> seq_vector);
@@ -90,7 +76,6 @@ class btree {
   void computeConsistencyAlignment(TNODE *a);
   int **computeConsistMatrix(TNODE *a, TNODE *b);
   void relaxConsistMatrix();
-  void relaxConsistMatrix(double **dist_matrix, double max_dist_cutoff);
   void relaxConsistMatrix(double **dist_matrix, double max_dist_cutoff,
                           double min_cutoff);
   int *computePairwiseAlignment(int **scoreMat, int m, int n,
@@ -99,10 +84,6 @@ class btree {
   void profileConsistency_psipred(hmm_psipred_parameters *params,
                                   double **dist_matrix, double max_dist_cutoff,
                                   int use_homologs);
-  void profileConsistency_psipred_sum_of_pairs(hmm_psipred_parameters *params,
-                                               double **dist_matrix,
-                                               double max_dist_cutoff,
-                                               int use_homologs);
 
   static int btreecount;
 
@@ -157,7 +138,6 @@ void btree<TNODE>::readTree(char *treefile) {
 
   root = new TNODE;
   size++;
-  // cout << size << endl;
   root->rootFlag = 1;
   readTreefile(tf, root);
 
@@ -176,9 +156,6 @@ void btree<TNODE>::readTreefile(ifstream &tf, TNODE *rt) {
     tf.get();
   }
   cfirst = tf.peek();
-  //
-  // cout <<"|"<< cfirst << "|"<<endl;
-  //
   if (cfirst == '(') {  // the childL
     cfirst = tf.get();
     rt->childL = new TNODE;
@@ -206,10 +183,6 @@ void btree<TNODE>::readTreefile(ifstream &tf, TNODE *rt) {
       // unrooted = true;
     }
   }
-  /* else if(cfirst == ')') {
-      tf.get();
-      readTreefile(tf, rt->parent();
-  } */
   else if (cfirst == ';') {
     tf.close();
     return;
@@ -242,17 +215,13 @@ void btree<TNODE>::readTreefile(ifstream &tf, TNODE *rt) {
       cfirst = tf.peek();
     }
     name[i] = '\0';
-    // strcpy(rt->name, name);
     rt->name = name;
-    // cout << "==== " << rt->name << " ==="<<endl;
 
     // 2. get the node len
     if (cfirst == ':') {
       tf.get();
       tf >> rt->branchlen;
     }
-    // cout << "==== " << rt->name << " === " << rt->branchlen << " === " <<
-    // rt->nodecount <<endl;
     readTreefile(tf, rt->parent);
   }
 }
@@ -321,7 +290,6 @@ void btree<TNODE>::writeTopologyfile(ofstream &otf, TNODE *rt) {
   // if rt is a leaf node: print leaf node name + branchlen
   if ((!rt->childL) && (!rt->childR) && (!rt->childT)) {
     otf << rt->name;
-    // otf << rt->name << ":" << rt->branchlen ;
   }
 
   // if rt is an internal node: print "(", childrens, ")", and branchlen
@@ -487,7 +455,6 @@ void btree<TNODE>::reroot(TNODE *nr) {
           tmpp->childL = tmpp->childT;
           tmpp->childT = 0;
         }
-        // tmpbranchlen = tmpp->branchlen;
         tmpp->branchlen = tmpn->branchlen;
         tmpn->branchlen = 0;
         tmpn = tmpp;  // the loop ends here since tmpp is the root
@@ -561,18 +528,9 @@ void btree<TNODE>::rootTree(TNODE *r, double len) {
   int i, j, k;
   TNODE *rp;
 
-  // cout << "----\n";
-  // cout << root->branchlen << endl;
   checkRoot();
-  // cout << "++++\n";
 
-  // r cannot be a leaf node or the root
-  /* if(r->childL==0) {
-          cout << "rootTree error msg: r cannot be a leaf node" << endl;
-          cout << "rootTree not executed" << endl;
-          return;
-  }
-  else */
+  // r cannot be root
   if (r->childT) {
     cout << "rootTree error msg: r cannot be the root" << endl;
     cout << "rootTree not executed" << endl;
@@ -609,24 +567,6 @@ void btree<TNODE>::rootTree(TNODE *r, double len) {
   r->branchlen = len;
   size++;
 
-  /*
-          // reroot the tree to r
-          rp = r->parent;
-          reroot(r); // after rerooting, rp becomes r->childT (my convention)
-
-          // add the new root
-          TNODE *newRoot = new TNODE;
-          newRoot->childL = r;
-          newRoot->childR = rp;
-          newRoot->childT = 0;
-          r->parent = newRoot;
-          r->childT = 0;
-          rp->parent = newRoot;
-          r->branchlen = len;
-          rp->branchlen = rp->branchlen - len;
-          size++;
-  */
-
   // update the root information
   root->rootFlag = 0;
   root = newRoot;
@@ -635,14 +575,6 @@ void btree<TNODE>::rootTree(TNODE *r, double len) {
 
   // update the v array
   map_v();
-  // TNODE **v1 = new TNODE * [size+1];
-  // for(i=1;i<size;i++) v1[i] = v[i];
-  // v1[size] = root;
-  // root->n = size;
-  // delete [] v;
-  // v = new tonde[size+1];
-  // for(i=1;i<=size;i++) v[i] = v1[i];
-  // delete [] v1;
 
   checkRoot();
 
@@ -710,6 +642,39 @@ void btree<TNODE>::checkRoot() {
     exit(1);
   }
 }
+
+template <typename TNODE>
+void btree<TNODE>::get_descendants(TNODE *r) {
+  int i, j, k;
+
+  if (r->childL) {
+    get_descendants(r->childL);
+    get_descendants(r->childR);
+    r->descendants = r->childL->descendants + r->childR->descendants;
+  } else {
+    r->descendants = 1;
+  }
+}
+
+template <typename TNODE>
+void btree<TNODE>::assign_weights(TNODE *r) {
+  TNODE *tmp;
+  if (r->childL) {
+    r->seq_weight = 0;
+    assign_weight(r->childL);
+    assign_weight(r->childR);
+  }
+
+  else {
+    r->seq_weight = 0;
+    tmp = r;
+    while (tmp->rootFlag) {
+      r->seq_weight += tmp->branchlen() / tmp->descendants;
+    }
+  }
+}
+
+
 
 // find in each branch if there exists a point other than the end points that
 // minimizes the variance of the distances of all leaf nodes to that point Na:
@@ -779,17 +744,9 @@ void btree<TNODE>::leastSquareRoot(TNODE **rootNode, double *dist, double *var,
     }  // ignore the root
 
     // root the tree to origV[i]
-    // cout << "i: " << i << endl;
     rootTree(origV[i], origV[i]->branchlen / 2);
-    // char treename[20];
-    // sprintf(treename, "t%d.tre", i);
-    // writeTree(treename);
-
+    
     // calculate the distances from the leaf nodes to the root
-    for (j = 1; j <= size; j++) {
-      // cout << j << "\t" << a[j] << "\t" << b[j] << endl;
-    }
-
     cal_len2root(root->childL, a);
     cal_len2root(root->childR, b);
     for (j = 1; j <= size; j++) {
@@ -814,22 +771,9 @@ void btree<TNODE>::leastSquareRoot(TNODE **rootNode, double *dist, double *var,
           tmpNode = tmpNode->parent;
         }
       }
-      // cout << j << "\t" << a[j] << "\t" << b[j] << endl;
-      /* if(a[j]!=0) {
-              Na++;
-              t += a[j];
-      }
-      if(b[j]!=0) {
-              Nb++;
-              b[j] += (root->childL->branchlen + root->childR->branchlen);
-              t += b[j];
-      } */
     }
     t /= (Na + Nb);
     s = 1.0 * (Na - Nb) / (Na + Nb);
-
-    // cout << "Na: " << Na << " Nb: " << Nb << " t: " << t << " s: " << s <<
-    // endl;
 
     for (j = 1; j <= size; j++) {
       if (v[j]->childL) continue;
@@ -838,11 +782,9 @@ void btree<TNODE>::leastSquareRoot(TNODE **rootNode, double *dist, double *var,
       while (tmpNode != root) {
         if (tmpNode == root->childL) {
           x += (a[j] - t) * (1 - s);
-          // cout << "j: a " << j << " " << (a[j]-t)*(1-s) << endl;
           break;
         } else if (tmpNode == root->childR) {
           x -= (b[j] - t) * (1 + s);
-          // cout << "j: b " << j << " " << (b[j]-t)*(1+s) << endl;
           break;
         } else {
           tmpNode = tmpNode->parent;
@@ -853,8 +795,6 @@ void btree<TNODE>::leastSquareRoot(TNODE **rootNode, double *dist, double *var,
     y += (1 - s) * (1 - s) * Na;
     y = 0 - y;
     x /= y;
-    // cout << "x: " << x << " " << root->childL->branchlen +
-    // root->childR->branchlen << endl; x / = (0-(1+s)*(1+s)*Nb-(1-s)*(1-s)*Na );
 
     if ((x >= 0) && x < (root->childL->branchlen + root->childR->branchlen)) {
       rootNode[k] = root->childL;
@@ -879,11 +819,7 @@ void btree<TNODE>::leastSquareRoot(TNODE **rootNode, double *dist, double *var,
       k++;
     }
 
-    // cout << "i again: " << i << endl;
     reroot(origR);
-    // cout << root->branchlen << endl;
-    // cout << "=========" << endl;
-
   }  // end of i
   Num = k - 1;
 }
@@ -894,8 +830,6 @@ void btree<TNODE>::UPGMA(float **distMat, vector<string> seq,
   int i, j, k;
   double minElement;
   int ci = 0, cj = 0;
-  // int mark[nseqs+1];
-  // double d[nseqs+1];
 
   int *mark;
   double *d;
@@ -916,11 +850,8 @@ void btree<TNODE>::UPGMA(float **distMat, vector<string> seq,
   size = 2 * nseqs - 1;
   for (i = 1; i <= nseqs; i++) {
     // copy the names
-    // if(name[i].length()>=49) name[i].copy(tnodeArray[i]->name,49);
-    // else name[i].copy(tnodeArray[i]->name, name[i].length());
     tnodeArray[i]->name = name[i];
     tnodeArray[i]->n = i;  // new
-    // cout << tnodeArray[i]->name << endl;
 
     // copy the arrays: skipping the gaps
     tnodeArray[i]->aseq = cvector(seq[i].length() + 1);
@@ -939,7 +870,6 @@ void btree<TNODE>::UPGMA(float **distMat, vector<string> seq,
 
     // get the subalign from the seq and name
     tnodeArray[i]->getSubalign();
-    // cout << i << " " << tnodeArray[i]->aligned << endl;
   }
 
   tnodeArray = new TNODE *[nseqs + 1];
@@ -969,11 +899,8 @@ void btree<TNODE>::UPGMA(float **distMat, vector<string> seq,
         }
       }
     }
-    // cout << "minElement: " << minElement << endl;
-    // TNODE *a = new TNODE;
     TNODE *a = v[current_tnode_index];  // new
     a->n = current_tnode_index;         // new
-    // cout << "current_tnode_index " << current_tnode_index << endl;
     current_tnode_index += 1;  // new
     a->childL = tnodeArray[ci];
     a->childR = tnodeArray[cj];
@@ -983,8 +910,6 @@ void btree<TNODE>::UPGMA(float **distMat, vector<string> seq,
         minElement / 2 - d[ci];  //(minElement + d[cj] - d[ci])/2;
     tnodeArray[cj]->branchlen =
         minElement / 2 - d[cj];  //(minElement + d[ci] - d[cj])/2;
-    // cout << tnodeArray[ci]->branchlen << "\t" << tnodeArray[cj]->branchlen <<
-    // endl;
     for (i = 1; i <= nseqs; i++) {
       if (mark[i] == 0) continue;
       if (i == cj) continue;
@@ -1003,17 +928,10 @@ void btree<TNODE>::UPGMA(float **distMat, vector<string> seq,
     }
   }
 
-  // cout << "finished here" << endl;
-  // writeTree("tmptree.tre");
-  //
-  // for(i=1;i<nseqs*2;i++) { cout << i << " " << v[i]->aligned << endl; }
-
   delete[] mark;
   delete[] d;
   delete[] tnodeArray;
   free_dmatrix(newMat, nseqs, nseqs);
-
-  // writeTree("tmp.tree");
 }
 
 #endif

@@ -1,5 +1,4 @@
 #include "multiple.h"
-#include "btree_template.h"
 #include "constraint.h"
 #include "param.h"
 #include "progressiveAlignHMM.h"
