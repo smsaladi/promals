@@ -32,10 +32,7 @@ MAIN = promals_c
 
 .PHONY: depend clean
 
-all:    $(MAIN) al2co_consensus
-
-al2co_consensus: al2co_consensus.c
-	$(CC) $(CFLAGS) $(INCLUDES) $(LFLAGS) $(LIBS) al2co_consensus.c -o al2co_consensus
+all:    $(MAIN)
 
 refinegap: refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LFLAGS) $(LIBS) refinegap.c consv1.o mathfunc.o subalign.o util.o amino.o -o refinegap
