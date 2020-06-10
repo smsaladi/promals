@@ -1,0 +1,27 @@
+LICENSE
+
+PROMALS3D is released with a note stating:
+
+    This program is free for academic use.
+    Please read the file 'license' for additional information.
+    Contact: Jimin Pei (jpei [AT] chop [DOT] swmed [DOT] edu)
+
+There is no `license` file included with the archive.
+
+
+`ScoreType.h` is from PROBCONS whose release states the following:
+
+PROBCONS has been made freely available as PUBLIC DOMAIN
+software and hence is not subject to copyright in the United
+States. This system and/or any portion of the source code
+may be used, modified, or redistributed without restrictions.  
+PROBCONS is distributed WITHOUT WARRANTY, express or implied.
+The authors accept NO LEGAL LIABILITY OR RESPONSIBILITY for
+loss due to reliance on the program. 
+
+
+My contributions are available under BSDv3 or any other OSS compliant
+license that is specified by the authors of PROMALS.
+  Shyam Saladi (saladi@caltech.edu)
+  June 2020
+
