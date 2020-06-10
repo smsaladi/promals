@@ -18,7 +18,7 @@ INCLUDES =
 LFLAGS =
 LIBS = -lm
 
-SRCS = progress.c kmer_dist.c util.c amino.c mathfunc.c subalign.c sequences.c tnode.c btree_template.h smallnumber.c progressiveAlignHMM.h sparsematrix.c time.c mm.c hmm_profpair1.c param.c hmm_local.c hmm_multim.c refinegap.c consv1.c multiple.c ss_prof.c regularizer.c hmm_psipred.c blastpgp.c gap_refining.c refine.c seq_str_aln.c constraint.c structutil.c filter_similar.c
+SRCS = progress.c kmer_dist.c util.c amino.c mathfunc.c subalign.c sequences.c tnode.c btree_template.h smallnumber.c progressiveAlignHMM.h sparsematrix.c time.c mm.c hmm_profpair.c param.c hmm_local.c hmm_multim.c refinegap.c consv1.c multiple.c ss_prof.c regularizer.c hmm_psipred.c blastpgp.c gap_refining.c refine.c seq_str_aln.c constraint.c structutil.c filter_similar.c
 
 OBJS = $(SRCS:.c=.o)
 

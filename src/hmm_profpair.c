@@ -1,8 +1,8 @@
 #include "all.h"
-#include "hmm_profpair1.h"
+#include "hmm_profpair.h"
 
 static int debug = 0;
-hmm_profpair1::hmm_profpair1(subalign *x1, subalign *y1) {
+hmm_profpair::hmm_profpair(subalign *x1, subalign *y1) {
   x = x1;
   y = y1;
   lenx = x->alilen;
@@ -23,7 +23,7 @@ hmm_profpair1::hmm_profpair1(subalign *x1, subalign *y1) {
   probMat = 0;
 }
 
-hmm_profpair1::~hmm_profpair1() {
+hmm_profpair::~hmm_profpair() {
   free_gmatrix<float>(Vm, lenx, leny);
   free_gmatrix<float>(Vx, lenx, leny);
   free_gmatrix<float>(Vy, lenx, leny);
@@ -46,7 +46,7 @@ hmm_profpair1::~hmm_profpair1() {
   // cout << "indeed freed" << endl;
 }
 
-void hmm_profpair1::viterbi() {
+void hmm_profpair::viterbi() {
   int i, j, k;
   int xi, yj, a;
 
@@ -245,7 +245,7 @@ void hmm_profpair1::viterbi() {
 
 // this is correponds to sum-of-pairs of the log-odds RATIO scores of weighted
 // amino acid pairs
-float hmm_profpair1::log_odds_score(int xi, int yj) {
+float hmm_profpair::log_odds_score(int xi, int yj) {
   int i, j;
 
   float score = 0;
@@ -273,7 +273,7 @@ float hmm_profpair1::log_odds_score(int xi, int yj) {
   return score;
 }
 
-float hmm_profpair1::max3(float a, float b, float c, int &t) {
+float hmm_profpair::max3(float a, float b, float c, int &t) {
   float max;
 
   if (a >= b) {
@@ -296,7 +296,7 @@ float hmm_profpair1::max3(float a, float b, float c, int &t) {
   return max;
 }
 
-float hmm_profpair1::max2(float a, float b, int &t) {
+float hmm_profpair::max2(float a, float b, int &t) {
   if (a >= b) {
     t = 1;
     return a;
@@ -306,7 +306,7 @@ float hmm_profpair1::max2(float a, float b, int &t) {
   }
 }
 
-void hmm_profpair1::printHmmAlign(int blocksize) {
+void hmm_profpair::printHmmAlign(int blocksize) {
   int i, j, k;
 
   int nblocks;
@@ -371,7 +371,7 @@ void hmm_profpair1::printHmmAlign(int blocksize) {
 }
 
 // generate an alignment of the two alignments
-subalign *hmm_profpair1::productViterbiAlign() {
+subalign *hmm_profpair::productViterbiAlign() {
   int i, j, k;
 
   // subalign *newAlign = new subalign();
@@ -434,7 +434,7 @@ subalign *hmm_profpair1::productViterbiAlign() {
   return a;
 }
 
-void hmm_profpair1::forward() {
+void hmm_profpair::forward() {
   int i, j, k;
 
   ScoreType mm, mxy, xym, xy, E;
@@ -547,7 +547,7 @@ void hmm_profpair1::forward() {
 
 // this is correponds to sum-of-pairs of the log-odds scores of weighted amino
 // acid pairs
-ScoreType hmm_profpair1::log_odds(int xi, int yj) {
+ScoreType hmm_profpair::log_odds(int xi, int yj) {
   int i, j;
 
   ////double score = 0;
@@ -580,7 +580,7 @@ ScoreType hmm_profpair1::log_odds(int xi, int yj) {
 }
 
 // this is correponds to log-odds scores of weighted amino acid frequencies
-ScoreType hmm_profpair1::log_odds_x(int xi) {
+ScoreType hmm_profpair::log_odds_x(int xi) {
   int i, j;
 
   ////double score = 0;
@@ -606,7 +606,7 @@ ScoreType hmm_profpair1::log_odds_x(int xi) {
 }
 
 // this is correponds to log-odds scores of weighted amino acid frequencies
-ScoreType hmm_profpair1::log_odds_y(int yj) {
+ScoreType hmm_profpair::log_odds_y(int yj) {
   int i, j;
 
   ////double score = 0;
@@ -632,7 +632,7 @@ ScoreType hmm_profpair1::log_odds_y(int yj) {
 }
 
 // this is correponds to log-odds scores of weighted amino acid frequencies
-float hmm_profpair1::log_odds_x_d(int xi) {
+float hmm_profpair::log_odds_x_d(int xi) {
   int i, j;
 
   ////double score = 0;
@@ -656,7 +656,7 @@ float hmm_profpair1::log_odds_x_d(int xi) {
 }
 
 // this is correponds to log-odds scores of weighted amino acid frequencies
-float hmm_profpair1::log_odds_y_d(int yj) {
+float hmm_profpair::log_odds_y_d(int yj) {
   int i, j;
 
   float score = 0;
@@ -678,7 +678,7 @@ float hmm_profpair1::log_odds_y_d(int yj) {
   return score;
 }
 
-void hmm_profpair1::backward() {
+void hmm_profpair::backward() {
   int i, j, k;
 
   ScoreType mm, mxy, xym, xy, E;
@@ -806,11 +806,11 @@ void hmm_profpair1::backward() {
   // fprintf(stdout, "================\n");
 }
 
-void hmm_profpair1::getPosterior() {
+void hmm_profpair::getPosterior() {
   ;  // nothing here now
 }
 
-void hmm_profpair1::getTransitions() {
+void hmm_profpair::getTransitions() {
   ep = log(epsilon);
   ep1 = log(1 - epsilon);
   d = log(delta);
@@ -819,7 +819,7 @@ void hmm_profpair1::getTransitions() {
   th2 = log(1 - 2 * theta);
 }
 
-void hmm_profpair1::baumwelch() {
+void hmm_profpair::baumwelch() {
   int i, j;
 
   getTransitions();
@@ -916,7 +916,7 @@ void hmm_profpair1::baumwelch() {
 
 float newEP = 0.79, newD = 0.019;
 
-int *hmm_profpair1::posteriorAlignment() {
+int *hmm_profpair::posteriorAlignment() {
   int i, j, k;
   int *path;
 

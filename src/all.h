@@ -7,7 +7,6 @@
 #include "header_cpp.h"
 #include "hmm_local.h"
 #include "hmm_profpair.h"
-#include "hmm_profpair1.h"
 #include "kmer_dist.h"
 #include "mathfunc.h"
 #include "sequences.h"

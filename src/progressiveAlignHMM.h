@@ -6,7 +6,6 @@
 #include "amino.h"
 #include "btree_template.h"
 #include "hmm_profpair.h"
-#include "hmm_profpair1.h"
 #include "mm.h"
 #include "sequences.h"
 #include "tnode.h"
@@ -44,7 +43,7 @@ void btree<TNODE>::progressiveAlignHMM(TNODE *n) {
   // cout << "======" << endl;
   a = n->childL->aln;
   b = n->childR->aln;
-  hmm_profpair1 profHMM(a, b);
+  hmm_profpair profHMM(a, b);
 
   a->gap_threshold = b->gap_threshold = 1;
   a->beta = 0;
@@ -111,7 +110,7 @@ void btree<TNODE>::progressiveAlignHMM_FastStage(TNODE *n, float distCutoff) {
   // cout << "======" << endl;
   a = n->childL->aln;
   b = n->childR->aln;
-  hmm_profpair1 profHMM(a, b);
+  hmm_profpair profHMM(a, b);
 
   a->gap_threshold = b->gap_threshold = 1;
   a->beta = 0;
@@ -384,8 +383,8 @@ void btree<TNODE>::profileConsistency() {
     for (j = i + 1; j < (int)preAligned.size(); j++) {
       // cout << "i: " << i << "\t" << "j: " << "\t" << j << endl;
       nonZeroCounts = 0;
-      hmm_profpair1 *hmmProfPair =
-          new hmm_profpair1(preAligned[i]->aln, preAligned[j]->aln);
+      hmm_profpair *hmmProfPair =
+          new hmm_profpair(preAligned[i]->aln, preAligned[j]->aln);
       hmmProfPair->viterbi();
       if (Debug > 1)
         cout << "Pairwise viterbi alignment: " << i << "\t" << j << endl;
@@ -456,7 +455,7 @@ void btree<TNODE>::profileConsistency_multim(hmm_parameters *params) {
       hmm_multim *hmmProfPair =
           new hmm_multim(preAligned[i]->aln, preAligned[j]->aln);
       hmmProfPair->set_parameters(params);
-      // hmm_profpair1 *hmmProfPair = new hmm_profpair1(preAligned[i]->aln,
+      // hmm_profpair *hmmProfPair = new hmm_profpair(preAligned[i]->aln,
       // preAligned[j]->aln); hmmProfPair->viterbi(); cout << "Pairwise viterbi
       // alignment: " << i << "\t" << j << endl; subalign *newalign =
       // hmmProfPair->productViterbiAlign(); newalign->printali(70); delete
@@ -556,7 +555,7 @@ void btree<TNODE>::profileConsistency_multim(hmm_parameters *params,
       hmm_multim *hmmProfPair =
           new hmm_multim(preAligned[i]->aln, preAligned[j]->aln);
       hmmProfPair->set_parameters(params);
-      // hmm_profpair1 *hmmProfPair = new hmm_profpair1(preAligned[i]->aln,
+      // hmm_profpair *hmmProfPair = new hmm_profpair(preAligned[i]->aln,
       // preAligned[j]->aln); hmmProfPair->viterbi(); cout << "Pairwise viterbi
       // alignment: " << i << "\t" << j << endl; subalign *newalign =
       // hmmProfPair->productViterbiAlign(); newalign->printali(60); delete
@@ -664,7 +663,7 @@ void btree<TNODE>::profileConsistency_psipred(hmm_psipred_parameters *params,
       // preAligned[i]->aln->printali(60);
       // preAligned[j]->aln->printali(60);
       hmmProfPair->set_parameters(params);
-      // hmm_profpair1 *hmmProfPair = new hmm_profpair1(preAligned[i]->aln,
+      // hmm_profpair *hmmProfPair = new hmm_profpair(preAligned[i]->aln,
       // preAligned[j]->aln); hmmProfPair->viterbi(); cout << "Pairwise viterbi
       // alignment: " << i << "\t" << j << endl; subalign *newalign =
       // hmmProfPair->productViterbiAlign(); newalign->printali(60); delete
@@ -805,7 +804,7 @@ void btree<TNODE>::profileConsistency_psipred_sum_of_pairs(
       // preAligned[i]->aln->printali(60);
       // preAligned[j]->aln->printali(60);
       hmmProfPair->set_parameters(params);
-      // hmm_profpair1 *hmmProfPair = new hmm_profpair1(preAligned[i]->aln,
+      // hmm_profpair *hmmProfPair = new hmm_profpair(preAligned[i]->aln,
       // preAligned[j]->aln); hmmProfPair->viterbi(); cout << "Pairwise viterbi
       // alignment: " << i << "\t" << j << endl; subalign *newalign =
       // hmmProfPair->productViterbiAlign(); newalign->printali(60); delete
@@ -914,8 +913,8 @@ void btree<TNODE>::profileConsistency_profilehmm(hmm_parameters *params,
       // cout << "i: " << i << "\t" << "j: " << "\t" << j << endl;
       nonZeroCounts = 0;
       // hmm_multim *hmmProfPair = new hmm_multim(preAligned[i]->aln,
-      // preAligned[j]->aln); hmmProfPair->set_parameters(params); hmm_profpair1
-      // *hmmProfPair = new hmm_profpair1(preAligned[i]->aln,
+      // preAligned[j]->aln); hmmProfPair->set_parameters(params); hmm_profpair
+      // *hmmProfPair = new hmm_profpair(preAligned[i]->aln,
       // preAligned[j]->aln); hmmProfPair->viterbi(); cout << "Pairwise viterbi
       // alignment: " << i << "\t" << j << endl; subalign *newalign =
       // hmmProfPair->productViterbiAlign(); newalign->printali(60); delete
@@ -1193,8 +1192,8 @@ void btree<TNODE>::profileConsistency_glocal(float wg) {
       hmmProfPair->forward();
       hmmProfPair->backward();
 
-      hmm_profpair1 *hmmProfPair_g =
-          new hmm_profpair1(preAligned[i]->aln, preAligned[j]->aln);
+      hmm_profpair *hmmProfPair_g =
+          new hmm_profpair(preAligned[i]->aln, preAligned[j]->aln);
       hmmProfPair_g->forward();
       hmmProfPair_g->backward();
       realmat = hmmProfPair->probMat;
