@@ -8,18 +8,12 @@ extern double minProb;
 extern string outFile;
 extern int probconsBLOSUM;
 
-extern void getParameter(int argc, char **argv, int prog);
+extern void getParameter(int argc, char **argv);
 extern void printParameters();
-extern void printParameters1();
-extern void printHelp(int prog);
-extern int useLocal;
-extern float weightG;
+extern void printHelp();
 extern int solv;
 extern int ss;
 extern int unaligned;
-extern char parameter_file[];
-extern char parameter_file1[];
-extern char parameter_file2[];
 extern int relax_number;
 extern int reverse_align_order;
 extern double id_thr;
@@ -31,7 +25,6 @@ extern int psipred_env_number;
 extern char psipred_dir[500];
 extern char psipred_parameter_file[200];
 extern char runpsipred_command[500];
-extern char runpsipred1_command[500];
 
 // for database homolog
 extern char blast_dir[500];
@@ -42,7 +35,6 @@ extern char blastpgp_command[500];
 // for using ss-dependent amino acid frequencies
 extern int use_ss_freq;  // 0, 1, or 2
 
-extern int use_single_sequence;
 extern float ss_w;
 extern float score_w;
 extern float score_shift;

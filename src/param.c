@@ -8,14 +8,9 @@ double ave_grp_thr = 1;
 double minProb = 0.01;
 string outFile = "";
 int probconsBLOSUM = 1;  // probcons blosum62
-int useLocal = 3;
-float weightG = 1;
 int ss = 3;
 int solv = 1;
 int unaligned = 0;
-char parameter_file[200];
-char parameter_file1[200];
-char parameter_file2[200];
 int relax_number = 2;
 int reverse_align_order = 0;
 double id_thr = 0.6;
@@ -25,7 +20,6 @@ char program_dir[500];
 int psipred_env_number;
 char psipred_dir[500];
 char runpsipred_command[500];
-char runpsipred1_command[500];
 
 // for database homolog
 char blast_dir[500];
@@ -36,10 +30,7 @@ char blastpgp_command[500];
 int use_ss_freq = 2;
 
 char psipred_parameter_file[200];
-int use_single_sequence = 0;
 
-// float ss_w = 0.3;
-// float score_w = 1;
 float ss_w = 0.2;
 float score_w = 0.8;
 float score_shift = 0;
@@ -111,22 +102,20 @@ int use_updated_database = 1;
 //
 int max_struct_number = 1;
 
-void getParameter(int argc, char **argv, int prog) {
+void getParameter(int argc, char **argv) {
   int i, j;
   string argStr;
 
   if (argc <= 1) {
-    printHelp(prog);
+    printHelp();
     exit(0);
   }
 
   if (argv[1][0] == '-') {
-    printHelp(prog);
+    printHelp();
     exit(0);
   }
 
-  // cout << argc << endl;
-  parameter_file[0] = '\0';
   psipred_dir[0] = '.';
   psipred_dir[1] = '\0';
   blast_dir[0] = '.';
@@ -143,7 +132,6 @@ void getParameter(int argc, char **argv, int prog) {
 
   strcpy(blastpgp_command, "blastpgp");
   strcpy(runpsipred_command, "runpsipredplus");
-  strcpy(runpsipred1_command, "runpsipredplus");
 
   if (getenv("PROMALS_DIR")) {
     strcpy(program_dir, getenv("PROMALS_DIR"));
@@ -165,12 +153,8 @@ void getParameter(int argc, char **argv, int prog) {
   strcpy(blast_dir, argv[1]);
   strcat(blast_dir, "_blast");
 
-  strcpy(parameter_file,
-         "hmm_parameters/dataset_0.20_0.40_0.60_abcd.dali0.solv1_ss1.mat");
-
   for (i = 1; i < argc; i++) {
     argStr = argv[i];
-    // if(argStr == "-a") { ave_grp_thr = atof(argv[i+1]); continue; }
     if (argStr == "-minprob") {
       minProb = atof(argv[i + 1]);
       continue;
@@ -182,14 +166,6 @@ void getParameter(int argc, char **argv, int prog) {
     if (argStr == "-pb") {
       probconsBLOSUM = atoi(argv[i + 1]);
       continue;
-    }
-    if (argStr == "-local") {
-      useLocal = atoi(argv[i + 1]);
-    }
-    if (argStr == "-wg") {
-      weightG = atof(argv[i + 1]);
-      assert(weightG >= 0);
-      assert(weightG <= 1);
     }
     if (argStr == "-ss") {
       ss = atoi(argv[i + 1]);
@@ -206,16 +182,6 @@ void getParameter(int argc, char **argv, int prog) {
       unaligned = atoi(argv[i + 1]);
       assert(unaligned <= 1);
     }
-
-    if (argStr == "-param") {
-      strcpy(parameter_file, argv[i + 1]);
-    }
-    if (argStr == "-param1") {
-      strcpy(parameter_file1, argv[i + 1]);
-    }
-    if (argStr == "-param2") {
-      strcpy(parameter_file2, argv[i + 1]);
-    }
     if (argStr == "-r") {
       relax_number = atoi(argv[i + 1]);
     }
@@ -224,9 +190,7 @@ void getParameter(int argc, char **argv, int prog) {
     }
     if (argStr == "-id_thr") {
       id_thr = atof(argv[i + 1]);
-      // cout << id_thr << endl;
     }
-
     if (argStr == "-psipred_dir") {
       strcpy(psipred_dir, argv[i + 1]);
     }
@@ -235,9 +199,6 @@ void getParameter(int argc, char **argv, int prog) {
     }
     if (argStr == "-psipred_param") {
       strcpy(psipred_parameter_file, argv[i + 1]);
-    }
-    if (argStr == "-use_single_sequence") {
-      use_single_sequence = atoi(argv[i + 1]);
     }
     if (argStr == "-ss_weight") {
       ss_w = atof(argv[i + 1]);
@@ -268,7 +229,6 @@ void getParameter(int argc, char **argv, int prog) {
       }
       iteration_number++;  // to get a check point file, iteration number must
                            // be above 1
-      // if(iteration_number <=0) iteration_number = 1;
       if (iteration_number > 50) iteration_number = 50;
     }
     if (argStr == "-evalue") {
@@ -370,7 +330,6 @@ void getParameter(int argc, char **argv, int prog) {
     }
     if (argStr == "-dali") {
       use_dali = atoi(argv[i + 1]);
-      // if(dali < 0) { dali = 0; }
       if (use_dali) {
         char command1[500];
         sprintf(command1, "ls %s/bin/DaliLite", program_dir);
@@ -384,7 +343,6 @@ void getParameter(int argc, char **argv, int prog) {
     }
     if (argStr == "-fast") {
       use_fast = atoi(argv[i + 1]);
-      // if(minDaliZ < 0) { minDaliZ = 0; }
       if (use_fast) {
         char command1[500];
         sprintf(command1, "ls %s/bin/fast", program_dir);
@@ -398,7 +356,6 @@ void getParameter(int argc, char **argv, int prog) {
     }
     if (argStr == "-tmalign") {
       use_tmalign = atoi(argv[i + 1]);
-      // if(minDaliZ < 0) { minDaliZ = 0; }
       if (use_tmalign) {
         char command1[500];
         sprintf(command1, "ls %s/bin/tmalign", program_dir);
@@ -412,15 +369,12 @@ void getParameter(int argc, char **argv, int prog) {
     }
     if (argStr == "-realign_psiblast") {
       realign_psiblast = atoi(argv[i + 1]);
-      // if(minDaliZ < 0) { minDaliZ = 0; }
     }
     if (argStr == "-constraint") {
       strcpy(constraint_file, argv[i + 1]);
-      // if(minDaliZ < 0) { minDaliZ = 0; }
     }
     if (argStr == "-user_constraint") {
       strcpy(user_constraint, argv[i + 1]);
-      // if(minDaliZ < 0) { minDaliZ = 0; }
     }
     if (argStr == "-weight_end_penalty") {
       weight_end_penalty = atof(argv[i + 1]);
@@ -441,7 +395,6 @@ void getParameter(int argc, char **argv, int prog) {
       max_struct_number = atoi(argv[i + 1]);
     }
   }
-  // cout << "Here" << endl;
 
   // check if blast_dir is a regular file
   struct stat buf;
@@ -484,106 +437,22 @@ void getParameter(int argc, char **argv, int prog) {
     cout << "Error: blast directory not executable " << blast_dir << endl;
     exit(0);
   }
-
-  // cout << "Setting up a blast directory: " << blast_dir << endl << endl;
 }
 
 void printParameters() {
   cout << "List of parameters: " << endl;
-  // cout << "  ave_grp_thr: " << ave_grp_thr << endl;
-  // cout << "  minprob: " << minProb << endl;
-  // cout << "  outfile name: " << outFile << endl;
-  // cout << "  using probscons blosum62: " << probconsBLOSUM << endl;
-  // cout << "  using local alignment option: " << useLocal;
-  /*switch (useLocal) {
-          case 1: cout << "  local only" << endl; break;
-          case 0: cout << "  global only" << endl; break;
-          case 2: cout << "  both local and global" << endl;
-                  cout << "  weight of global: " << weightG << endl; break;
-          default: cout << "   global only" << endl;
-  }*/
-  // cout << "  unaligned: " << unaligned << endl;
-  // cout << "  ss: " << ss << "\n  solv: " << solv << "\n  parameter file: " <<
-  // parameter_file << endl;
   cout << "  identity threshold: " << id_thr << endl;
-  // cout << "  relax_number: " << relax_number << endl;
-  // cout << "  reverse align order: " << reverse_align_order << endl;
-}
-
-void printParameters1() {
-  // cout << "  psipred_dir: " << psipred_dir << endl;
-  // cout << "  psipred_env_number:  " << psipred_env_number << endl;
-  // cout << "  psipred_param: " << psipred_parameter_file << endl;
   cout << "  blast_dir: " << blast_dir << endl;
-  // cout << "  use_ss_freq: " << use_ss_freq << endl;
   cout << "  secondary structure weight: " << ss_w << endl;
   cout << "  amino acid weight: " << score_w << endl;
-  // cout << "  adjust_weight: " << adjust_weight << endl;
-  // cout << "  score_shift: " << score_shift << endl;
-
-  // cout << endl;
-  // cout << "  blastpgp_cmd: " << blastpgp_command << endl;
-  // cout << "  runpsipred_command: " << runpsipred_command << endl;
-  // cout << "  runpsipred1_command: " << runpsipred1_command << endl;
-  // cout << "  uniref90_file: " << uniref90_file << endl;
-  // cout << endl;
-
-  // cout << "  relax_count: ";
-  // if(relax_count<=0) cout << "20" << endl;
-  // else cout << relax_count << endl;
 }
 
-void printHelp(int prog) {
-  if (prog == 1)  // mummals
-  {
+void printHelp() {
     cout << endl << " promals with 3D information " << endl;
 
     cout << " Usage:" << endl;
     cout << " \t promals input_file [options]" << endl;
     cout << endl;
     return;
-
-    cout << " options: " << endl << endl;
-
-    // cout << " -ss         Number of secondary structural types, 1 or 3" <<
-    // endl; cout << " -solv       Number of solvent accessibility categories, 1,
-    // 2 or 3" << endl; cout << " -unaligned  Number of additional match states
-    // for unaligned regions, 0 or 1" << endl; cout << " -param      Input
-    // parameter file for hidden Markov model" << endl;
-    cout << " -id_thr     identity threshold above which neighboring groups "
-            "are aligned in a fast way, between 0 and 1"
-         << endl;
-
-    cout << " -outfile    Output file name" << endl;
-    cout << endl;
-
-    cout << " Example: " << endl << endl;
-    cout << " promals tmp1.fa -id_thr 0.6 -outfile tmp1.mummals.aln" << endl;
-
-    cout << endl;
-  }
-
-  else if (prog == 0)  // merge_align
-  {
-    cout << endl
-         << "merge_align - merge several multiple alignments into one "
-            "alignment based on consistency";
-    cout << endl << endl;
-
-    cout << " input should be a file that contains a list of alignment file "
-            "names"
-         << endl;
-    cout << " each alignment file should be in fasta format " << endl;
-    cout << endl;
-    cout << " Usage:" << endl;
-    cout << " \t merge_align input_file_list [options]" << endl;
-    cout << endl;
-
-    cout << " options: " << endl << endl;
-    cout << " -outfile    Output file name " << endl;
-    cout << "	   if not specified, it will be input_file_list.merge_aln.aln"
-         << endl;
-
-    cout << endl;
-  }
 }
+

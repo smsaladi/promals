@@ -7,7 +7,7 @@
 static int mydebug = 11;
 static int debug = 11;
 static void run_psipred_check_lowercase_letters(char *repres_name,
-                                                char *runpsipred1_command);
+                                                char *runpsipred_command);
 
 // Initilize static data member at file scope
 int subalign::subaligncount = 0;
@@ -2098,7 +2098,7 @@ void subalign::get_ss_prof(char *dir_name, char *runpsipred_command) {
 // read psipred output files
 // copy psipred output files to dir_name
 void subalign::get_ss_prof1(char *dir_name, char *query_name,
-                            char *runpsipred1_command) {
+                            char *runpsipred_command) {
   int i;
   char base_name[300];
   char cwd[300];
@@ -2170,9 +2170,9 @@ void subalign::get_ss_prof1(char *dir_name, char *query_name,
   cout << "4: " << status << endl;
 
   // here check if the sequence contains small letters
-  run_psipred_check_lowercase_letters(repres_name, runpsipred1_command);
+  run_psipred_check_lowercase_letters(repres_name, runpsipred_command);
   // sprintf(command, "runpsipred %s.fa", repres_name);
-  // sprintf(command, "%s %s.fa 2>/dev/null 1>/dev/null", runpsipred1_command,
+  // sprintf(command, "%s %s.fa 2>/dev/null 1>/dev/null", runpsipred_command,
   // repres_name); cout << command << endl; system(command);
 
   // get the psipred profile object
@@ -2346,7 +2346,7 @@ void subalign::get_score_bg_mine2(float *aa_loop0, float *ss_loop0,
 // and insert small letters into the result file, the inserted secondary
 // structure types are 'C' and confidence level the lowest, equal probability
 void run_psipred_check_lowercase_letters(char *repres_name,
-                                         char *runpsipred1_command) {
+                                         char *runpsipred_command) {
   int i, j, k, l;
   char origseq[10000], newseq[10000];
   char command[1000];
@@ -2379,7 +2379,7 @@ void run_psipred_check_lowercase_letters(char *repres_name,
 
   // if no small letters found, just run the command and return
   if (strlen(newseq) == origseqlen) {
-    sprintf(command, "%s %s.fa 2>/dev/null 1>/dev/null", runpsipred1_command,
+    sprintf(command, "%s %s.fa 2>/dev/null 1>/dev/null", runpsipred_command,
             repres_name);
     if (debug > -1) cout << command << endl;
     psipred_status = system(command);
@@ -2436,7 +2436,7 @@ void run_psipred_check_lowercase_letters(char *repres_name,
   system("cp psitmp.chk1 tmp.chk1");
 
   // 5. run psipred
-  sprintf(command, "%s %s.fa 2>/dev/null 1>/dev/null", runpsipred1_command,
+  sprintf(command, "%s %s.fa 2>/dev/null 1>/dev/null", runpsipred_command,
           repres_name);
   if (debug > 1) cout << command << endl;
   psipred_status = system(command);

@@ -16,9 +16,8 @@ int main(int argc, char **argv) {
   time(&timestart);
   timecount = 0;
 
-  getParameter(argc, argv, 1);
+  getParameter(argc, argv);
   printParameters();
-  printParameters1();
 
   get_log_robinson_freq();
   get_log_q_blosum62_ratio();
@@ -423,7 +422,7 @@ void multiple::alignDivergent_psipred(int use_homologs) {
                                  alltree.preAligned[i]->aln->aname[0],
                                  alltree.preAligned[i]->aln->aseq[0]);
       alltree.preAligned[i]->aln->get_ss_prof1(
-          blast_dir, alltree.preAligned[i]->aln->aname[0], runpsipred1_command);
+          blast_dir, alltree.preAligned[i]->aln->aname[0], runpsipred_command);
       if (!alltree.preAligned[i]->aux_align) {
         cout << "reading blastpgp alignment failed "
              << alltree.preAligned[i]->aln->aname[0] << endl;

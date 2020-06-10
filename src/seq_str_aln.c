@@ -338,7 +338,7 @@ void seq_str_aln::get_prof() {
     // strcpy(oneseqaln[i]->repres_name, oneseqaln[i]->aname[0]);
     // cout << oneseqaln[i]->repres_name << endl;
     oneseqaln[i]->select_representative();
-    oneseqaln[i]->get_ss_prof1(blast_dir, id[i], runpsipred1_command);
+    oneseqaln[i]->get_ss_prof1(blast_dir, id[i], runpsipred_command);
   }
 
   // 3. get the auxilary alignments: prof, read from the blast result directory
@@ -436,7 +436,7 @@ void seq_str_aln::get_prof_update() {
     strcpy(blast_dir, blastresults_);
     strcat(blast_dir, subdir);
     // cout << "blast_dir: " << blast_dir << endl;
-    oneseqaln[i]->get_ss_prof1(blast_dir, id[i], runpsipred1_command);
+    oneseqaln[i]->get_ss_prof1(blast_dir, id[i], runpsipred_command);
   }
 
   char tmpid[5000];

@@ -145,7 +145,7 @@ class subalign {
   // 2. get secondary structure profile for the representative
   void get_ss_prof(char *dir_name, char *runpsipred_command);
   void get_ss_prof1(char *dir_name, char *query_name,
-                    char *runpsipred1_command);
+                    char *runpsipred_command);
 
   // 3. map between profile positions and secondary structure profile positions
   int *prof_map_ss;  // mapping the profile positions to ss profile positions
